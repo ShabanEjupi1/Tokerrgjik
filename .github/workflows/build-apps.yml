@@ -232,6 +232,21 @@ jobs:
             --dart-define=CRYPTOLENS_ACCESS_TOKEN="${{ secrets.CRYPTOLENS_ACCESS_TOKEN }}" \
             --dart-define=CRYPTOLENS_RSA_PUBLIC_KEY="${{ secrets.CRYPTOLENS_RSA_PUBLIC_KEY }}"
       
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v3.0
+        with:
+          publish-dir: './tokerrgjik_mobile/build/web'
+          production-branch: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy from GitHub Actions - ${{ github.sha }}"
+          enable-pull-request-comment: true
+          enable-commit-comment: true
+          overwrites-pull-request-comment: true
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        timeout-minutes: 5
+      
       - name: Upload Web artifacts
         uses: actions/upload-artifact@v4
         with:
