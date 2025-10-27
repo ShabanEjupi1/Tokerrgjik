@@ -141,6 +141,7 @@ class SettingsScreen extends StatelessWidget {
                 children: [
                   ListTile(
                     title: const Text('Ngjyra e lojtarit 1'),
+                    subtitle: const Text('100 Monedha për ndryshim'),
                     trailing: Container(
                       width: 40,
                       height: 40,
@@ -150,14 +151,17 @@ class SettingsScreen extends StatelessWidget {
                         border: Border.all(color: Colors.grey, width: 2),
                       ),
                     ),
-                    onTap: () => _showColorPicker(
+                    onTap: () => _showColorPickerWithCost(
                       context,
+                      profile,
                       profile.player1Color,
                       (color) => profile.updateTheme(player1: color),
+                      100,
                     ),
                   ),
                   ListTile(
                     title: const Text('Ngjyra e lojtarit 2'),
+                    subtitle: const Text('100 Monedha për ndryshim'),
                     trailing: Container(
                       width: 40,
                       height: 40,
@@ -167,14 +171,17 @@ class SettingsScreen extends StatelessWidget {
                         border: Border.all(color: Colors.grey, width: 2),
                       ),
                     ),
-                    onTap: () => _showColorPicker(
+                    onTap: () => _showColorPickerWithCost(
                       context,
+                      profile,
                       profile.player2Color,
                       (color) => profile.updateTheme(player2: color),
+                      100,
                     ),
                   ),
                   ListTile(
                     title: const Text('Ngjyra e tabelës'),
+                    subtitle: const Text('100 Monedha për ndryshim'),
                     trailing: Container(
                       width: 40,
                       height: 40,
@@ -184,10 +191,12 @@ class SettingsScreen extends StatelessWidget {
                         border: Border.all(color: Colors.grey, width: 2),
                       ),
                     ),
-                    onTap: () => _showColorPicker(
+                    onTap: () => _showColorPickerWithCost(
                       context,
+                      profile,
                       profile.boardColor,
                       (color) => profile.updateTheme(board: color),
+                      100,
                     ),
                   ),
                   ListTile(
@@ -260,17 +269,19 @@ class SettingsScreen extends StatelessWidget {
                     onTap: () => _showLicenseInfo(context),
                   ),
                   ListTile(
-                    leading: const Icon(Icons.code, color: Color(0xFF3498DB)),
-                    title: const Text('Zhvilluar nga'),
-                    subtitle: const Text('DogaCode Solutions'),
+                    leading: const Icon(Icons.email, color: Color(0xFF3498DB)),
+                    title: const Text('Mbështetje'),
+                    subtitle: const Text('support@tokerrgjik.com'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const DeveloperInfoScreen(),
-                        ),
+                    onTap: () async {
+                      final Uri emailUri = Uri(
+                        scheme: 'mailto',
+                        path: 'support@tokerrgjik.com',
+                        query: 'subject=TokerrGjik Support',
                       );
+                      if (await canLaunchUrl(emailUri)) {
+                        await launchUrl(emailUri);
+                      }
                     },
                   ),
                 ],
@@ -344,6 +355,85 @@ class SettingsScreen extends StatelessWidget {
     );
   }
   
+  void _showColorPickerWithCost(
+    BuildContext context,
+    UserProfile profile,
+    Color current,
+    Function(Color) onColorChanged,
+    int cost,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        Color pickerColor = current;
+        return AlertDialog(
+          title: Row(
+            children: [
+              const Text('Zgjedh ngjyrën'),
+              const Spacer(),
+              Row(
+                children: [
+                  Text(
+                    '$cost',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFDAA520),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.monetization_on, color: Color(0xFFDAA520), size: 20),
+                ],
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: ColorPicker(
+              pickerColor: pickerColor,
+              onColorChanged: (color) {
+                pickerColor = color;
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Anulo'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                // Check if user has enough coins
+                if (profile.coins < cost) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Nuk ke mjaftueshëm monedha! Nevojiten $cost monedha.'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  return;
+                }
+                
+                // Deduct coins and save color
+                await profile.spendCoins(cost);
+                onColorChanged(pickerColor);
+                Navigator.pop(context);
+                
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Ngjyra u ndryshua! (-$cost monedha)'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              },
+              child: const Text('Ruaj dhe Blej'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+  
   void _showThemeSelector(BuildContext context, UserProfile profile) {
     showDialog(
       context: context,
@@ -366,8 +456,13 @@ class SettingsScreen extends StatelessWidget {
   
   Widget _themeOptionNew(BuildContext context, String key, GameTheme theme, UserProfile profile) {
     bool isSelected = profile.boardTheme == key;
-    // Free themes: classic, dark, custom (already unlocked)
-    bool isFreeTheme = key == 'classic' || key == 'dark' || key == 'custom';
+    // Free themes: classic, dark
+    bool isFreeTheme = key == 'classic' || key == 'dark';
+    // Custom theme costs 5000 coins
+    bool isCustomTheme = key == 'custom';
+    int customCost = 5000;
+    bool hasCustom = profile.unlockedThemes.contains('custom');
+    // Other premium themes need to be bought from shop or have Pro
     bool isUnlocked = isFreeTheme || profile.unlockedThemes.contains(key) || profile.isPro;
     
     return Container(
@@ -390,6 +485,18 @@ class SettingsScreen extends StatelessWidget {
             if (!isUnlocked) ...[
               const SizedBox(width: 8),
               const Icon(Icons.lock, size: 16, color: Colors.orange),
+              if (isCustomTheme) ...[
+                const SizedBox(width: 4),
+                Text(
+                  '$customCost',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFDAA520),
+                  ),
+                ),
+                const Icon(Icons.monetization_on, size: 14, color: Color(0xFFDAA520)),
+              ],
             ],
           ],
         ),
@@ -398,9 +505,9 @@ class SettingsScreen extends StatelessWidget {
           children: [
             Text(theme.description, style: const TextStyle(fontSize: 12)),
             if (!isUnlocked)
-              const Text(
-                'Bleje në Dyqan',
-                style: TextStyle(fontSize: 11, color: Colors.orange, fontWeight: FontWeight.bold),
+              Text(
+                isCustomTheme ? 'Blej për $customCost monedha' : 'Bleje në Dyqan',
+                style: const TextStyle(fontSize: 11, color: Colors.orange, fontWeight: FontWeight.bold),
               ),
           ],
         ),
@@ -436,19 +543,74 @@ class SettingsScreen extends StatelessWidget {
             ],
           ),
         ),
-        onTap: isUnlocked ? () {
-          profile.updateTheme(
-            theme: key,
-            board: theme.boardColor,
-            player1: theme.player1Color,
-            player2: theme.player2Color,
-          );
-          SoundService.playClick();
-          Navigator.pop(context);
-        } : () {
-          // Navigate to shop
-          Navigator.pop(context);
-          Navigator.pushNamed(context, '/shop');
+        onTap: () async {
+          if (isUnlocked) {
+            // Theme is unlocked, apply it
+            profile.updateTheme(
+              theme: key,
+              board: theme.boardColor,
+              player1: theme.player1Color,
+              player2: theme.player2Color,
+            );
+            SoundService.playClick();
+            Navigator.pop(context);
+          } else if (isCustomTheme) {
+            // Custom theme - charge 5000 coins
+            if (profile.coins < customCost) {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Nuk ke mjaftueshëm monedha! Nevojiten $customCost monedha për temën e personalizuar.'),
+                  backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 4),
+                ),
+              );
+              return;
+            }
+            
+            // Confirm purchase
+            final confirm = await showDialog<bool>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Blej Temë të Personalizuar'),
+                content: Text('Dëshiron të blesh temën e personalizuar për $customCost monedha?\n\nKjo do të të lejojë të zgjedhësh ngjyrat e tua të preferuara!'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('Anulo'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('Blej'),
+                  ),
+                ],
+              ),
+            );
+            
+            if (confirm == true) {
+              await profile.spendCoins(customCost);
+              await profile.unlockTheme('custom');
+              profile.updateTheme(
+                theme: key,
+                board: theme.boardColor,
+                player1: theme.player1Color,
+                player2: theme.player2Color,
+              );
+              SoundService.playClick();
+              Navigator.pop(context);
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Tema e personalizuar u hap! (-$customCost monedha)'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+          } else {
+            // Navigate to shop for premium themes
+            Navigator.pop(context);
+            Navigator.pushNamed(context, '/shop');
+          }
         },
       ),
     );
@@ -636,7 +798,7 @@ class SettingsScreen extends StatelessWidget {
               onPressed: () async {
                 Navigator.pop(context);
                 // Open license purchase page in browser
-                const licenseUrl = 'https://tokerrgjik.netlify.app/license';
+                const licenseUrl = 'https://tokerrgjik.netlify.app/license.html';
                 try {
                   final uri = Uri.parse(licenseUrl);
                   if (await canLaunchUrl(uri)) {
@@ -645,7 +807,7 @@ class SettingsScreen extends StatelessWidget {
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Nuk mund të hapet faqja e licencës. Provoni manualisht: https://tokerrgjik.netlify.app/license'),
+                          content: Text('Nuk mund të hapet faqja e licencës. Provoni manualisht: https://tokerrgjik.netlify.app/license.html'),
                           duration: Duration(seconds: 5),
                         ),
                       );
