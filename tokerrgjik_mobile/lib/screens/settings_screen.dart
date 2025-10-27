@@ -271,12 +271,12 @@ class SettingsScreen extends StatelessWidget {
                   ListTile(
                     leading: const Icon(Icons.email, color: Color(0xFF3498DB)),
                     title: const Text('Mbështetje'),
-                    subtitle: const Text('support@tokerrgjik.com'),
+                    subtitle: const Text('info@shabanejupi.engineer'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                     onTap: () async {
                       final Uri emailUri = Uri(
                         scheme: 'mailto',
-                        path: 'support@tokerrgjik.com',
+                        path: 'info@shabanejupi.engineer',
                         query: 'subject=TokerrGjik Support',
                       );
                       if (await canLaunchUrl(emailUri)) {
@@ -589,7 +589,7 @@ class SettingsScreen extends StatelessWidget {
             
             if (confirm == true) {
               await profile.spendCoins(customCost);
-              await profile.unlockTheme('custom');
+              profile.unlockTheme('custom');
               profile.updateTheme(
                 theme: key,
                 board: theme.boardColor,
