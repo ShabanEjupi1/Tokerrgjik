@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:confetti/confetti.dart';
 import '../models/user_profile.dart';
 import '../services/sound_service.dart';
+import '../config/app_colors.dart';
 import 'game_screen.dart';
 import 'multiplayer_lobby_screen.dart';
 

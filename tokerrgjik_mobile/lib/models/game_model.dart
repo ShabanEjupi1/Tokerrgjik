@@ -18,6 +18,7 @@ class GameModel {
   int? selectedPosition;
   bool aiEnabled = false;
   int aiPlayer = 2;
+  String aiDifficulty = 'medium'; // AI difficulty level: easy, medium, hard, expert
   
   // Shilevek bonus: Track repeated mills for smart play rewards
   final List<int> _recentMillPositions = [];
@@ -403,7 +404,14 @@ class GameModel {
     return removable;
   }
 
-  // ============ AI LOGIC ============
+  // ============ AI LOGIC - ENHANCED ============
+  // Difficulty-based depth limits
+  static const Map<String, int> difficultyDepths = {
+    'easy': 1,     // Look ahead 1 move
+    'medium': 2,   // Look ahead 2 moves
+    'hard': 3,     // Look ahead 3 moves
+    'expert': 4,   // Look ahead 4 moves
+  };
 
   void makeAIMove() {
     if (phase == 'placing') {
@@ -415,29 +423,159 @@ class GameModel {
     }
   }
 
+  /// Evaluate board position (positive = good for AI, negative = good for opponent)
+  int _evaluateBoard() {
+    final opponent = aiPlayer == 1 ? 2 : 1;
+    int score = 0;
+    
+    // 1. Piece count advantage (most important)
+    score += (piecesOnBoard[aiPlayer]! - piecesOnBoard[opponent]!) * 100;
+    score += (piecesLeft[aiPlayer]! - piecesLeft[opponent]!) * 50;
+    
+    // 2. Mill potential (two pieces in a mill line)
+    int aiMillPotential = 0;
+    int oppMillPotential = 0;
+    for (var mill in mills) {
+      int aiCount = 0;
+      int oppCount = 0;
+      int emptyCount = 0;
+      
+      for (int pos in mill) {
+        if (board[pos] == aiPlayer) aiCount++;
+        else if (board[pos] == opponent) oppCount++;
+        else emptyCount++;
+      }
+      
+      // Two pieces + one empty = potential mill
+      if (aiCount == 2 && emptyCount == 1) aiMillPotential++;
+      if (oppCount == 2 && emptyCount == 1) oppMillPotential++;
+    }
+    score += (aiMillPotential - oppMillPotential) * 30;
+    
+    // 3. Completed mills
+    int aiMills = 0;
+    int oppMills = 0;
+    for (int i = 0; i < 24; i++) {
+      if (board[i] == aiPlayer && checkMill(i)) aiMills++;
+      if (board[i] == opponent && checkMill(i)) oppMills++;
+    }
+    score += (aiMills - oppMills) * 40;
+    
+    // 4. Mobility (number of possible moves)
+    if (phase == 'moving') {
+      int aiMobility = 0;
+      int oppMobility = 0;
+      for (int i = 0; i < 24; i++) {
+        if (board[i] == aiPlayer) aiMobility += getValidMoves(i).length;
+        if (board[i] == opponent) oppMobility += getValidMoves(i).length;
+      }
+      score += (aiMobility - oppMobility) * 10;
+    }
+    
+    // 5. Strategic positions (center squares worth more)
+    List<int> centerPositions = [1, 3, 5, 7, 9, 11, 13, 15];
+    for (int pos in centerPositions) {
+      if (board[pos] == aiPlayer) score += 5;
+      if (board[pos] == opponent) score -= 5;
+    }
+    
+    // 6. Blocking opponent's potential mills
+    score += (aiMillPotential > 0 ? 15 : 0);
+    score -= (oppMillPotential > 0 ? 15 : 0);
+    
+    return score;
+  }
+
+  /// Minimax with alpha-beta pruning for placing phase
+  (int, int?) _minimaxPlace(int depth, int alpha, int beta, bool isMaximizing) {
+    // Base case: reached depth limit or game over
+    if (depth == 0 || checkWinCondition()) {
+      return (_evaluateBoard(), null);
+    }
+    
+    List<int> emptyPositions = [];
+    for (int i = 0; i < 24; i++) {
+      if (board[i] == null) emptyPositions.add(i);
+    }
+    
+    if (emptyPositions.isEmpty) return (_evaluateBoard(), null);
+    
+    if (isMaximizing) {
+      int maxScore = -999999;
+      int? bestMove;
+      
+      for (int pos in emptyPositions) {
+        // Simulate move
+        board[pos] = aiPlayer;
+        piecesLeft[aiPlayer] = piecesLeft[aiPlayer]! - 1;
+        
+        int score = _minimaxPlace(depth - 1, alpha, beta, false).$1;
+        
+        // Undo move
+        board[pos] = null;
+        piecesLeft[aiPlayer] = piecesLeft[aiPlayer]! + 1;
+        
+        if (score > maxScore) {
+          maxScore = score;
+          bestMove = pos;
+        }
+        
+        alpha = max(alpha, score);
+        if (beta <= alpha) break; // Alpha-beta pruning
+      }
+      
+      return (maxScore, bestMove);
+    } else {
+      int minScore = 999999;
+      int? bestMove;
+      final opponent = aiPlayer == 1 ? 2 : 1;
+      
+      for (int pos in emptyPositions) {
+        // Simulate opponent move
+        board[pos] = opponent;
+        piecesLeft[opponent] = piecesLeft[opponent]! - 1;
+        
+        int score = _minimaxPlace(depth - 1, alpha, beta, true).$1;
+        
+        // Undo move
+        board[pos] = null;
+        piecesLeft[opponent] = piecesLeft[opponent]! + 1;
+        
+        if (score < minScore) {
+          minScore = score;
+          bestMove = pos;
+        }
+        
+        beta = min(beta, score);
+        if (beta <= alpha) break; // Alpha-beta pruning
+      }
+      
+      return (minScore, bestMove);
+    }
+  }
+
   void _aiPlacePiece() {
     List<int> emptyPositions = [];
     for (int i = 0; i < 24; i++) {
       if (board[i] == null) emptyPositions.add(i);
     }
 
-    if (emptyPositions.isEmpty) {
-      // No empty positions - this shouldn't happen but handle it
-      return;
-    }
+    if (emptyPositions.isEmpty) return;
+    
+    final depth = difficultyDepths[aiDifficulty] ?? 2;
 
-    // 1. Try to complete a mill
+    // 1. ALWAYS try to complete a mill first (immediate win opportunity)
     for (int pos in emptyPositions) {
       board[pos] = aiPlayer;
       if (checkMill(pos)) {
-        board[pos] = null; // Reset
+        board[pos] = null;
         placePiece(pos);
         return;
       }
       board[pos] = null;
     }
 
-    // 2. Block opponent's mill
+    // 2. ALWAYS block opponent's immediate mill
     int opponent = aiPlayer == 1 ? 2 : 1;
     for (int pos in emptyPositions) {
       board[pos] = opponent;
@@ -449,7 +587,14 @@ class GameModel {
       board[pos] = null;
     }
 
-    // 3. Strategic positions (corners and centers)
+    // 3. Use minimax for strategic placement
+    var result = _minimaxPlace(depth, -999999, 999999, true);
+    if (result.$2 != null) {
+      placePiece(result.$2!);
+      return;
+    }
+
+    // 4. Fallback: Strategic positions
     List<int> strategic = [1, 3, 5, 7, 9, 11, 13, 15];
     List<int> availableStrategic =
         emptyPositions.where((pos) => strategic.contains(pos)).toList();
@@ -458,7 +603,7 @@ class GameModel {
       return;
     }
 
-    // 4. Random placement
+    // 5. Random placement
     placePiece(emptyPositions[Random().nextInt(emptyPositions.length)]);
   }
 
@@ -468,7 +613,13 @@ class GameModel {
       if (board[i] == aiPlayer) aiPieces.add(i);
     }
 
-    // 1. Try to form a mill
+    if (aiPieces.isEmpty) return;
+
+    int bestScore = -999999;
+    int? bestFrom;
+    int? bestTo;
+
+    // 1. ALWAYS try to form a mill first
     for (int from in aiPieces) {
       List<int> moves = getValidMoves(from);
       for (int to in moves) {
@@ -486,7 +637,7 @@ class GameModel {
       }
     }
 
-    // 2. Block opponent
+    // 2. ALWAYS block opponent's immediate mill threat
     int opponent = aiPlayer == 1 ? 2 : 1;
     for (int from in aiPieces) {
       List<int> moves = getValidMoves(from);
@@ -501,13 +652,35 @@ class GameModel {
       }
     }
 
-    // 3. Random move - ensure we always have a fallback
-    if (aiPieces.isEmpty) {
-      // No pieces to move - this shouldn't happen but handle it
-      return;
+    // 3. Evaluate all possible moves
+    for (int from in aiPieces) {
+      List<int> moves = getValidMoves(from);
+      for (int to in moves) {
+        // Simulate move
+        int? temp = board[from];
+        board[from] = null;
+        board[to] = temp;
+        
+        int score = _evaluateBoard();
+        
+        // Undo move
+        board[from] = temp;
+        board[to] = null;
+        
+        if (score > bestScore) {
+          bestScore = score;
+          bestFrom = from;
+          bestTo = to;
+        }
+      }
     }
     
-    // Try up to 10 times to find a valid move
+    if (bestFrom != null && bestTo != null) {
+      movePiece(bestFrom, bestTo);
+      return;
+    }
+
+    // 4. Fallback: Random valid move
     for (int attempt = 0; attempt < 10; attempt++) {
       int from = aiPieces[Random().nextInt(aiPieces.length)];
       List<int> moves = getValidMoves(from);
@@ -516,14 +689,47 @@ class GameModel {
         return;
       }
     }
-    
-    // If still no valid move found, AI has lost (no moves available)
-    // Don't make a move - let checkWinCondition handle it
   }
 
   void _aiRemovePiece() {
     List<int> removable = getRemovablePieces();
-    if (removable.isNotEmpty) {
+    if (removable.isEmpty) return;
+    
+    int opponent = aiPlayer == 1 ? 2 : 1;
+    int bestScore = -999999;
+    int? bestRemove;
+
+    // Evaluate which piece removal is best
+    for (int pos in removable) {
+      // Check if this piece is part of a potential mill
+      int potentialMills = 0;
+      for (var mill in mills) {
+        if (mill.contains(pos)) {
+          int oppCount = 0;
+          int emptyCount = 0;
+          for (int p in mill) {
+            if (board[p] == opponent) oppCount++;
+            if (board[p] == null) emptyCount++;
+          }
+          if (oppCount == 2 && emptyCount == 1) potentialMills++;
+        }
+      }
+      
+      int score = potentialMills * 50;
+      
+      // Center pieces are more valuable
+      List<int> centerPositions = [1, 3, 5, 7, 9, 11, 13, 15];
+      if (centerPositions.contains(pos)) score += 10;
+      
+      if (score > bestScore) {
+        bestScore = score;
+        bestRemove = pos;
+      }
+    }
+    
+    if (bestRemove != null) {
+      removePiece(bestRemove);
+    } else {
       removePiece(removable[Random().nextInt(removable.length)]);
     }
   }
@@ -545,3 +751,4 @@ class GameSnapshot {
     required this.piecesOnBoard,
   });
 }
+
