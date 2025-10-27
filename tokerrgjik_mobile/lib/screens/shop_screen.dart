@@ -138,12 +138,11 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
     return Consumer<UserProfile>(
       builder: (context, profile, child) {
         final themes = [
-          {'name': 'Default', 'color': const Color(0xFF667eea), 'cost': 0, 'id': 'default'},
-          {'name': 'Ocean Blue', 'color': const Color(0xFF1e3a8a), 'cost': 50, 'id': 'ocean'},
-          {'name': 'Forest Green', 'color': const Color(0xFF166534), 'cost': 50, 'id': 'forest'},
-          {'name': 'Sunset Orange', 'color': const Color(0xFFea580c), 'cost': 75, 'id': 'sunset'},
-          {'name': 'Midnight Black', 'color': const Color(0xFF111827), 'cost': 100, 'id': 'midnight'},
-          {'name': 'Golden Shine', 'color': const Color(0xFFfbbf24), 'cost': 150, 'id': 'gold'},
+          {'name': 'Klasike (Ari)', 'color': const Color(0xFFDAA520), 'cost': 0, 'id': 'classic', 'description': 'Tabelë e artë 3D me ngjyra klasike'},
+          {'name': 'E errët', 'color': const Color(0xFF424242), 'cost': 0, 'id': 'dark', 'description': 'Tabelë e errët me figura të ndritshme'},
+          {'name': 'Natyrore', 'color': const Color(0xFF8B4513), 'cost': 150, 'id': 'nature', 'description': 'Ngjyra druri natyror'},
+          {'name': 'Oqean', 'color': const Color(0xFF1E90FF), 'cost': 200, 'id': 'ocean', 'description': 'Temë blu oqeani'},
+          {'name': 'E personalizuar', 'color': const Color(0xFFDAA520), 'cost': 5000, 'id': 'custom', 'description': 'Krijuar nga ti - zgjedh ngjyrat'},
         ];
 
         return ListView(
