@@ -149,7 +149,7 @@ class TokerrgjikApp extends StatelessWidget {
         title: 'Tokerrgjik',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          primarySwatch: Colors.deepPurple,
+          primarySwatch: Colors.blue,
           useMaterial3: true,
           fontFamily: 'Roboto',
         ),

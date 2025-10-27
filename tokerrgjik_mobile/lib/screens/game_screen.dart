@@ -634,7 +634,7 @@ class _GameScreenState extends State<GameScreen> {
                   borderRadius: BorderRadius.circular(15),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.deepPurple.withOpacity(0.3),
+                      color: Colors.teal.withOpacity(0.3),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -787,7 +787,7 @@ class _GameScreenState extends State<GameScreen> {
         boxShadow: isActive
             ? [
                 BoxShadow(
-                  color: Colors.deepPurple.withOpacity(0.3),
+                  color: Colors.teal.withOpacity(0.3),
                   blurRadius: 8,
                   spreadRadius: 2,
                 ),

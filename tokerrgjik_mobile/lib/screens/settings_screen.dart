@@ -242,7 +242,7 @@ class SettingsScreen extends StatelessWidget {
                 title: 'ℹ️ Informacion',
                 children: [
                   ListTile(
-                    leading: const Icon(Icons.info_outline, color: Color(0xFF667eea)),
+                    leading: const Icon(Icons.info_outline, color: Color(0xFF3498DB)),
                     title: const Text('Versioni i aplikacionit'),
                     subtitle: const Text('1.0.0'),
                   ),
@@ -260,7 +260,7 @@ class SettingsScreen extends StatelessWidget {
                     onTap: () => _showLicenseInfo(context),
                   ),
                   ListTile(
-                    leading: const Icon(Icons.code, color: Color(0xFF667eea)),
+                    leading: const Icon(Icons.code, color: Color(0xFF3498DB)),
                     title: const Text('Zhvilluar nga'),
                     subtitle: const Text('DogaCode Solutions'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),

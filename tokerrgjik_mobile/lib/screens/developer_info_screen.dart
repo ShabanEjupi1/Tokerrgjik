@@ -159,7 +159,7 @@ class DeveloperInfoScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF667eea),
+                        color: Color(0xFF2C3E50),
                       ),
                     ),
                     const SizedBox(height: 5),

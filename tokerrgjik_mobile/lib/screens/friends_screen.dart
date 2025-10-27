@@ -44,7 +44,7 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
     return Scaffold(
       appBar: AppBar(
         title: const Text('👥 Miqtë'),
-        backgroundColor: const Color(0xFF667eea),
+        backgroundColor: const Color(0xFF3498DB),
         actions: [
           IconButton(
             icon: const Icon(Icons.person_add),
@@ -93,7 +93,7 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
                   icon: const Icon(Icons.share),
                   label: const Text('Fto Miq'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF667eea),
+                    backgroundColor: const Color(0xFF3498DB),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
@@ -115,7 +115,7 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
               margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
               child: ListTile(
                 leading: CircleAvatar(
-                  backgroundColor: const Color(0xFF667eea),
+                  backgroundColor: const Color(0xFF3498DB),
                   child: Text(
                     friend[0].toUpperCase(),
                     style: const TextStyle(color: Colors.white),

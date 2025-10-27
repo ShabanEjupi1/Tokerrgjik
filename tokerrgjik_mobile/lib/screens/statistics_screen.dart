@@ -58,7 +58,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('📊 Statistika'),
-        backgroundColor: const Color(0xFF667eea),
+        backgroundColor: const Color(0xFF3498DB),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -143,7 +143,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           children: [
             CircleAvatar(
               radius: 50,
-              backgroundColor: const Color(0xFF667eea),
+              backgroundColor: const Color(0xFF3498DB),
               child: Text(
                 '$level',
                 style: const TextStyle(
@@ -352,7 +352,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF667eea),
+              color: Color(0xFF3498DB),
             ),
           ),
         ],
@@ -388,7 +388,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             ),
             const SizedBox(height: 16),
             ListTile(
-              leading: const Icon(Icons.emoji_events, color: Color(0xFF667eea), size: 32),
+              leading: const Icon(Icons.emoji_events, color: Color(0xFF3498DB), size: 32),
               title: const Text('Shiko arritjet e tua'),
               subtitle: const Text('Hap arritje të reja duke luajtur'),
               trailing: const Icon(Icons.arrow_forward),
