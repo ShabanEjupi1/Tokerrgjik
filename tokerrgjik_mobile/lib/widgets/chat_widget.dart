@@ -103,7 +103,7 @@ class _ChatWidgetState extends State<ChatWidget> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.deepPurple,
+          color: Colors.teal, // Changed from deepPurple
           borderRadius: BorderRadius.circular(20),
         ),
         child: const Row(
@@ -125,7 +125,7 @@ class _ChatWidgetState extends State<ChatWidget> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: const BoxDecoration(
-        color: Colors.deepPurple,
+        color: Colors.teal, // Changed from deepPurple
         borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
       ),
       child: Row(
@@ -208,7 +208,7 @@ class _ChatWidgetState extends State<ChatWidget> {
           IconButton(
             icon: Icon(
               _showQuickChat ? Icons.keyboard : Icons.flash_on,
-              color: Colors.deepPurple,
+              color: Colors.teal, // Changed from deepPurple
               size: 20,
             ),
             onPressed: () {
@@ -243,7 +243,7 @@ class _ChatWidgetState extends State<ChatWidget> {
           ),
           const SizedBox(width: 8),
           IconButton(
-            icon: const Icon(Icons.send, color: Colors.deepPurple, size: 20),
+            icon: const Icon(Icons.send, color: Colors.teal, size: 20), // Changed from deepPurple
             onPressed: _sendMessage,
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),

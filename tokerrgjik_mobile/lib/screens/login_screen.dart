@@ -84,7 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+            colors: [Color(0xFF2C3E50), Color(0xFF3498DB)], // Dark blue-grey to bright blue
           ),
         ),
         child: SafeArea(
@@ -107,14 +107,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         const Icon(
                           Icons.grid_3x3,
                           size: 64,
-                          color: Color(0xFF667eea),
+                          color: Color(0xFF2C3E50), // Dark blue-grey
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'TokerrGjik',
+                          'Tokerrgjik',
                           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: const Color(0xFF667eea),
+                                color: const Color(0xFF2C3E50), // Dark blue-grey
                               ),
                         ),
                         const SizedBox(height: 8),
@@ -225,7 +225,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              backgroundColor: const Color(0xFF667eea),
+                              backgroundColor: const Color(0xFF2C3E50), // Dark blue-grey
                             ),
                             child: _isLoading
                                 ? const SizedBox(
@@ -257,7 +257,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             _isLoginMode
                                 ? 'Nuk keni llogari? Regjistrohu këtu'
                                 : 'Keni llogari? Hyr këtu',
-                            style: const TextStyle(color: Color(0xFF667eea)),
+                            style: const TextStyle(color: Color(0xFF2C3E50)), // Dark blue-grey
                           ),
                         ),
 

@@ -160,7 +160,7 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Multiplayer'),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: Colors.teal, // Changed from deepPurple
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -174,7 +174,7 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
           : _buildLobbyContent(),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _isCreatingSession ? null : _createNewSession,
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: Colors.teal, // Changed from deepPurple
         icon: _isCreatingSession
             ? const SizedBox(
                 width: 20,
@@ -265,7 +265,7 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
       child: ListTile(
         contentPadding: const EdgeInsets.all(16),
         leading: CircleAvatar(
-          backgroundColor: isMySession ? Colors.green : Colors.deepPurple,
+          backgroundColor: isMySession ? Colors.green : Colors.teal, // Changed from deepPurple
           radius: 30,
           child: Icon(
             isMySession ? Icons.person : Icons.sports_esports,
@@ -309,7 +309,7 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
                 icon: const Icon(Icons.login, size: 18),
                 label: const Text('Join'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple,
+                  backgroundColor: Colors.teal, // Changed from deepPurple
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),

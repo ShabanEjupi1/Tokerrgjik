@@ -92,8 +92,8 @@ export async function handler(event, context) {
         
         // Create game session
         const session = await sql`
-          INSERT INTO game_sessions (host_username, guest_username, status, board_state, current_turn)
-          VALUES (${host_username}, ${guest_username || null}, 'waiting', '{}', ${host_username})
+          INSERT INTO game_sessions (host_username, guest_username, status, board_state, current_turn, created_at)
+          VALUES (${host_username}, ${guest_username || null}, 'waiting', '{}', ${host_username}, NOW())
           RETURNING *
         `;
         
@@ -215,12 +215,12 @@ export async function handler(event, context) {
       const gameResult = await sql`
         INSERT INTO game_history (
           username, game_mode, result, opponent_username, 
-          score, duration, moves_count, played_at
+          score, duration, moves_count, played_at, created_at
         )
         VALUES (
           ${username}, ${game_mode}, ${result}, ${opponent_username || null},
           ${score || 0}, ${duration || 0}, ${moves_count || 0}, 
-          ${played_at || new Date().toISOString()}
+          ${played_at || new Date().toISOString()}, NOW()
         )
         RETURNING *
       `;

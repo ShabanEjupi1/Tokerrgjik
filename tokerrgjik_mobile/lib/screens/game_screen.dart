@@ -43,6 +43,7 @@ class _GameScreenState extends State<GameScreen> {
     // Configure game based on mode and difficulty
     if (widget.mode == 'ai' && widget.difficulty != null) {
       game.aiEnabled = true;
+      game.aiDifficulty = widget.difficulty ?? 'medium'; // Set AI difficulty
     } else if (widget.mode == 'online') {
       // Configure for online play
     }
@@ -457,7 +458,7 @@ class _GameScreenState extends State<GameScreen> {
             'Si të luash tokerrgjik',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: Color(0xFF667eea),
+              color: Color(0xFF2C3E50), // Dark blue-grey
             ),
           ),
           content: SingleChildScrollView(
@@ -502,7 +503,7 @@ class _GameScreenState extends State<GameScreen> {
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF764ba2),
+            color: Color(0xFF3498DB), // Bright blue
           ),
         ),
         const SizedBox(height: 5),
@@ -526,7 +527,7 @@ class _GameScreenState extends State<GameScreen> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        backgroundColor: const Color(0xFF667eea),
+        backgroundColor: const Color(0xFF2C3E50), // Dark blue-grey
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -628,7 +629,7 @@ class _GameScreenState extends State<GameScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                    colors: [Color(0xFF2C3E50), Color(0xFF3498DB)], // Dark blue-grey to bright blue
                   ),
                   borderRadius: BorderRadius.circular(15),
                   boxShadow: [
@@ -653,35 +654,33 @@ class _GameScreenState extends State<GameScreen> {
               const SizedBox(height: 8),
 
               // Game board - perfectly centered with proper constraints
-              Expanded(
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                    child: AspectRatio(
-                      aspectRatio: 1.0,
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          // Get the smaller dimension to ensure board fits
-                          final boardSize = constraints.maxWidth < constraints.maxHeight
-                              ? constraints.maxWidth
-                              : constraints.maxHeight;
-                          
-                          return Center(
-                            child: SizedBox(
-                              width: boardSize,
-                              height: boardSize,
-                              child: GameBoard(
-                                game: game,
-                                onPositionTap: handlePositionTap,
-                                boardColor: profile.boardColor,
-                                player1Color: profile.player1Color,
-                                player2Color: profile.player2Color,
-                                hintPosition: _hintPosition,
-                              ),
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: AspectRatio(
+                    aspectRatio: 1.0,
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        // Get the smaller dimension to ensure board fits
+                        final boardSize = constraints.maxWidth < constraints.maxHeight
+                            ? constraints.maxWidth
+                            : constraints.maxHeight;
+                        
+                        return Center(
+                          child: SizedBox(
+                            width: boardSize,
+                            height: boardSize,
+                            child: GameBoard(
+                              game: game,
+                              onPositionTap: handlePositionTap,
+                              boardColor: profile.boardColor,
+                              player1Color: profile.player1Color,
+                              player2Color: profile.player2Color,
+                              hintPosition: _hintPosition,
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -698,7 +697,7 @@ class _GameScreenState extends State<GameScreen> {
                     IconButton(
                       onPressed: game.canUndo() ? _undo : null,
                       icon: const Icon(Icons.undo),
-                      color: game.canUndo() ? const Color(0xFF667eea) : Colors.grey,
+                      color: game.canUndo() ? const Color(0xFF2C3E50) : Colors.grey, // Dark blue-grey
                       iconSize: 32,
                       tooltip: 'Zhbëj',
                     ),
@@ -706,7 +705,7 @@ class _GameScreenState extends State<GameScreen> {
                     IconButton(
                       onPressed: game.canRedo() ? _redo : null,
                       icon: const Icon(Icons.redo),
-                      color: game.canRedo() ? const Color(0xFF667eea) : Colors.grey,
+                      color: game.canRedo() ? const Color(0xFF2C3E50) : Colors.grey, // Dark blue-grey
                       iconSize: 32,
                       tooltip: 'Ribëj',
                     ),
@@ -732,7 +731,7 @@ class _GameScreenState extends State<GameScreen> {
                       icon: Icons.refresh,
                       label: 'E re',
                       onPressed: resetGame,
-                      color: const Color(0xFF667eea),
+                      color: const Color(0xFF2C3E50), // Dark blue-grey
                     ),
                     _buildSmallButton(
                       icon: Icons.menu_book,
@@ -819,7 +818,7 @@ class _GameScreenState extends State<GameScreen> {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
-                  color: isActive ? const Color(0xFF667eea) : Colors.grey,
+                  color: isActive ? const Color(0xFF2C3E50) : Colors.grey, // Dark blue-grey
                 ),
               ),
               Text(

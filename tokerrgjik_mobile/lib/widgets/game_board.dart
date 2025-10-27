@@ -114,9 +114,9 @@ class GameBoard extends StatelessWidget {
         game.phase == 'removing' && game.getRemovablePieces().contains(pos.id);
     bool isHint = hintPosition == pos.id; // Check if this is the hint position
 
-    // Larger touch target for mobile
-    double touchSize = 60.0;
-    double pieceSize = 44.0; // Larger pieces
+    // Smaller pieces for better visibility and aesthetics
+    double touchSize = 52.0;  // Reduced from 60
+    double pieceSize = 36.0;   // Reduced from 44
 
     return Positioned(
       left: x - touchSize / 2,

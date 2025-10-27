@@ -495,12 +495,12 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                       ),
                       const SizedBox(height: 24),
                       ElevatedButton.icon(
-                        onPressed: profile.coins >= 50
-                            ? () => _skipAdsWithCoins(context, profile, 24, 50)
+                        onPressed: profile.coins >= 5000
+                            ? () => _skipAdsWithCoins(context, profile, 24, 5000)
                             : null,
                         icon: const Icon(Icons.monetization_on, size: 24),
                         label: const Text(
-                          '50 monedha - 24 orë',
+                          '5000 monedha - 24 orë',
                           style: TextStyle(fontSize: 18),
                         ),
                         style: ElevatedButton.styleFrom(

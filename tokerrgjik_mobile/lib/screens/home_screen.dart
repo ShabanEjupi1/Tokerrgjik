@@ -70,14 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Container(
             decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF667eea),
-                  Color(0xFF764ba2),
-                ],
-              ),
+              gradient: AppColors.primaryGradient,
             ),
             child: SafeArea(
               child: Column(
@@ -141,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Text(
                         profile.username[0].toUpperCase(),
                         style: const TextStyle(
-                          color: Color(0xFF667eea),
+                          color: Color(0xFF2C3E50), // Dark blue-grey
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -375,7 +368,7 @@ class _HomeScreenState extends State<HomeScreen> {
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: gradient == null ? Colors.white : Colors.transparent,
-          foregroundColor: gradient == null ? const Color(0xFF667eea) : Colors.white,
+          foregroundColor: gradient == null ? const Color(0xFF2C3E50) : Colors.white, // Dark blue-grey
           shadowColor: Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
           shape: RoundedRectangleBorder(
@@ -480,7 +473,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: const TextStyle(
                     fontSize: 48,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF667eea),
+                    color: Color(0xFF2C3E50), // Dark blue-grey
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -490,7 +483,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     SoundService.playClick();
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF667eea),
+                    backgroundColor: const Color(0xFF2C3E50), // Dark blue-grey
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 48,
@@ -536,7 +529,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final isSelected = profile.difficulty == value;
     
     return Card(
-      color: isSelected ? const Color(0xFF667eea).withOpacity(0.1) : null,
+      color: isSelected ? const Color(0xFF2C3E50).withOpacity(0.1) : null, // Dark blue-grey
       child: ListTile(
         leading: Radio<String>(
           value: value,
@@ -598,7 +591,7 @@ class _HomeScreenState extends State<HomeScreen> {
             'Si të luash Tokerrgjik',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: Color(0xFF667eea),
+              color: Color(0xFF2C3E50), // Dark blue-grey
             ),
           ),
           content: SingleChildScrollView(
@@ -654,7 +647,7 @@ class _HomeScreenState extends State<HomeScreen> {
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF764ba2),
+            color: Color(0xFF3498DB), // Bright blue
           ),
         ),
         const SizedBox(height: 5),

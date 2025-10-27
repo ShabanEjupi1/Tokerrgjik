@@ -18,7 +18,7 @@ class DeveloperInfoScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Rreth aplikacionit'),
-        backgroundColor: const Color(0xFF667eea),
+        backgroundColor: const Color(0xFF2C3E50), // Dark blue-grey
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -49,11 +49,11 @@ class DeveloperInfoScreen extends StatelessWidget {
                     
                     // Name
                     const Text(
-                      'TokerrGjik',
+                      'Tokerrgjik',
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF667eea),
+                        color: Color(0xFF2C3E50), // Dark blue-grey
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -95,10 +95,10 @@ class DeveloperInfoScreen extends StatelessWidget {
                   children: [
                     Row(
                       children: const [
-                        Icon(Icons.info_outline, color: Color(0xFF667eea)),
+                        Icon(Icons.info_outline, color: Color(0xFF2C3E50)), // Dark blue-grey
                         SizedBox(width: 10),
                         Text(
-                          'Ç\'është TokerrGjik?',
+                          'Ç\'është Tokerrgjik?',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -108,7 +108,7 @@ class DeveloperInfoScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 15),
                     const Text(
-                      'TokerrGjik është lojë tradicionale shqiptare që luhet me 9 figura për secilin lojtar. '
+                      'Tokerrgjik është lojë tradicionale shqiptare që luhet me 9 figura për secilin lojtar. '
                       'Qëllimi është të formosh "dang" (3 figura në rresht) për të hequr figurat e kundërshtarit.',
                       style: TextStyle(fontSize: 16, height: 1.5),
                     ),
@@ -142,7 +142,7 @@ class DeveloperInfoScreen extends StatelessWidget {
                   children: [
                     Row(
                       children: const [
-                        Icon(Icons.code, color: Color(0xFF667eea)),
+                        Icon(Icons.code, color: Color(0xFF2C3E50)), // Dark blue-grey
                         SizedBox(width: 10),
                         Text(
                           'Zhvilluar nga',

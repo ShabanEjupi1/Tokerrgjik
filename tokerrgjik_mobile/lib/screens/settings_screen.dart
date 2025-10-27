@@ -9,6 +9,7 @@ import '../services/translations.dart';
 import '../services/cryptolens_service.dart';
 import '../config/themes.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'developer_info_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -21,7 +22,7 @@ class SettingsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(languageService.translate('settings_title')),
-        backgroundColor: const Color(0xFF667eea),
+        backgroundColor: const Color(0xFF2C3E50), // Dark blue-grey
       ),
       body: Consumer2<UserProfile, LanguageService>(
         builder: (context, profile, languageService, child) {
@@ -62,7 +63,7 @@ class SettingsScreen extends StatelessWidget {
               // Sound Settings
               _buildSection(
                 context,
-                title: '🔊 Tinguj dhe muzikë',
+                title: '🔊 Tinguj',
                 children: [
                   SwitchListTile(
                     title: const Text('Efektet e zërit'),
@@ -72,15 +73,6 @@ class SettingsScreen extends StatelessWidget {
                       profile.updateSettings(sound: value);
                       SoundService.setSoundEnabled(value);
                       if (value) SoundService.playClick();
-                    },
-                  ),
-                  SwitchListTile(
-                    title: const Text('Muzika e sfondit'),
-                    subtitle: const Text('Muzikë gjatë lojës'),
-                    value: profile.musicEnabled,
-                    onChanged: (value) {
-                      profile.updateSettings(music: value);
-                      SoundService.setMusicEnabled(value);
                     },
                   ),
                   SwitchListTile(
@@ -234,6 +226,13 @@ class SettingsScreen extends StatelessWidget {
                       Navigator.pushNamed(context, '/shop');
                     },
                   ),
+                  if (AuthService.isLoggedIn)
+                    ListTile(
+                      leading: const Icon(Icons.logout, color: Colors.red),
+                      title: const Text('Dil nga llogaria'),
+                      subtitle: const Text('Shkyçu nga llogaria aktuale'),
+                      onTap: () => _showLogoutDialog(context),
+                    ),
                 ],
               ),
               
@@ -242,9 +241,10 @@ class SettingsScreen extends StatelessWidget {
                 context,
                 title: 'ℹ️ Informacion',
                 children: [
-                  const ListTile(
-                    title: Text('Versioni'),
-                    subtitle: Text('1.0.0'),
+                  ListTile(
+                    leading: const Icon(Icons.info_outline, color: Color(0xFF667eea)),
+                    title: const Text('Versioni i aplikacionit'),
+                    subtitle: const Text('1.0.0'),
                   ),
                   ListTile(
                     title: const Text('🔐 License Status'),
@@ -260,30 +260,9 @@ class SettingsScreen extends StatelessWidget {
                     onTap: () => _showLicenseInfo(context),
                   ),
                   ListTile(
+                    leading: const Icon(Icons.code, color: Color(0xFF667eea)),
                     title: const Text('Zhvilluar nga'),
                     subtitle: const Text('DogaCode Solutions'),
-                    trailing: const Icon(Icons.info_outline),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const DeveloperInfoScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-              
-              // About / Developer Info
-              _buildSection(
-                context,
-                title: 'ℹ️ Informacion',
-                children: [
-                  ListTile(
-                    leading: const Icon(Icons.code, color: Color(0xFF667eea)),
-                    title: const Text('Informacion për zhvilluesin'),
-                    subtitle: const Text('Shiko detajet e aplikacionit'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                     onTap: () {
                       Navigator.push(
@@ -293,11 +272,6 @@ class SettingsScreen extends StatelessWidget {
                         ),
                       );
                     },
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.info_outline, color: Color(0xFF667eea)),
-                    title: const Text('Versioni i aplikacionit'),
-                    subtitle: const Text('1.0.0'),
                   ),
                 ],
               ),
@@ -321,7 +295,7 @@ class SettingsScreen extends StatelessWidget {
             title,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
-              color: const Color(0xFF667eea),
+              color: const Color(0xFF2C3E50), // Dark blue-grey
             ),
           ),
         ),
@@ -392,6 +366,10 @@ class SettingsScreen extends StatelessWidget {
   
   Widget _themeOptionNew(BuildContext context, String key, GameTheme theme, UserProfile profile) {
     bool isSelected = profile.boardTheme == key;
+    // Free themes: classic, dark, custom (already unlocked)
+    bool isFreeTheme = key == 'classic' || key == 'dark' || key == 'custom';
+    bool isUnlocked = isFreeTheme || profile.unlockedThemes.contains(key) || profile.isPro;
+    
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
       decoration: BoxDecoration(
@@ -403,11 +381,29 @@ class SettingsScreen extends StatelessWidget {
         ),
       ),
       child: ListTile(
-        title: Text(
-          theme.name,
-          style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal),
+        title: Row(
+          children: [
+            Text(
+              theme.name,
+              style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal),
+            ),
+            if (!isUnlocked) ...[
+              const SizedBox(width: 8),
+              const Icon(Icons.lock, size: 16, color: Colors.orange),
+            ],
+          ],
         ),
-        subtitle: Text(theme.description, style: const TextStyle(fontSize: 12)),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(theme.description, style: const TextStyle(fontSize: 12)),
+            if (!isUnlocked)
+              const Text(
+                'Bleje në Dyqan',
+                style: TextStyle(fontSize: 11, color: Colors.orange, fontWeight: FontWeight.bold),
+              ),
+          ],
+        ),
         leading: Container(
           width: 50,
           height: 50,
@@ -440,7 +436,7 @@ class SettingsScreen extends StatelessWidget {
             ],
           ),
         ),
-        onTap: () {
+        onTap: isUnlocked ? () {
           profile.updateTheme(
             theme: key,
             board: theme.boardColor,
@@ -449,6 +445,10 @@ class SettingsScreen extends StatelessWidget {
           );
           SoundService.playClick();
           Navigator.pop(context);
+        } : () {
+          // Navigate to shop
+          Navigator.pop(context);
+          Navigator.pushNamed(context, '/shop');
         },
       ),
     );
@@ -593,7 +593,7 @@ class SettingsScreen extends StatelessWidget {
               color: CryptolensService.isLicensed ? Colors.green : Colors.orange,
             ),
             const SizedBox(width: 8),
-            const Text('License Information'),
+            const Text('License information'),
           ],
         ),
         content: SingleChildScrollView(
@@ -607,7 +607,7 @@ class SettingsScreen extends StatelessWidget {
                 _buildLicenseRow('Expires:', '${licenseStatus['daysRemaining']} days'),
               if (licenseStatus['activations'] != null)
                 _buildLicenseRow('Activations:', licenseStatus['activations']),
-              _buildLicenseRow('App Version:', '${licenseStatus['appVersion']} (${licenseStatus['buildNumber']})'),
+              _buildLicenseRow('App Version:', '${licenseStatus['appVersion']}'),
               const Divider(),
               const Text(
                 '© 2025 Shaban Ejupi\nAll Rights Reserved',
@@ -633,12 +633,83 @@ class SettingsScreen extends StatelessWidget {
           ),
           if (!CryptolensService.isLicensed)
             ElevatedButton(
-              onPressed: () {
-                // TODO: Navigate to license purchase page
+              onPressed: () async {
                 Navigator.pop(context);
+                // Open license purchase page in browser
+                const licenseUrl = 'https://tokerrgjik.netlify.app/license';
+                try {
+                  final uri = Uri.parse(licenseUrl);
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  } else {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Nuk mund të hapet faqja e licencës. Provoni manualisht: https://tokerrgjik.netlify.app/license'),
+                          duration: Duration(seconds: 5),
+                        ),
+                      );
+                    }
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Gabim: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
               },
               child: const Text('Get License'),
             ),
+        ],
+      ),
+    );
+  }
+  
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.logout, color: Colors.red),
+            SizedBox(width: 8),
+            Text('Dil nga llogaria?'),
+          ],
+        ),
+        content: const Text(
+          'A jeni i sigurt që dëshironi të dilni nga llogaria? '
+          'Të gjitha të dhënat e pashpëtuara do të humbasin.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Anulo'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              // Logout
+              await AuthService.logout();
+              if (context.mounted) {
+                Navigator.pop(context); // Close dialog
+                Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('✅ U shkëputët me sukses'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Dil'),
+          ),
         ],
       ),
     );

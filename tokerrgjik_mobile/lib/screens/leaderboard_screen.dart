@@ -43,7 +43,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('🏆 Leaderboard'),
-        backgroundColor: const Color(0xFF667eea),
+        backgroundColor: const Color(0xFF2C3E50), // Dark blue-grey
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -53,9 +53,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _loadLeaderboard,
-              child: LayoutBuilder(
+          : _leaderboard.isEmpty
+              ? _buildEmptyState()
+              : RefreshIndicator(
+                  onRefresh: _loadLeaderboard,
+                  child: LayoutBuilder(
                 builder: (context, constraints) {
                   return SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
@@ -82,6 +84,53 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     );
   }
 
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.leaderboard,
+              size: 100,
+              color: Colors.grey,
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'No leaderboard data yet',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Play some games and your stats will appear here!',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () => Navigator.pushNamed(context, '/home'),
+              icon: const Icon(Icons.play_arrow),
+              label: const Text('Play Now'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2C3E50),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildUserRankCard(UserProfile profile) {
     final userRank = _userRank?['rank'] ?? 0;
     final showInLeaderboard = userRank > 0 && userRank <= 10;
@@ -96,7 +145,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           child: Row(
             children: [
               CircleAvatar(
-                backgroundColor: const Color(0xFF667eea),
+                backgroundColor: const Color(0xFF2C3E50), // Dark blue-grey
                 child: Text(
                   profile.username[0].toUpperCase(),
                   style: const TextStyle(color: Colors.white),
@@ -158,7 +207,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            const Color(0xFF667eea).withOpacity(0.1),
+            const Color(0xFF2C3E50).withOpacity(0.1), // Dark blue-grey
             Colors.transparent,
           ],
         ),
@@ -284,7 +333,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       color: isTopTen ? Colors.amber[50] : null,
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: isTopTen ? const Color(0xFF667eea) : Colors.grey,
+          backgroundColor: isTopTen ? const Color(0xFF2C3E50) : Colors.grey, // Dark blue-grey
           child: Text(
             '#$rank',
             style: const TextStyle(
@@ -318,7 +367,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF667eea),
+                color: Color(0xFF2C3E50), // Dark blue-grey
               ),
             ),
             const Text(
