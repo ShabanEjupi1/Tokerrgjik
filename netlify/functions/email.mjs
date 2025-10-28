@@ -1,25 +1,74 @@
 import { neon } from '@neondatabase/serverless';
+import nodemailer from 'nodemailer';
 
 const sql = neon(process.env.NEON_DATABASE_URL || process.env.NETLIFY_DATABASE_URL);
 
-// Simplified email logging (no SendGrid needed!)
-// Emails are logged to Netlify console for testing
-// Students can see email content in Netlify function logs
+// Email configuration - uses environment variables
+const EMAIL_CONFIG = {
+  FROM_EMAIL: process.env.FROM_EMAIL || 'noreply@tokerrgjik.com',
+  FROM_NAME: 'Tokerrgjik Game',
+  SMTP_HOST: 'smtp.gmail.com',
+  SMTP_PORT: 587,
+  APP_PASSWORD: process.env.APP_PASSWORD,
+};
+
+// Create email transporter with Gmail SMTP
+const createTransporter = () => {
+  if (!EMAIL_CONFIG.APP_PASSWORD) {
+    console.warn('⚠️  APP_PASSWORD not set. Emails will only be logged to console.');
+    return null;
+  }
+
+  return nodemailer.createTransporter({
+    host: EMAIL_CONFIG.SMTP_HOST,
+    port: EMAIL_CONFIG.SMTP_PORT,
+    secure: false, // Use TLS
+    auth: {
+      user: EMAIL_CONFIG.FROM_EMAIL,
+      pass: EMAIL_CONFIG.APP_PASSWORD,
+    },
+  });
+};
+
+// Send email via SMTP
 async function sendEmail(to, subject, html) {
   console.log('\n========================================');
   console.log('📧 EMAIL NOTIFICATION');
   console.log('========================================');
   console.log(`To: ${to}`);
+  console.log(`From: ${EMAIL_CONFIG.FROM_NAME} <${EMAIL_CONFIG.FROM_EMAIL}>`);
   console.log(`Subject: ${subject}`);
   console.log('----------------------------------------');
-  console.log(html);
-  console.log('========================================\n');
   
-  // For production with Testmail.app or another service:
-  // You can integrate their API here when ready
-  // Example: await fetch('https://api.testmail.app/api/send', {...})
+  const transporter = createTransporter();
   
-  return true;
+  if (!transporter) {
+    console.log('⚠️  Email SMTP not configured. Email content:');
+    console.log(html);
+    console.log('========================================\n');
+    return true; // Return success so workflow doesn't break
+  }
+
+  try {
+    const info = await transporter.sendMail({
+      from: `"${EMAIL_CONFIG.FROM_NAME}" <${EMAIL_CONFIG.FROM_EMAIL}>`,
+      to: to,
+      subject: subject,
+      html: html,
+    });
+    
+    console.log('✅ Email sent successfully!');
+    console.log('Message ID:', info.messageId);
+    console.log('========================================\n');
+    return true;
+  } catch (error) {
+    console.error('❌ Error sending email:', error.message);
+    console.log('Email content (backup):');
+    console.log(html);
+    console.log('========================================\n');
+    // Return true anyway so the function doesn't fail
+    return true;
+  }
 }
 
 export default async (req, res) => {
