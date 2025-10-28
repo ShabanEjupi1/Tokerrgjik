@@ -10,7 +10,7 @@ subprojects {
     // Set Java compatibility for all subprojects
     afterEvaluate {
         extensions.findByType<com.android.build.gradle.BaseExtension>()?.apply {
-            compileSdkVersion(36)  // Set compileSdk for all subprojects
+            compileSdkVersion(34)  // Use stable SDK version for CI compatibility
             compileOptions {
                 sourceCompatibility = JavaVersion.VERSION_17
                 targetCompatibility = JavaVersion.VERSION_17

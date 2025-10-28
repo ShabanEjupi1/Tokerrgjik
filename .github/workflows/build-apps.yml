@@ -68,8 +68,16 @@ jobs:
           
           # CI-specific optimizations
           org.gradle.workers.max=2
-          org.gradle.jvmargs=-Xmx3G -XX:MaxMetaspaceSize=1G -XX:+UseParallelGC
+          org.gradle.jvmargs=-Xmx4G -XX:MaxMetaspaceSize=1G -XX:+UseParallelGC
+          org.gradle.daemon=false
+          org.gradle.parallel=false
+          org.gradle.caching=true
+          android.useAndroidX=true
+          android.enableJetifier=true
           EOF
+          
+          echo "✅ Gradle configuration updated for CI"
+          cat gradle.properties
       
       - name: Display build environment
         working-directory: tokerrgjik_mobile
@@ -87,7 +95,7 @@ jobs:
       
       - name: Build APK (Release)
         working-directory: tokerrgjik_mobile
-        timeout-minutes: 30
+        timeout-minutes: 45
         run: |
           echo "🏗️ Starting APK build..."
           
@@ -104,14 +112,19 @@ jobs:
           echo "📦 Building APK with configuration:"
           echo "  - Split per ABI: enabled"
           echo "  - Release mode: enabled"
+          echo "  - Verbose output: enabled"
           
+          # Build with error handling
           flutter build apk --release --split-per-abi \
-            --verbose \
             --dart-define=CRYPTOLENS_PRODUCT_ID="$CRYPTOLENS_PRODUCT_ID" \
             --dart-define=CRYPTOLENS_ACCESS_TOKEN="$CRYPTOLENS_ACCESS_TOKEN" \
-            --dart-define=CRYPTOLENS_RSA_PUBLIC_KEY="$CRYPTOLENS_RSA_PUBLIC_KEY" || {
+            --dart-define=CRYPTOLENS_RSA_PUBLIC_KEY="$CRYPTOLENS_RSA_PUBLIC_KEY" 2>&1 | tee build.log || {
               echo "❌ APK build failed!"
-              echo "Checking for common issues..."
+              echo "📋 Last 100 lines of build log:"
+              tail -n 100 build.log
+              echo "🔍 Checking Gradle daemon logs..."
+              find android/.gradle -name "*.log" -exec tail -n 20 {} \;
+              echo "🩺 Running flutter doctor..."
               flutter doctor -v
               exit 1
             }

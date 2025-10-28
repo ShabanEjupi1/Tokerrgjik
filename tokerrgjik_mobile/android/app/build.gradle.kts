@@ -7,8 +7,8 @@ plugins {
 
 android {
     namespace = "com.ejupishaban.tokerrgjik"
-    compileSdk = 36  // Updated to support latest plugins
-    ndkVersion = "27.0.12077973"  // Updated to latest NDK version for plugin compatibility
+    compileSdk = 34  // Use stable SDK version for CI compatibility
+    ndkVersion = flutter.ndkVersion  // Use Flutter's recommended NDK version
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17  // Updated from 11 to 17
@@ -27,7 +27,7 @@ android {
         applicationId = "com.ejupishaban.tokerrgjik"
         // Application configuration
         minSdk = 24  // Android 7.0 and above
-        targetSdk = 36  // Latest Android
+        targetSdk = 34  // Stable Android version for CI
         versionCode = 1
         versionName = "1.0.0"
     }
