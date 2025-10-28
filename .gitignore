@@ -9,15 +9,14 @@ package-lock.json
 tokerrgjik_mobile/.dart_tool/
 tokerrgjik_mobile/.packages
 # Keep build/web for Netlify deployment
-tokerrgjik_mobile/build/android/
-tokerrgjik_mobile/build/ios/
-tokerrgjik_mobile/build/linux/
-tokerrgjik_mobile/build/macos/
-tokerrgjik_mobile/build/windows/
+tokerrgjik_mobile/build/
+tokerrgjik_mobile/android/.gradle/
+tokerrgjik_mobile/android/build/
 tokerrgjik_mobile/.flutter-plugins
 tokerrgjik_mobile/.flutter-plugins-dependencies
 tokerrgjik_mobile/.pub-cache/
 tokerrgjik_mobile/.pub/
+tokerrgjik_mobile/android/local.properties
 
 # IDE
 .vscode/
