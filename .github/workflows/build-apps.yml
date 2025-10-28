@@ -90,24 +90,94 @@ jobs:
         timeout-minutes: 30
         run: |
           echo "🏗️ Starting APK build..."
+          
+          # Set default values if secrets are not configured
+          CRYPTOLENS_PRODUCT_ID="${{ secrets.CRYPTOLENS_PRODUCT_ID }}"
+          CRYPTOLENS_ACCESS_TOKEN="${{ secrets.CRYPTOLENS_ACCESS_TOKEN }}"
+          CRYPTOLENS_RSA_PUBLIC_KEY="${{ secrets.CRYPTOLENS_RSA_PUBLIC_KEY }}"
+          
+          # Use empty strings if secrets are not set
+          CRYPTOLENS_PRODUCT_ID="${CRYPTOLENS_PRODUCT_ID:-}"
+          CRYPTOLENS_ACCESS_TOKEN="${CRYPTOLENS_ACCESS_TOKEN:-}"
+          CRYPTOLENS_RSA_PUBLIC_KEY="${CRYPTOLENS_RSA_PUBLIC_KEY:-}"
+          
+          echo "📦 Building APK with configuration:"
+          echo "  - Split per ABI: enabled"
+          echo "  - Release mode: enabled"
+          
           flutter build apk --release --split-per-abi \
             --verbose \
-            --dart-define=CRYPTOLENS_PRODUCT_ID="${{ secrets.CRYPTOLENS_PRODUCT_ID }}" \
-            --dart-define=CRYPTOLENS_ACCESS_TOKEN="${{ secrets.CRYPTOLENS_ACCESS_TOKEN }}" \
-            --dart-define=CRYPTOLENS_RSA_PUBLIC_KEY="${{ secrets.CRYPTOLENS_RSA_PUBLIC_KEY }}"
-          echo "✅ APK build completed"
+            --dart-define=CRYPTOLENS_PRODUCT_ID="$CRYPTOLENS_PRODUCT_ID" \
+            --dart-define=CRYPTOLENS_ACCESS_TOKEN="$CRYPTOLENS_ACCESS_TOKEN" \
+            --dart-define=CRYPTOLENS_RSA_PUBLIC_KEY="$CRYPTOLENS_RSA_PUBLIC_KEY" || {
+              echo "❌ APK build failed!"
+              echo "Checking for common issues..."
+              flutter doctor -v
+              exit 1
+            }
+          
+          echo "✅ APK build completed successfully!"
+          echo "📦 Listing generated APKs:"
+          ls -lh build/app/outputs/flutter-apk/
       
       - name: Build App Bundle (Release)
         working-directory: tokerrgjik_mobile
         timeout-minutes: 30
         run: |
           echo "🏗️ Starting App Bundle build..."
+          
+          # Set default values if secrets are not configured
+          CRYPTOLENS_PRODUCT_ID="${{ secrets.CRYPTOLENS_PRODUCT_ID }}"
+          CRYPTOLENS_ACCESS_TOKEN="${{ secrets.CRYPTOLENS_ACCESS_TOKEN }}"
+          CRYPTOLENS_RSA_PUBLIC_KEY="${{ secrets.CRYPTOLENS_RSA_PUBLIC_KEY }}"
+          
+          # Use empty strings if secrets are not set
+          CRYPTOLENS_PRODUCT_ID="${CRYPTOLENS_PRODUCT_ID:-}"
+          CRYPTOLENS_ACCESS_TOKEN="${CRYPTOLENS_ACCESS_TOKEN:-}"
+          CRYPTOLENS_RSA_PUBLIC_KEY="${CRYPTOLENS_RSA_PUBLIC_KEY:-}"
+          
+          echo "📦 Building App Bundle with configuration:"
+          echo "  - Release mode: enabled"
+          
           flutter build appbundle --release \
             --verbose \
-            --dart-define=CRYPTOLENS_PRODUCT_ID="${{ secrets.CRYPTOLENS_PRODUCT_ID }}" \
-            --dart-define=CRYPTOLENS_ACCESS_TOKEN="${{ secrets.CRYPTOLENS_ACCESS_TOKEN }}" \
-            --dart-define=CRYPTOLENS_RSA_PUBLIC_KEY="${{ secrets.CRYPTOLENS_RSA_PUBLIC_KEY }}"
-          echo "✅ App Bundle build completed"
+            --dart-define=CRYPTOLENS_PRODUCT_ID="$CRYPTOLENS_PRODUCT_ID" \
+            --dart-define=CRYPTOLENS_ACCESS_TOKEN="$CRYPTOLENS_ACCESS_TOKEN" \
+            --dart-define=CRYPTOLENS_RSA_PUBLIC_KEY="$CRYPTOLENS_RSA_PUBLIC_KEY" || {
+              echo "❌ App Bundle build failed!"
+              echo "Checking for common issues..."
+              flutter doctor -v
+              exit 1
+            }
+          
+          echo "✅ App Bundle build completed successfully!"
+          echo "📦 Listing generated AAB:"
+          ls -lh build/app/outputs/bundle/release/
+      
+      - name: Verify build outputs
+        working-directory: tokerrgjik_mobile
+        run: |
+          echo "🔍 Verifying build outputs..."
+          
+          # Check APK files
+          if [ -d "build/app/outputs/flutter-apk" ]; then
+            echo "✅ APK directory exists"
+            APK_COUNT=$(find build/app/outputs/flutter-apk -name "*.apk" | wc -l)
+            echo "📦 Found $APK_COUNT APK file(s):"
+            find build/app/outputs/flutter-apk -name "*.apk" -exec ls -lh {} \;
+          else
+            echo "❌ APK directory not found!"
+          fi
+          
+          # Check AAB files
+          if [ -d "build/app/outputs/bundle/release" ]; then
+            echo "✅ AAB directory exists"
+            AAB_COUNT=$(find build/app/outputs/bundle/release -name "*.aab" | wc -l)
+            echo "📦 Found $AAB_COUNT AAB file(s):"
+            find build/app/outputs/bundle/release -name "*.aab" -exec ls -lh {} \;
+          else
+            echo "❌ AAB directory not found!"
+          fi
       
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
@@ -124,6 +194,32 @@ jobs:
           path: |
             tokerrgjik_mobile/build/app/outputs/bundle/release/*.aab
           retention-days: 90
+      
+      - name: Build Summary
+        if: always()
+        working-directory: tokerrgjik_mobile
+        run: |
+          echo "📊 Build Summary"
+          echo "================================"
+          echo ""
+          echo "Flutter Version:"
+          flutter --version
+          echo ""
+          echo "Build Status:"
+          if [ -f "build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk" ]; then
+            echo "✅ APK build: SUCCESS"
+          else
+            echo "❌ APK build: FAILED"
+          fi
+          if [ -f "build/app/outputs/bundle/release/app-release.aab" ]; then
+            echo "✅ AAB build: SUCCESS"
+          else
+            echo "❌ AAB build: FAILED"
+          fi
+          echo ""
+          echo "Disk usage:"
+          df -h .
+
       
       - name: Create Release (if tag)
         if: startsWith(github.ref, 'refs/tags/v')
@@ -183,10 +279,26 @@ jobs:
         working-directory: tokerrgjik_mobile
         run: |
           echo "ℹ️  Building iOS without codesigning (manual signing required for deployment)"
+          
+          # Set default values if secrets are not configured
+          CRYPTOLENS_PRODUCT_ID="${{ secrets.CRYPTOLENS_PRODUCT_ID }}"
+          CRYPTOLENS_ACCESS_TOKEN="${{ secrets.CRYPTOLENS_ACCESS_TOKEN }}"
+          CRYPTOLENS_RSA_PUBLIC_KEY="${{ secrets.CRYPTOLENS_RSA_PUBLIC_KEY }}"
+          
+          # Use empty strings if secrets are not set
+          CRYPTOLENS_PRODUCT_ID="${CRYPTOLENS_PRODUCT_ID:-}"
+          CRYPTOLENS_ACCESS_TOKEN="${CRYPTOLENS_ACCESS_TOKEN:-}"
+          CRYPTOLENS_RSA_PUBLIC_KEY="${CRYPTOLENS_RSA_PUBLIC_KEY:-}"
+          
           flutter build ios --release --no-codesign \
-            --dart-define=CRYPTOLENS_PRODUCT_ID="${{ secrets.CRYPTOLENS_PRODUCT_ID }}" \
-            --dart-define=CRYPTOLENS_ACCESS_TOKEN="${{ secrets.CRYPTOLENS_ACCESS_TOKEN }}" \
-            --dart-define=CRYPTOLENS_RSA_PUBLIC_KEY="${{ secrets.CRYPTOLENS_RSA_PUBLIC_KEY }}"
+            --dart-define=CRYPTOLENS_PRODUCT_ID="$CRYPTOLENS_PRODUCT_ID" \
+            --dart-define=CRYPTOLENS_ACCESS_TOKEN="$CRYPTOLENS_ACCESS_TOKEN" \
+            --dart-define=CRYPTOLENS_RSA_PUBLIC_KEY="$CRYPTOLENS_RSA_PUBLIC_KEY" || {
+              echo "❌ iOS build failed!"
+              flutter doctor -v
+              exit 1
+            }
+          
           echo "✅ iOS build complete - manual codesigning needed before App Store submission"
       
       - name: Create IPA
@@ -261,10 +373,28 @@ jobs:
       - name: Build Web
         working-directory: tokerrgjik_mobile
         run: |
+          echo "🌐 Building web version..."
+          
+          # Set default values if secrets are not configured
+          CRYPTOLENS_PRODUCT_ID="${{ secrets.CRYPTOLENS_PRODUCT_ID }}"
+          CRYPTOLENS_ACCESS_TOKEN="${{ secrets.CRYPTOLENS_ACCESS_TOKEN }}"
+          CRYPTOLENS_RSA_PUBLIC_KEY="${{ secrets.CRYPTOLENS_RSA_PUBLIC_KEY }}"
+          
+          # Use empty strings if secrets are not set
+          CRYPTOLENS_PRODUCT_ID="${CRYPTOLENS_PRODUCT_ID:-}"
+          CRYPTOLENS_ACCESS_TOKEN="${CRYPTOLENS_ACCESS_TOKEN:-}"
+          CRYPTOLENS_RSA_PUBLIC_KEY="${CRYPTOLENS_RSA_PUBLIC_KEY:-}"
+          
           flutter build web --release \
-            --dart-define=CRYPTOLENS_PRODUCT_ID="${{ secrets.CRYPTOLENS_PRODUCT_ID }}" \
-            --dart-define=CRYPTOLENS_ACCESS_TOKEN="${{ secrets.CRYPTOLENS_ACCESS_TOKEN }}" \
-            --dart-define=CRYPTOLENS_RSA_PUBLIC_KEY="${{ secrets.CRYPTOLENS_RSA_PUBLIC_KEY }}"
+            --dart-define=CRYPTOLENS_PRODUCT_ID="$CRYPTOLENS_PRODUCT_ID" \
+            --dart-define=CRYPTOLENS_ACCESS_TOKEN="$CRYPTOLENS_ACCESS_TOKEN" \
+            --dart-define=CRYPTOLENS_RSA_PUBLIC_KEY="$CRYPTOLENS_RSA_PUBLIC_KEY" || {
+              echo "❌ Web build failed!"
+              flutter doctor -v
+              exit 1
+            }
+          
+          echo "✅ Web build completed successfully!"
       
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v3.0
