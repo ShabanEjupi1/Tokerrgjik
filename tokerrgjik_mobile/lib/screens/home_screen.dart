@@ -288,9 +288,6 @@ class _HomeScreenState extends State<HomeScreen> {
         _buildMenuButton(
           icon: Icons.wifi,
           label: 'Luaj online',
-          gradient: const LinearGradient(
-            colors: [Colors.orange, Colors.deepOrange],
-          ),
           onPressed: () {
             // Navigate to multiplayer lobby instead of directly to game
             Navigator.push(
