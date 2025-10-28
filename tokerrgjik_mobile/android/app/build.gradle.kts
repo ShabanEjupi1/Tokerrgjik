@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.ejupishaban.tokerrgjik"
-    compileSdk = 34  // Use stable SDK version for CI compatibility
+    compileSdk = 36  // Required by sqflite_android-2.4.2+2 which uses BAKLAVA (Android 36)
     ndkVersion = flutter.ndkVersion  // Use Flutter's recommended NDK version
 
     compileOptions {
