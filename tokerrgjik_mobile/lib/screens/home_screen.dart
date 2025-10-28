@@ -4,6 +4,7 @@ import 'package:confetti/confetti.dart';
 import '../models/user_profile.dart';
 import '../services/sound_service.dart';
 import '../config/app_colors.dart';
+import '../widgets/joystick_icon.dart';
 import 'game_screen.dart';
 import 'multiplayer_lobby_screen.dart';
 
@@ -108,6 +109,13 @@ class _HomeScreenState extends State<HomeScreen> {
               emissionFrequency: 0.05,
               numberOfParticles: 50,
               gravity: 0.1,
+              colors: const [
+                Color(0xFF3498DB), // Blue
+                Color(0xFFDAA520), // Gold
+                Color(0xFF27AE60), // Green
+                Color(0xFF2C3E50), // Dark blue-grey
+                Color(0xFFE67E22), // Orange
+              ],
             ),
           ),
           // Login Reward Dialog
@@ -256,7 +264,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       children: [
         _buildMenuButton(
-          icon: Icons.computer,
+          customIcon: const JoystickIcon(size: 32, color: Color(0xFF667eea)),
           label: 'Luaj kundër AI',
           onPressed: () {
             _showDifficultyDialog();
@@ -347,7 +355,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildMenuButton({
-    required IconData icon,
+    IconData? icon,
+    Widget? customIcon,
     required String label,
     required VoidCallback onPressed,
     Gradient? gradient,
@@ -379,7 +388,10 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 26),
+            if (customIcon != null)
+              customIcon
+            else if (icon != null)
+              Icon(icon, size: 26),
             const SizedBox(width: 6),
             Flexible(
               child: Text(

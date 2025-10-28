@@ -176,7 +176,7 @@ class HintsService {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.monetization_on, color: Colors.orange, size: 20),
+                  const Icon(Icons.monetization_on, color: Color(0xFFDAA520), size: 20),
                   const SizedBox(width: 8),
                   Text(
                     '$HINT_COST monedha',

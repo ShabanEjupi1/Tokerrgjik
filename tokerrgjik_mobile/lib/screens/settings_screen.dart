@@ -33,29 +33,56 @@ class SettingsScreen extends StatelessWidget {
                 context,
                 title: '🌐 ${languageService.translate('language')}',
                 children: [
-                  RadioListTile<String>(
-                    title: const Text('🇦🇱 Shqip'),
-                    subtitle: const Text('Albanian language'),
-                    value: 'sq',
-                    groupValue: languageService.currentLanguage,
-                    onChanged: (value) {
-                      if (value != null) {
-                        languageService.setLanguage(value);
-                        SoundService.playClick();
-                      }
-                    },
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFE41E20), Color(0xFF000000)], // Albanian flag colors
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    child: RadioListTile<String>(
+                      title: const Text('🇦🇱 Shqip', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      subtitle: const Text('Albanian language', style: TextStyle(color: Colors.white70)),
+                      value: 'sq',
+                      groupValue: languageService.currentLanguage,
+                      selectedTileColor: Colors.white.withOpacity(0.2),
+                      activeColor: Colors.white,
+                      onChanged: (value) {
+                        if (value != null) {
+                          languageService.setLanguage(value);
+                          SoundService.playClick();
+                        }
+                      },
+                    ),
                   ),
-                  RadioListTile<String>(
-                    title: const Text('🇬🇧 English'),
-                    subtitle: const Text('English language'),
-                    value: 'en',
-                    groupValue: languageService.currentLanguage,
-                    onChanged: (value) {
-                      if (value != null) {
-                        languageService.setLanguage(value);
-                        SoundService.playClick();
-                      }
-                    },
+                  const SizedBox(height: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF012169), Color(0xFFC8102E)], // UK flag colors (blue and red)
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    child: RadioListTile<String>(
+                      title: const Text('🇬🇧 English', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      subtitle: const Text('English language', style: TextStyle(color: Colors.white70)),
+                      value: 'en',
+                      groupValue: languageService.currentLanguage,
+                      selectedTileColor: Colors.white.withOpacity(0.2),
+                      activeColor: Colors.white,
+                      onChanged: (value) {
+                        if (value != null) {
+                          languageService.setLanguage(value);
+                          SoundService.playClick();
+                        }
+                      },
+                    ),
                   ),
                 ],
               ),

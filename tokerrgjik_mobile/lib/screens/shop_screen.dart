@@ -322,7 +322,7 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.monetization_on, color: Colors.orange),
+                const Icon(Icons.monetization_on, color: Color(0xFFDAA520)),
                 const SizedBox(width: 8),
                 Text(
                   '$cost monedha',
@@ -497,7 +497,7 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                         onPressed: profile.coins >= 5000
                             ? () => _skipAdsWithCoins(context, profile, 24, 5000)
                             : null,
-                        icon: const Icon(Icons.monetization_on, size: 24),
+                        icon: const Icon(Icons.monetization_on, size: 24, color: Color(0xFFDAA520)),
                         label: const Text(
                           '5000 monedha - 24 orë',
                           style: TextStyle(fontSize: 18),
