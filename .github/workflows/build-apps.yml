@@ -13,6 +13,7 @@ jobs:
   build-android:
     name: Build Android APK/AAB
     runs-on: ubuntu-latest
+    timeout-minutes: 60  # Increase timeout for build process
     
     steps:
       - name: Checkout repository
@@ -59,21 +60,54 @@ jobs:
         working-directory: tokerrgjik_mobile
         run: flutter pub get
       
-      - name: Build APK (Release)
+      - name: Configure Gradle for CI
+        working-directory: tokerrgjik_mobile/android
+        run: |
+          # Create gradle.properties with CI-optimized settings
+          cat >> gradle.properties <<EOF
+          
+          # CI-specific optimizations
+          org.gradle.workers.max=2
+          org.gradle.jvmargs=-Xmx3G -XX:MaxMetaspaceSize=1G -XX:+UseParallelGC
+          EOF
+      
+      - name: Display build environment
         working-directory: tokerrgjik_mobile
         run: |
+          echo "📊 Build Environment Information:"
+          echo "Flutter Version: $(flutter --version)"
+          echo "Java Version: $(java -version 2>&1 | head -n 1)"
+          echo "Available Memory: $(free -h | grep Mem)"
+          cd android && ./gradlew --version
+      
+      - name: Analyze Dart code
+        working-directory: tokerrgjik_mobile
+        run: flutter analyze --no-fatal-infos
+        continue-on-error: true
+      
+      - name: Build APK (Release)
+        working-directory: tokerrgjik_mobile
+        timeout-minutes: 30
+        run: |
+          echo "🏗️ Starting APK build..."
           flutter build apk --release --split-per-abi \
+            --verbose \
             --dart-define=CRYPTOLENS_PRODUCT_ID="${{ secrets.CRYPTOLENS_PRODUCT_ID }}" \
             --dart-define=CRYPTOLENS_ACCESS_TOKEN="${{ secrets.CRYPTOLENS_ACCESS_TOKEN }}" \
             --dart-define=CRYPTOLENS_RSA_PUBLIC_KEY="${{ secrets.CRYPTOLENS_RSA_PUBLIC_KEY }}"
+          echo "✅ APK build completed"
       
       - name: Build App Bundle (Release)
         working-directory: tokerrgjik_mobile
+        timeout-minutes: 30
         run: |
+          echo "🏗️ Starting App Bundle build..."
           flutter build appbundle --release \
+            --verbose \
             --dart-define=CRYPTOLENS_PRODUCT_ID="${{ secrets.CRYPTOLENS_PRODUCT_ID }}" \
             --dart-define=CRYPTOLENS_ACCESS_TOKEN="${{ secrets.CRYPTOLENS_ACCESS_TOKEN }}" \
             --dart-define=CRYPTOLENS_RSA_PUBLIC_KEY="${{ secrets.CRYPTOLENS_RSA_PUBLIC_KEY }}"
+          echo "✅ App Bundle build completed"
       
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
