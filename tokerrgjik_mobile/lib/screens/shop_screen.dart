@@ -27,6 +27,17 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Check for initialTab argument and switch to it
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    if (args != null && args['initialTab'] != null) {
+      final initialTab = args['initialTab'] as int;
+      _tabController.index = initialTab;
+    }
+  }
+
+  @override
   void dispose() {
     _tabController.dispose();
     super.dispose();

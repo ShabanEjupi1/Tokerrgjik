@@ -634,9 +634,9 @@ class SettingsScreen extends StatelessWidget {
               );
             }
           } else {
-            // Navigate to shop for premium themes
+            // Navigate to shop Themes tab for premium themes
             Navigator.pop(context);
-            Navigator.pushNamed(context, '/shop');
+            Navigator.pushNamed(context, '/shop', arguments: {'initialTab': 1}); // Tab 1 = Themes
           }
         },
       ),
