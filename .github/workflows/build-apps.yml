@@ -32,6 +32,12 @@ jobs:
           flutter-version: '3.24.5'
           channel: 'stable'
           cache: true
+      
+      - name: Install Android SDK Platform 36
+        run: |
+          echo "📦 Installing Android SDK Platform 36..."
+          sdkmanager --install "platforms;android-36"
+          echo "✅ Android SDK Platform 36 installed"
         
       - name: Generate API keys
         working-directory: tokerrgjik_mobile
