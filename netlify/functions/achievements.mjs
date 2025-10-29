@@ -10,7 +10,7 @@ if (!connectionString) {
 
 const sql = connectionString ? neon(connectionString) : null;
 
-// Predefined achievements (these are client-side definitions)
+// Achievements te paradefinuara (shembuj)
 const ACHIEVEMENT_DEFINITIONS = [
   { type: 'first_win', title: 'Fitorja e parë', description: 'Fitoni lojën tuaj të parë', icon: '🏆' },
   { type: 'win_streak_5', title: 'Seri fitore 5', description: 'Fitoni 5 lojëra në seri', icon: '🔥' },
