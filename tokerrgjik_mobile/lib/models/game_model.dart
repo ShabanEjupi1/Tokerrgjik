@@ -20,9 +20,8 @@ class GameModel {
   int aiPlayer = 2;
   String aiDifficulty = 'medium'; // AI difficulty level: easy, medium, hard, expert
   
-  // Shilevek bonus: Track repeated mills for smart play rewards
-  final List<int> _recentMillPositions = [];
-  static const int shilevekBonusCoins = 20; // Bonus coins for repeated mill mastery
+  // Shilevek bonus: Award bonus for breaking a mill and forming a new one in same move
+  static const int shilevekBonusCoins = 20; // Bonus coins for shilevek technique
   Function(int coins, String reason)? onBonusEarned; // Callback for awarding bonus coins
   
   // Undo/Redo functionality
@@ -174,46 +173,44 @@ class GameModel {
 
     if (!canFly && !isAdjacent) return false;
 
+    // SHILEVEK CHECK: Did we break a mill by moving this piece?
+    bool brokeMillAtFrom = checkMill(from);
+    
     // Make the move
     board[to] = board[from];
     board[from] = null;
 
-    if (checkMill(to)) {
-      // SHILEVEK BONUS: Reward smart players who create repeated mills!
-      // If this position was used to form a mill recently, it means the player
-      // is playing very strategically (shilevek technique) - reward them!
-      if (_recentMillPositions.contains(to)) {
-        // This is a repeated mill (shilevek) - BONUS COINS!
-        onBonusEarned?.call(shilevekBonusCoins, 'Shilevek ekspert! Formim i përsëritur i dangut');
-      }
-      
-      // Track this mill position
-      _recentMillPositions.add(to);
-      if (_recentMillPositions.length > 5) {
-        _recentMillPositions.removeAt(0); // Keep reasonable history
+    // Check if we formed a new mill at the destination
+    bool formedMillAtTo = checkMill(to);
+    
+    if (formedMillAtTo) {
+      // SHILEVEK BONUS: Breaking a mill AND forming a new one in the same move!
+      // This is the true shilevek technique - a strategic master move!
+      if (brokeMillAtFrom) {
+        onBonusEarned?.call(shilevekBonusCoins, '🌟 SHILEVEK! Theve një dang dhe formove një tjetër! +20 monedha');
       }
       
       phase = 'removing';
-      return true; // Mill formed - DO NOT switch player, they must remove a piece
+      return true; // Mill u formuar - Mos ndrysho lojtarin, duhet të heqë një figurë
     }
 
-    // No mill - automatically switch to next player
+    // Jo mill - automatikisht ndrysho lojtarin
     switchPlayer();
-    return false; // No mill
+    return false; // Jo mill
   }
 
-  // Remove opponent's piece
+  // Largo figuren e kundërshtarit
   bool removePiece(int posId) {
     int opponent = currentPlayer == 1 ? 2 : 1;
 
     if (board[posId] != opponent) return false;
 
-    _saveState(); // Save state before making move
+    _saveState(); // Ruaje gjendjen para heqjes së figurës
     
-    // Check if piece is in a mill
+    // Shiko nëse figura është në një rreth
     bool inMill = checkMill(posId);
     if (inMill) {
-      // Check if all opponent pieces are in mills
+      // Shiko nese te gjitha figurat e kundërshtarit janë në rrathë
       bool hasNonMillPieces = false;
       for (int i = 0; i < 24; i++) {
         if (board[i] == opponent && !checkMill(i)) {
@@ -221,26 +218,26 @@ class GameModel {
           break;
         }
       }
-      if (hasNonMillPieces) return false; // Can't remove piece in mill
+      if (hasNonMillPieces) return false; // Nuk mund të hiqet figura në rreth
     }
 
     board[posId] = null;
     piecesOnBoard[opponent] = piecesOnBoard[opponent]! - 1;
 
-    // Return to appropriate phase and switch player
+    // Kthehu në fazën e duhur dhe ndrysho lojtarin
     if (piecesLeft[1]! == 0 && piecesLeft[2]! == 0) {
       phase = 'moving';
     } else {
       phase = 'placing';
     }
-    
-    // After removing opponent's piece, switch to opponent's turn
+
+    // Pas heqjes së figurës së kundërshtarit, kaloni në turin e kundërshtarit
     switchPlayer();
 
     return true;
   }
 
-  // Check if position forms a mill
+  // Shiko nëse pozicioni formon një rreth
   bool checkMill(int posId) {
     int? player = board[posId];
     if (player == null) return false;
@@ -249,29 +246,29 @@ class GameModel {
         mill.contains(posId) && mill.every((pos) => board[pos] == player));
   }
 
-  // Check win condition
+  // Shiko kushtet e fitores
   bool checkWinCondition() {
     int opponent = currentPlayer == 1 ? 2 : 1;
 
-    // Win if opponent has only 2 pieces
+    // Fitoni nëse kundërshtari ka vetëm 2 figura
     if (piecesOnBoard[opponent]! < 3 && piecesLeft[opponent]! == 0) {
       return true;
     }
 
-    // Win if opponent cannot move (blocked - in moving phase)
+    // Fitoni nëse kundërshtari nuk mund të lëvizë (bllokuar - në fazën e lëvizjes)
     if (phase == 'moving' && piecesLeft[opponent]! == 0) {
       bool canMove = false;
       for (int i = 0; i < 24; i++) {
         if (board[i] == opponent) {
-          // Check if this piece can move
+          // Shiko nëse kjo figurë mund të lëvizë
           if (piecesOnBoard[opponent]! == 3) {
-            // Can fly to any empty position
+            // Mund të fluturojë në çdo pozitë të lirë
             if (board.any((piece) => piece == null)) {
               canMove = true;
               break;
             }
           } else {
-            // Check adjacent positions
+            // Shiko pozitat ngjitur
             List<int>? adjacent = connections[i];
             if (adjacent != null &&
                 adjacent.any((pos) => board[pos] == null)) {
@@ -283,22 +280,22 @@ class GameModel {
       }
       return !canMove;
     }
-    
-    // Check if CURRENT player is blocked (opponent wins!)
-    // This happens when it's your turn but you can't move
+
+    // Shiko nëse LOJTARI aktual është i bllokuar (kundërshtari fiton!)
+    // Kjo ndodh kur është radha juaj, por nuk mund të lëvizni
     if (phase == 'moving' && piecesLeft[currentPlayer]! == 0) {
       bool canMove = false;
       for (int i = 0; i < 24; i++) {
         if (board[i] == currentPlayer) {
-          // Check if this piece can move
+          // Shiko nëse kjo figurë mund të lëvizë
           if (piecesOnBoard[currentPlayer]! == 3) {
-            // Can fly to any empty position
+            // Mund të fluturojë në çdo pozitë të lirë
             if (board.any((piece) => piece == null)) {
               canMove = true;
               break;
             }
           } else {
-            // Check adjacent positions
+            // Shiko pozitat ngjitur
             List<int>? adjacent = connections[i];
             if (adjacent != null &&
                 adjacent.any((pos) => board[pos] == null)) {
@@ -356,7 +353,6 @@ class GameModel {
     piecesLeft = {1: 9, 2: 9};
     piecesOnBoard = {1: 0, 2: 0};
     selectedPosition = null;
-    _recentMillPositions.clear(); // Clear shilevek tracking for new game
     _history.clear();
     _redoStack.clear();
     _saveState(); // Save initial state
