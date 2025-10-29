@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
 import '../models/game_model.dart';
 
 class GameBoard extends StatelessWidget {
@@ -27,10 +26,11 @@ class GameBoard extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           double size = constraints.maxWidth;
-          return Container(
-            decoration: BoxDecoration(
-              // Enhanced 3D wood-like board
-              gradient: RadialGradient(
+          return RepaintBoundary( // Isolate repaints to improve performance
+            child: Container(
+              decoration: BoxDecoration(
+                // Enhanced 3D wood-like board
+                gradient: RadialGradient(
                 center: Alignment.topLeft,
                 radius: 1.5,
                 colors: [
@@ -67,8 +67,8 @@ class GameBoard extends StatelessWidget {
                 color: const Color(0xFF654321),
                 width: 6,
               ),
-            ),
-            child: Container(
+              ),
+              child: Container(
               margin: const EdgeInsets.all(4),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
@@ -96,6 +96,7 @@ class GameBoard extends StatelessWidget {
                 ],
               ),
             ),
+            ),
           );
         },
       ),
@@ -122,6 +123,7 @@ class GameBoard extends StatelessWidget {
       left: x - touchSize / 2,
       top: y - touchSize / 2,
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque, // Prevent touch events from passing through
         onTap: () => onPositionTap(pos.id),
         child: Container(
           width: touchSize,
@@ -139,7 +141,8 @@ class GameBoard extends StatelessWidget {
 
   Widget _buildPositionCircle(int? piece, double pieceSize, bool isSelected, bool isValidMove, bool isRemovable) {
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 150), // Reduced from 200ms for snappier response
+      curve: Curves.easeOut, // Better performance curve
       width: pieceSize,
       height: pieceSize,
       decoration: BoxDecoration(

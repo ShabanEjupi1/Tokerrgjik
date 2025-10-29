@@ -25,6 +25,9 @@ class _GameScreenState extends State<GameScreen> {
   int _player1Mills = 0; // Track mills formed by player 1
   int _coinsEarned = 0; // Track coins earned this game
   int? _hintPosition; // Position to highlight with pulsing white effect
+  bool _isProcessing = false; // Prevent rapid taps from causing issues
+  DateTime _lastTapTime = DateTime.now();
+  static const Duration _tapDebounceTime = Duration(milliseconds: 100);
 
   @override
   void initState() {
@@ -51,10 +54,22 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void handlePositionTap(int posId) {
+    // Prevent rapid taps and processing during AI turn or when already processing
+    if (_isProcessing) {
+      return;
+    }
+    
     // Don't allow input during AI's turn
     if (game.aiEnabled && game.currentPlayer == game.aiPlayer) {
       return;
     }
+    
+    // Debounce: Ignore taps that are too close together
+    final now = DateTime.now();
+    if (now.difference(_lastTapTime) < _tapDebounceTime) {
+      return;
+    }
+    _lastTapTime = now;
 
     setState(() {
       // Clear hint when player makes a move
@@ -160,71 +175,96 @@ class _GameScreenState extends State<GameScreen> {
 
   void _makeAIMoveIfNeeded() {
     if (game.aiEnabled && game.currentPlayer == game.aiPlayer) {
+      // Prevent concurrent AI moves
+      if (_isProcessing) {
+        return;
+      }
+      
+      _isProcessing = true;
+      
       // Show AI thinking notification
       NotificationService.notifyAIThinking();
       
-      // Add timeout protection - max 3 seconds for AI to make a move
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (!mounted) return;
+      // Move AI computation off the main thread with a small delay to allow UI to update
+      Future.delayed(const Duration(milliseconds: 300), () async {
+        if (!mounted) {
+          _isProcessing = false;
+          return;
+        }
         
         // Set a timeout in case AI gets stuck
         bool moveCompleted = false;
         
+        // Timeout handler
         Future.delayed(const Duration(seconds: 3), () {
-          if (!mounted || moveCompleted) return;
+          if (!mounted || moveCompleted || !_isProcessing) return;
           // Timeout - AI didn't move, force a random move or switch player
           print('AI move timeout - forcing fallback');
           if (mounted) {
             setState(() {
               // Force switch player if AI is stuck
               game.switchPlayer();
+              _isProcessing = false;
             });
+            NotificationService.cancelAIThinking();
           }
         });
         
-        setState(() {
-          try {
-            game.makeAIMove();
-            moveCompleted = true;
-            
+        try {
+          // Execute AI move
+          game.makeAIMove();
+          moveCompleted = true;
+          
+          if (!mounted) {
+            _isProcessing = false;
+            return;
+          }
+          
+          setState(() {
             // Cancel AI thinking notification
             NotificationService.cancelAIThinking();
             
             // If AI formed a mill during placement/moving, it needs to remove a piece
             // The phase will be 'removing' and currentPlayer will still be the AI
             if (game.phase == 'removing' && game.currentPlayer == game.aiPlayer) {
+              // Schedule the removal move
               Future.delayed(const Duration(milliseconds: 500), () {
-                if (mounted) {
-                  setState(() {
-                    game.makeAIMove(); // AI removes opponent's piece
-                    // removePiece() already switches player, don't switch again
-                    // Just check for win condition
-                    NotificationService.cancelAIThinking();
+                if (mounted && _isProcessing) {
+                  game.makeAIMove(); // AI removes opponent's piece
+                  
+                  if (mounted) {
+                    setState(() {
+                      _isProcessing = false;
+                    });
+                    
+                    // Check for win after AI's full turn
                     if (game.checkWinCondition()) {
                       SoundService.playWin();
                       _showWinDialog();
-                    } else {
-                      // Notify human player it's their turn
-                      NotificationService.notifyPlayerTurn(game.currentPlayer, isAI: true);
                     }
-                  });
+                  }
                 }
               });
-            } else if (game.checkWinCondition()) {
-              // Check for win after AI's move
-              SoundService.playWin();
-              _showWinDialog();
             } else {
-              // Notify human player it's their turn
-              NotificationService.notifyPlayerTurn(game.currentPlayer, isAI: true);
+              // AI's turn is complete
+              _isProcessing = false;
+              
+              // Check for win
+              if (game.checkWinCondition()) {
+                SoundService.playWin();
+                _showWinDialog();
+              }
             }
-          } catch (e) {
-            // If AI move fails, switch to player
-            print('AI move error: $e');
-            game.switchPlayer();
+          });
+        } catch (e) {
+          print('AI move error: $e');
+          if (mounted) {
+            setState(() {
+              _isProcessing = false;
+            });
             NotificationService.cancelAIThinking();
           }
-        });
+        }
       });
     }
   }
@@ -234,10 +274,13 @@ class _GameScreenState extends State<GameScreen> {
       game.reset();
       _player1Mills = 0;
       _coinsEarned = 0;
+      _isProcessing = false; // Reset processing flag
     });
   }
 
   void toggleAI() {
+    if (_isProcessing) return; // Don't allow toggling during processing
+    
     setState(() {
       game.aiEnabled = !game.aiEnabled;
       
@@ -248,6 +291,8 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _undo() {
+    if (_isProcessing) return; // Don't allow undo during processing
+    
     if (game.canUndo()) {
       setState(() {
         game.undo();
@@ -257,6 +302,8 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _redo() {
+    if (_isProcessing) return; // Don't allow redo during processing
+    
     if (game.canRedo()) {
       setState(() {
         game.redo();
