@@ -33,11 +33,11 @@ jobs:
           channel: 'stable'
           cache: true
       
-      - name: Install Android SDK Platform 36
+      - name: Setup Android SDK
         run: |
-          echo "📦 Installing Android SDK Platform 36..."
-          sdkmanager --install "platforms;android-36"
-          echo "✅ Android SDK Platform 36 installed"
+          echo "📦 Setting up Android SDK..."
+          # Flutter action already includes Android SDK
+          echo "✅ Android SDK available via Flutter"
         
       - name: Generate API keys
         working-directory: tokerrgjik_mobile
