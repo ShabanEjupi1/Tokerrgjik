@@ -283,6 +283,37 @@ class GameModel {
       }
       return !canMove;
     }
+    
+    // Check if CURRENT player is blocked (opponent wins!)
+    // This happens when it's your turn but you can't move
+    if (phase == 'moving' && piecesLeft[currentPlayer]! == 0) {
+      bool canMove = false;
+      for (int i = 0; i < 24; i++) {
+        if (board[i] == currentPlayer) {
+          // Check if this piece can move
+          if (piecesOnBoard[currentPlayer]! == 3) {
+            // Can fly to any empty position
+            if (board.any((piece) => piece == null)) {
+              canMove = true;
+              break;
+            }
+          } else {
+            // Check adjacent positions
+            List<int>? adjacent = connections[i];
+            if (adjacent != null &&
+                adjacent.any((pos) => board[pos] == null)) {
+              canMove = true;
+              break;
+            }
+          }
+        }
+      }
+      // If current player can't move, switch to opponent so they're declared winner
+      if (!canMove) {
+        switchPlayer();
+        return true;
+      }
+    }
 
     return false;
   }
