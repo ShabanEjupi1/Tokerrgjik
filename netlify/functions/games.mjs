@@ -57,51 +57,87 @@ export async function handler(event, context) {
           };
         }
         
-        // Ensure host user exists in users table (or create if needed)
+        // Ensure host user exists in users table
         try {
           const existingUser = await sql`
             SELECT username FROM users WHERE username = ${host_username}
           `;
           
           if (existingUser.length === 0) {
-            // Create user if doesn't exist (for guest users)
-            await sql`
-              INSERT INTO users (
-                username, email, password, coins, level, xp, 
-                total_wins, total_losses, total_draws, created_at
-              )
-              VALUES (
-                ${host_username}, 
-                ${host_username + '@guest.local'}, 
-                NULL,
-                100,
-                1,
-                0,
-                0,
-                0,
-                0,
-                NOW()
-              )
-              ON CONFLICT (username) DO NOTHING
+            return {
+              statusCode: 404,
+              headers,
+              body: JSON.stringify({ error: 'Host user not found. Please login first.' }),
+            };
+          }
+          
+          // Verify guest user exists if provided
+          if (guest_username) {
+            const guestExists = await sql`
+              SELECT username FROM users WHERE username = ${guest_username}
             `;
+            
+            if (guestExists.length === 0) {
+              return {
+                statusCode: 404,
+                headers,
+                body: JSON.stringify({ error: 'Guest user not found' }),
+              };
+            }
           }
         } catch (userError) {
-          console.error('Error ensuring user exists:', userError);
-          // Continue anyway - user might already exist
+          console.error('Error checking user existence:', userError);
+          return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({ error: 'Failed to verify users', details: userError.message }),
+          };
         }
         
-        // Create game session
-        const session = await sql`
-          INSERT INTO game_sessions (host_username, guest_username, status, board_state, current_turn, created_at)
-          VALUES (${host_username}, ${guest_username || null}, 'waiting', '{}', ${host_username}, NOW())
-          RETURNING *
-        `;
-        
-        return {
-          statusCode: 201,
-          headers,
-          body: JSON.stringify({ session_id: session[0].id, status: 'waiting' }),
-        };
+        // Create game session with proper initial state
+        try {
+          const session = await sql`
+            INSERT INTO game_sessions (
+              host_username, 
+              guest_username, 
+              status, 
+              board_state, 
+              current_turn, 
+              created_at,
+              updated_at
+            )
+            VALUES (
+              ${host_username}, 
+              ${guest_username || null}, 
+              'waiting', 
+              '{"board": [], "phase": "placing", "turn": 1}',
+              ${host_username}, 
+              NOW(),
+              NOW()
+            )
+            RETURNING *
+          `;
+          
+          return {
+            statusCode: 201,
+            headers,
+            body: JSON.stringify({ 
+              success: true,
+              message: 'Game session created',
+              session: session[0] 
+            }),
+          };
+        } catch (sessionError) {
+          console.error('Error creating game session:', sessionError);
+          return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({ 
+              error: 'Failed to create game session', 
+              details: sessionError.message 
+            }),
+          };
+        }
       }
 
       // JOIN SESSION

@@ -58,6 +58,20 @@ export async function handler(event, context) {
 
       // SEND FRIEND REQUEST
       if (action === 'send_request' || !action) {
+        // Ensure both users exist
+        const usersExist = await sql`
+          SELECT username FROM users 
+          WHERE username IN (${user_username}, ${friend_username})
+        `;
+
+        if (usersExist.length < 2) {
+          return {
+            statusCode: 404,
+            headers,
+            body: JSON.stringify({ error: 'One or both users not found' }),
+          };
+        }
+
         // Check if friendship already exists
         const existing = await sql`
           SELECT * FROM friends 
@@ -69,21 +83,28 @@ export async function handler(event, context) {
           return {
             statusCode: 400,
             headers,
-            body: JSON.stringify({ error: 'Friend request already exists' }),
+            body: JSON.stringify({ 
+              error: 'Friend request already exists',
+              status: existing[0].status 
+            }),
           };
         }
 
         // Create new friend request
         const result = await sql`
-          INSERT INTO friends (user_username, friend_username, status)
-          VALUES (${user_username}, ${friend_username}, 'pending')
+          INSERT INTO friends (user_username, friend_username, status, created_at)
+          VALUES (${user_username}, ${friend_username}, 'pending', NOW())
           RETURNING *
         `;
 
         return {
           statusCode: 201,
           headers,
-          body: JSON.stringify({ message: 'Friend request sent', friend_request: result[0] }),
+          body: JSON.stringify({ 
+            success: true,
+            message: 'Friend request sent', 
+            friend_request: result[0] 
+          }),
         };
       }
 

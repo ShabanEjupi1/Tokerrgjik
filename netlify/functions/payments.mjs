@@ -51,10 +51,18 @@ export async function handler(event, context) {
 
     // Check if PayPal is configured
     if (!PAYPAL_CLIENT_ID || !PAYPAL_SECRET) {
+      console.error('❌ PayPal not configured! Set PAYPAL_CLIENT_ID and PAYPAL_SECRET');
       return {
         statusCode: 500,
         headers,
-        body: JSON.stringify({ error: 'PayPal not configured. Contact admin.' }),
+        body: JSON.stringify({ 
+          error: 'PayPal payment system is not configured. Please contact support.',
+          debug: {
+            hasClientId: !!PAYPAL_CLIENT_ID,
+            hasSecret: !!PAYPAL_SECRET,
+            mode: process.env.PAYPAL_MODE || 'sandbox'
+          }
+        }),
       };
     }
 
@@ -71,6 +79,7 @@ export async function handler(event, context) {
       }
 
       // Step 1: Get PayPal Access Token
+      console.log('Requesting PayPal access token...');
       const authResponse = await fetch(`${PAYPAL_API_URL}/v1/oauth2/token`, {
         method: 'POST',
         headers: {
@@ -81,18 +90,24 @@ export async function handler(event, context) {
       });
 
       if (!authResponse.ok) {
-        console.error('Failed to get PayPal token');
+        const errorData = await authResponse.text();
+        console.error('Failed to get PayPal token:', errorData);
         return {
           statusCode: 500,
           headers,
-          body: JSON.stringify({ error: 'Payment verification failed' }),
+          body: JSON.stringify({ 
+            error: 'Payment verification failed - Could not authenticate with PayPal',
+            details: 'Check PayPal credentials in Netlify environment variables'
+          }),
         };
       }
 
       const authData = await authResponse.json();
       const accessToken = authData.access_token;
+      console.log('PayPal access token obtained successfully');
 
       // Step 2: Verify order with PayPal
+      console.log(`Verifying PayPal order: ${order_id}`);
       const orderResponse = await fetch(`${PAYPAL_API_URL}/v2/checkout/orders/${order_id}`, {
         method: 'GET',
         headers: {
@@ -102,15 +117,20 @@ export async function handler(event, context) {
       });
 
       if (!orderResponse.ok) {
-        console.error('Failed to verify order with PayPal');
+        const errorData = await orderResponse.text();
+        console.error('Failed to verify order with PayPal:', errorData);
         return {
           statusCode: 400,
           headers,
-          body: JSON.stringify({ error: 'Invalid payment order' }),
+          body: JSON.stringify({ 
+            error: 'Invalid payment order',
+            details: 'Order verification failed with PayPal'
+          }),
         };
       }
 
       const orderData = await orderResponse.json();
+      console.log('PayPal order status:', orderData.status);
 
       // Step 3: Verify payment was completed
       if (orderData.status !== 'COMPLETED') {

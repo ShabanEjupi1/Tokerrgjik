@@ -1,5 +1,5 @@
 import { neon } from '@neondatabase/serverless';
-import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
 
 const connectionString = process.env.NEON_DATABASE_URL 
   || process.env.NETLIFY_DATABASE_URL 
@@ -11,17 +11,29 @@ if (!connectionString) {
 
 const sql = connectionString ? neon(connectionString) : null;
 
-// Simple JWT generation (for demo - use proper JWT library in production)
-function generateToken(username) {
-  const payload = { username, timestamp: Date.now() };
-  return Buffer.from(JSON.stringify(payload)).toString('base64');
+// JWT Secret (IMPORTANT: Set in Netlify environment variables)
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_EXPIRY = '30d'; // 30 days
+
+// Generate JWT token
+function generateToken(username, deviceId) {
+  return jwt.sign(
+    { 
+      username, 
+      deviceId,
+      timestamp: Date.now() 
+    },
+    JWT_SECRET,
+    { expiresIn: JWT_EXPIRY }
+  );
 }
 
+// Verify JWT token
 function verifyToken(token) {
   try {
-    const payload = JSON.parse(Buffer.from(token, 'base64').toString());
-    return payload.username;
-  } catch {
+    return jwt.verify(token, JWT_SECRET);
+  } catch (error) {
+    console.error('Token verification failed:', error.message);
     return null;
   }
 }
@@ -93,6 +105,8 @@ export async function handler(event, context) {
     
     // LOGIN
     if (action === 'login') {
+      const { device_id } = JSON.parse(event.body || '{}');
+      
       const user = await sql`
         SELECT * FROM users 
         WHERE username = ${username} AND password = ${password}
@@ -107,14 +121,16 @@ export async function handler(event, context) {
         };
       }
       
-      // Update last login
+      // Update last login - ALLOW MULTIPLE DEVICES
       await sql`
         UPDATE users 
-        SET last_login_at = NOW()
+        SET last_login_at = NOW(),
+            updated_at = NOW()
         WHERE username = ${username}
       `;
       
-      const token = generateToken(username);
+      // Generate token with device ID for multi-device support
+      const token = generateToken(username, device_id || 'default');
       
       return {
         statusCode: 200,
@@ -150,20 +166,24 @@ export async function handler(event, context) {
       }
       
       const token = authHeader.replace('Bearer ', '');
-      const verifiedUsername = verifyToken(token);
+      const payload = verifyToken(token);
       
-      if (!verifiedUsername || verifiedUsername !== username) {
+      if (!payload || payload.username !== username) {
         return {
           statusCode: 401,
           headers,
-          body: JSON.stringify({ error: 'Invalid token' }),
+          body: JSON.stringify({ error: 'Invalid or expired token' }),
         };
       }
       
       return {
         statusCode: 200,
         headers,
-        body: JSON.stringify({ message: 'Token valid', username: verifiedUsername }),
+        body: JSON.stringify({ 
+          message: 'Token valid', 
+          username: payload.username,
+          device_id: payload.deviceId 
+        }),
       };
     }
     

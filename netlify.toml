@@ -1,11 +1,12 @@
 [build]
   # Use pre-built Flutter web files (build locally before committing)
-  command = "cd netlify/functions && npm install"
+  command = "cd netlify/functions && npm install && npm ci"
   publish = "tokerrgjik_mobile/build/web"
   functions = "netlify/functions"
 
 [build.environment]
-  NODE_VERSION = "18"
+  NODE_VERSION = "20"
+  NPM_FLAGS = "--legacy-peer-deps"
 
 # API redirects
 [[redirects]]
