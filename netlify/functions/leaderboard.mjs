@@ -55,16 +55,32 @@ export async function handler(event, context) {
           total_draws,
           level,
           xp,
-          (total_wins * 1.0 / NULLIF(total_wins + total_losses, 0) * 100) as win_rate
+          is_pro,
+          avatar_url,
+          CASE 
+            WHEN (total_wins + total_losses) > 0 
+            THEN ROUND((total_wins::numeric / (total_wins + total_losses)) * 100, 1)
+            ELSE 0 
+          END as win_rate
         FROM users
+        WHERE username NOT LIKE 'guest_%'
         ORDER BY total_wins DESC, level DESC, xp DESC
         LIMIT ${limit}
         OFFSET ${offset}
       `;
 
-      // Add rank numbers
+      // Add rank numbers and ensure proper data types
       const leaderboard = results.map((user, index) => ({
-        ...user,
+        username: user.username,
+        coins: parseInt(user.coins) || 0,
+        total_wins: parseInt(user.total_wins) || 0,
+        total_losses: parseInt(user.total_losses) || 0,
+        total_draws: parseInt(user.total_draws) || 0,
+        level: parseInt(user.level) || 1,
+        xp: parseInt(user.xp) || 0,
+        is_pro: user.is_pro || false,
+        avatar_url: user.avatar_url || null,
+        win_rate: parseFloat(user.win_rate) || 0,
         rank: offset + index + 1,
       }));
 
@@ -85,6 +101,7 @@ export async function handler(event, context) {
             username,
             ROW_NUMBER() OVER (ORDER BY total_wins DESC, level DESC, xp DESC) as rank
           FROM users
+          WHERE username NOT LIKE 'guest_%'
         )
         SELECT rank FROM ranked_users WHERE username = ${username}
       `;
@@ -93,14 +110,14 @@ export async function handler(event, context) {
         return {
           statusCode: 404,
           headers,
-          body: JSON.stringify({ error: 'User not found' }),
+          body: JSON.stringify({ error: 'User not found', rank: 0 }),
         };
       }
 
       return {
         statusCode: 200,
         headers,
-        body: JSON.stringify({ rank: result[0].rank }),
+        body: JSON.stringify({ rank: parseInt(result[0].rank) || 0 }),
       };
     }
 

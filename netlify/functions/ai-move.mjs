@@ -1,12 +1,15 @@
 import { HfInference } from '@huggingface/inference';
 
 const HF_TOKEN = process.env.HUGGINGFACE_TOKEN || process.env.HF_TOKEN;
+const HF_ENDPOINT = process.env.HUGGINGFACE_ENDPOINT || 'https://router.huggingface.co/hf-inference';
 
 if (!HF_TOKEN) {
   console.warn('⚠️ HUGGINGFACE_TOKEN not set! AI moves will use fallback logic.');
+} else {
+  console.log('✅ Hugging Face configured with new endpoint:', HF_ENDPOINT);
 }
 
-const hf = HF_TOKEN ? new HfInference(HF_TOKEN) : null;
+const hf = HF_TOKEN ? new HfInference(HF_TOKEN, { baseUrl: HF_ENDPOINT }) : null;
 
 /**
  * AI Move Generator using Hugging Face models

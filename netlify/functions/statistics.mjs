@@ -46,7 +46,22 @@ export async function handler(event, context) {
 
       // Get user data
       const userResult = await sql`
-        SELECT * FROM users WHERE username = ${username} LIMIT 1
+        SELECT 
+          username,
+          email,
+          coins,
+          level,
+          xp,
+          total_wins,
+          total_losses,
+          total_draws,
+          is_pro,
+          avatar_url,
+          created_at,
+          last_login_at
+        FROM users 
+        WHERE username = ${username} 
+        LIMIT 1
       `;
 
       if (userResult.length === 0) {
@@ -82,9 +97,9 @@ export async function handler(event, context) {
         LIMIT 10
       `;
 
-      // Calculate win rate
-      const totalGames = user.total_wins + user.total_losses + user.total_draws;
-      const winRate = totalGames > 0 ? (user.total_wins / totalGames * 100).toFixed(1) : 0;
+      // Calculate win rate (handle division by zero)
+      const totalGames = (user.total_wins || 0) + (user.total_losses || 0) + (user.total_draws || 0);
+      const winRate = totalGames > 0 ? ((user.total_wins || 0) / totalGames * 100).toFixed(1) : '0.0';
 
       return {
         statusCode: 200,
@@ -92,16 +107,27 @@ export async function handler(event, context) {
         body: JSON.stringify({
           user: {
             username: user.username,
-            coins: user.coins,
-            level: user.level,
-            xp: user.xp,
-            total_wins: user.total_wins,
-            total_losses: user.total_losses,
-            total_draws: user.total_draws,
+            coins: user.coins || 0,
+            level: user.level || 1,
+            xp: user.xp || 0,
+            total_wins: user.total_wins || 0,
+            total_losses: user.total_losses || 0,
+            total_draws: user.total_draws || 0,
             win_rate: parseFloat(winRate),
+            is_pro: user.is_pro || false,
+            avatar_url: user.avatar_url || null,
             created_at: user.created_at,
+            last_login_at: user.last_login_at,
           },
-          game_stats: gameStats,
+          game_stats: gameStats.map(stat => ({
+            ...stat,
+            total_games: parseInt(stat.total_games) || 0,
+            wins: parseInt(stat.wins) || 0,
+            losses: parseInt(stat.losses) || 0,
+            draws: parseInt(stat.draws) || 0,
+            avg_duration: parseFloat(stat.avg_duration) || 0,
+            avg_moves: parseFloat(stat.avg_moves) || 0,
+          })),
           recent_games: recentGames,
         }),
       };

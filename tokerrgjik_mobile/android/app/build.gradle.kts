@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.ejupishaban.tokerrgjik"
     compileSdk = 36  // Required by sqflite_android-2.4.2+2 which uses BAKLAVA (Android 36)
-    ndkVersion = flutter.ndkVersion  // Use Flutter's recommended NDK version
+    ndkVersion = "27.0.12077973"  // Fixed: Use highest NDK version required by plugins
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17  // Updated from 11 to 17
@@ -37,6 +37,12 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+            // Enable minification and ProGuard
+            isMinifyEnabled = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }

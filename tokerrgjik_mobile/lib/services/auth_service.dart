@@ -48,39 +48,48 @@ class AuthService {
     String? email,
   }) async {
     // ALWAYS try to save to Neon database first (for backup)
-    Map<String, dynamic>? serverResult;
     try {
-      serverResult = await ApiService.post('/auth', {
+      final result = await ApiService.post('/auth', {
         'action': 'register',
         'username': username,
         'password': password,
         if (email != null) 'email': email,
       });
 
-      if (serverResult != null) {
-        // Server registration successful - use server user ID
-        _currentUserId = serverResult['user']?['id']?.toString() ?? serverResult['userId']?.toString();
-        _authToken = serverResult['token'];
-        _currentUsername = username;
-        await _saveAuthLocal();
-        print('✅ User registered in Neon database: $_currentUserId');
-        return { ...serverResult, 'success': true };
+      if (result != null) {
+        // Extract user data from response
+        final userData = result['user'];
+        if (userData != null) {
+          _currentUserId = userData['id']?.toString() ?? 'user_${DateTime.now().millisecondsSinceEpoch}';
+          _currentUsername = userData['username'] ?? username;
+          _authToken = result['token'];
+          _isGuest = false;
+          await _saveAuthLocal();
+          
+          // Clear any guest session
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove('guest_id');
+          await prefs.remove('guest_username');
+          
+          print('✅ User registered in Neon database: $_currentUsername');
+          return { 
+            'success': true,
+            'user': userData,
+            'token': _authToken,
+          };
+        }
       }
     } catch (e) {
-      print('⚠️ Neon registration failed, creating local-only user: $e');
+      print('⚠️ Neon registration failed: $e');
+      return {
+        'success': false,
+        'error': 'Registration failed. Username may already exist.',
+      };
     }
     
-    // If server fails (mobile offline OR server down), create local user as fallback
-    _currentUserId = 'local_${DateTime.now().millisecondsSinceEpoch}';
-    _currentUsername = username;
-    await _saveAuthLocal();
-    print('📱 Local-only user created: $_currentUserId');
-    
     return {
-      'userId': _currentUserId,
-      'username': username,
-      'success': true,
-      'offline': true,
+      'success': false,
+      'error': 'Registration failed. Please try again.',
     };
   }
   
@@ -98,31 +107,40 @@ class AuthService {
         'password': password,
       });
 
-      if (result != null && result['success'] == true) {
-        _currentUserId = result['user']?['id']?.toString() ?? result['userId']?.toString();
-        _authToken = result['token'];
-        _currentUsername = username;
-        await _saveAuthLocal();
-        print('✅ Logged in via Neon database: $_currentUserId');
-        return { ...result, 'success': true };
+      if (result != null) {
+        // Extract user data from response
+        final userData = result['user'];
+        if (userData != null) {
+          _currentUserId = userData['id']?.toString() ?? 'user_${DateTime.now().millisecondsSinceEpoch}';
+          _currentUsername = userData['username'] ?? username;
+          _authToken = result['token'];
+          _isGuest = false;
+          await _saveAuthLocal();
+          
+          // Clear any guest session
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove('guest_id');
+          await prefs.remove('guest_username');
+          
+          print('✅ Logged in via Neon database: $_currentUsername');
+          return { 
+            'success': true,
+            'user': userData,
+            'token': _authToken,
+          };
+        }
       }
     } catch (e) {
-      print('⚠️ Neon login failed, trying local storage: $e');
+      print('⚠️ Neon login failed: $e');
+      return {
+        'success': false,
+        'error': 'Login failed. Please check your credentials.',
+      };
     }
     
-    // Fallback: Load local user
-    await _loadAuthLocal();
-    if (_currentUserId == null) {
-      // No local user exists, register new one
-      return await register(username: username, password: password);
-    }
-    
-    print('📱 Logged in with local storage: $_currentUserId');
     return {
-      'userId': _currentUserId,
-      'username': _currentUsername ?? username,
-      'success': true,
-      'offline': true,
+      'success': false,
+      'error': 'Invalid username or password',
     };
   }
   
@@ -256,10 +274,16 @@ class AuthService {
   static Future<void> initialize() async {
     await _loadAuthLocal();
     
-    // Auto-login as guest if no user
-    if (_currentUserId == null) {
-      await loginAsGuest();
+    // Check if we have a guest session
+    final prefs = await SharedPreferences.getInstance();
+    String? guestId = prefs.getString('guest_id');
+    if (guestId != null && _currentUserId == guestId) {
+      _isGuest = true;
     }
+    
+    // DON'T auto-login as guest - let the login screen handle it
+    // Only restore existing session
+    print('🔑 Auth initialized - User: $_currentUsername, Guest: $_isGuest');
   }
   
   /// Verify token is still valid (for web)

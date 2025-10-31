@@ -52,3 +52,6 @@ GoogleService-Info.plist
 *.db.backup
 *.backup
 backups/
+
+# Local Netlify folder
+.netlify

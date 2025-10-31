@@ -7,8 +7,8 @@ const sql = neon(process.env.NEON_DATABASE_URL || process.env.NETLIFY_DATABASE_U
 const EMAIL_CONFIG = {
   FROM_EMAIL: process.env.FROM_EMAIL || 'noreply@tokerrgjik.com',
   FROM_NAME: 'Tokerrgjik Game',
-  SMTP_HOST: 'smtp.gmail.com',
-  SMTP_PORT: 587,
+  SMTP_HOST: process.env.SMTP_HOST || 'smtp.gmail.com',
+  SMTP_PORT: parseInt(process.env.SMTP_PORT) || 587,
   APP_PASSWORD: process.env.APP_PASSWORD,
 };
 
@@ -19,15 +19,33 @@ const createTransporter = () => {
     return null;
   }
 
-  return nodemailer.createTransporter({
+  console.log('📧 Email transporter config:', {
     host: EMAIL_CONFIG.SMTP_HOST,
     port: EMAIL_CONFIG.SMTP_PORT,
-    secure: false, // Use TLS
-    auth: {
-      user: EMAIL_CONFIG.FROM_EMAIL,
-      pass: EMAIL_CONFIG.APP_PASSWORD,
-    },
+    from: EMAIL_CONFIG.FROM_EMAIL,
+    secure: false, // TLS
+    hasPassword: !!EMAIL_CONFIG.APP_PASSWORD
   });
+
+  try {
+    return nodemailer.createTransporter({
+      host: EMAIL_CONFIG.SMTP_HOST,
+      port: EMAIL_CONFIG.SMTP_PORT,
+      secure: false, // Use TLS
+      auth: {
+        user: EMAIL_CONFIG.FROM_EMAIL,
+        pass: EMAIL_CONFIG.APP_PASSWORD,
+      },
+      tls: {
+        rejectUnauthorized: false // Accept self-signed certificates
+      },
+      logger: true, // Enable logging
+      debug: true, // Show SMTP traffic
+    });
+  } catch (error) {
+    console.error('❌ Failed to create transporter:', error);
+    return null;
+  }
 };
 
 // Send email via SMTP
@@ -86,24 +104,32 @@ export default async (req, res) => {
   }
   
   try {
+    console.log('📧 Email function called');
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+    
     const { type, username, data } = req.body;
     
     if (!username || !type) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      console.error('❌ Missing required fields');
+      return res.status(400).json({ error: 'Missing required fields: username and type' });
     }
     
     // Get user email
+    console.log('🔍 Looking up user:', username);
     const user = await sql`
       SELECT email, full_name FROM users
       WHERE username = ${username}
     `;
     
     if (user.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
+      console.error('❌ User not found:', username);
+      return res.status(404).json({ error: 'User not found', username });
     }
     
     const userEmail = user[0].email;
     const fullName = user[0].full_name || username;
+    
+    console.log('✅ User found:', userEmail);
     
     let subject = '';
     let html = '';
@@ -208,20 +234,28 @@ export default async (req, res) => {
     }
     
     else {
-      return res.status(400).json({ error: 'Invalid email type' });
+      console.error('❌ Invalid email type:', type);
+      return res.status(400).json({ error: 'Invalid email type', type });
     }
     
     // Send email
+    console.log('📤 Sending email to:', userEmail);
     await sendEmail(userEmail, subject, html);
     
+    console.log('✅ Email function completed successfully');
     return res.status(200).json({
-      message: 'Email notification sent (demo mode - integrate SendGrid/Mailgun for production)',
+      message: 'Email sent successfully',
       to: userEmail,
       type,
     });
     
   } catch (error) {
-    console.error('Email notification error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('❌ Email function error:', error);
+    console.error('Error stack:', error.stack);
+    return res.status(500).json({ 
+      error: 'Internal server error', 
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 };

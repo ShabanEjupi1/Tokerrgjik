@@ -31,8 +31,8 @@ class ApiKeys {
   // ==================== STRIPE ====================
   /// Get your Stripe keys from: https://dashboard.stripe.com/apikeys
   /// Use test keys for development, production keys for release
-  static const String stripePublishableKey = 'pk_test_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'; // TODO: Replace
-  static const String stripeSecretKey = 'sk_test_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'; // TODO: Replace (Keep this secret!)
+  static const String stripePublishableKey = 'pk_test_51SJpPtRny7FwUV21mosCRJAQ3mtXRVdZzaHrH7u2Czy8pDjdBm1tD04xa99pdsWtUb4EAawGiH7vtE1R2YHPoPtc00ZC2TU43I';
+  static const String stripeSecretKey = 'sk_test_51SJpPtRny7FwUV21NybTiOdtKKeXYvhDIwUHQE4mbg6vga7061wFcNyH8IOpGsFdkUheizZsdwZfoqX0i8mn5oEH00RrukTMNR';
 
   // ==================== SENTRY ====================
   /// Get your Sentry DSN from: https://sentry.io/
@@ -42,19 +42,19 @@ class ApiKeys {
   // ==================== BACKEND SERVER ====================
   /// Your backend server URL
   /// Development: Use your local IP or ngrok URL
-  /// Production: Use your deployed server URL (DigitalOcean, Heroku, etc.)
+  /// Production: Use your deployed server URL (Netlify Functions)
   static const String serverUrl = 'http://10.0.2.2:3000'; // Android emulator localhost
-  static const String serverUrlProduction = 'https://your-app.digitalocean.app'; // TODO: Replace
+  static const String serverUrlProduction = 'https://tokerrgjik.netlify.app/.netlify/functions';
   
   /// WebSocket URL for real-time multiplayer
   static const String websocketUrl = 'ws://10.0.2.2:3000';
-  static const String websocketUrlProduction = 'wss://your-app.digitalocean.app';
+  static const String websocketUrlProduction = 'wss://tokerrgjik.netlify.app';
 
   // ==================== DATABASE ====================
   /// PostgreSQL/MongoDB connection (for backend)
-  /// Get free databases from GitHub Education Pack
-  static const String databaseUrl = 'postgresql://user:password@host:5432/tokerrgjik'; // TODO: Replace
-  static const String mongoDbUrl = 'mongodb://user:password@host:27017/tokerrgjik'; // TODO: Replace
+  /// Using Neon database from .env
+  static const String databaseUrl = 'postgresql://neondb_owner:npg_d6WqxY0NaMnR@ep-super-water-aedl5ojl-pooler.c-2.us-east-2.aws.neon.tech/neondb?channel_binding=require&sslmode=require';
+  static const String mongoDbUrl = ''; // Not used - using PostgreSQL
 
   // ==================== ANALYTICS ====================
   /// SimpleAnalytics Site ID (privacy-friendly analytics)
