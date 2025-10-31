@@ -43,11 +43,11 @@ class ApiKeys {
   /// Your backend server URL
   /// Development: Use your local IP or ngrok URL
   /// Production: Use your deployed server URL (Netlify Functions)
-  static const String serverUrl = 'http://10.0.2.2:3000'; // Android emulator localhost
-  static const String serverUrlProduction = 'https://tokerrgjik.netlify.app/.netlify/functions';
+  static const String serverUrl = 'https://tokerrgjik.netlify.app'; // Production - uses /api/* redirect
+  static const String serverUrlProduction = 'https://tokerrgjik.netlify.app';
   
   /// WebSocket URL for real-time multiplayer
-  static const String websocketUrl = 'ws://10.0.2.2:3000';
+  static const String websocketUrl = 'ws://tokerrgjik.netlify.app';
   static const String websocketUrlProduction = 'wss://tokerrgjik.netlify.app';
 
   // ==================== DATABASE ====================

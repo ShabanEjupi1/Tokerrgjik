@@ -26,7 +26,15 @@ export async function handler(event, context) {
     return { statusCode: 200, headers, body: '' };
   }
 
-  const path = event.path.replace('/.netlify/functions/statistics', '');
+  // Handle both direct function calls and /api/ redirects
+  const path = event.path
+    .replace('/.netlify/functions/statistics', '')
+    .replace('/api/statistics', '');
+  
+  // Also check query parameters for userId (backward compatibility)
+  const params = event.queryStringParameters || {};
+  const usernameFromPath = path.substring(1); // Remove leading /
+  const username = usernameFromPath || params.username || params.userId;
 
   try {
     // Check if database is configured
@@ -40,9 +48,15 @@ export async function handler(event, context) {
       };
     }
 
-    // GET /statistics/:username - Get user statistics
-    if (event.httpMethod === 'GET' && path.startsWith('/')) {
-      const username = path.substring(1);
+    // GET /statistics/:username or /statistics?username=xxx - Get user statistics
+    if (event.httpMethod === 'GET') {
+      if (!username) {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({ error: 'Username is required' }),
+        };
+      }
 
       // Get user data
       const userResult = await sql`
