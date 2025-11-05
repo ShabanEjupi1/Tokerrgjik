@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../config/api_keys.dart';
 
@@ -7,6 +8,20 @@ import '../config/api_keys.dart';
 /// Handles all HTTP requests to the server
 class ApiService {
   static const Duration _timeout = Duration(seconds: 10);
+  
+  // Dio instance for better web CORS support
+  static final Dio _dio = Dio(BaseOptions(
+    connectTimeout: _timeout,
+    receiveTimeout: _timeout,
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    // Enable cookies for CORS
+    extra: {
+      'withCredentials': false,
+    },
+  ));
   
   /// Base URL for API requests
   static String get baseUrl {
@@ -20,33 +35,67 @@ class ApiService {
   /// Make GET request
   static Future<Map<String, dynamic>?> get(String endpoint, {Map<String, String>? headers}) async {
     try {
-      final url = Uri.parse('$baseUrl$endpoint');
+      final url = '$baseUrl$endpoint';
       print('API GET: $url');
       
-      final response = await http.get(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          ...?headers,
-        },
-      ).timeout(_timeout);
-      
-      if (response.statusCode == 200) {
-        return json.decode(response.body);
-      } else if (response.statusCode == 404) {
-        // CRITICAL FIX: Netlify functions not found - fail gracefully
-        print('⚠️ API endpoint not found (404): $endpoint');
-        print('   This is expected if Netlify functions are not deployed yet.');
-        print('   Using local storage fallback.');
-        return null;
+      // Use Dio for web to handle CORS better
+      if (kIsWeb) {
+        final response = await _dio.get(
+          url,
+          options: Options(
+            headers: headers,
+            validateStatus: (status) => status != null && status < 500,
+          ),
+        );
+        
+        if (response.statusCode == 200) {
+          return response.data is String 
+              ? json.decode(response.data) 
+              : response.data;
+        } else if (response.statusCode == 404) {
+          print('⚠️ API endpoint not found (404): $endpoint');
+          print('   This is expected if Netlify functions are not deployed yet.');
+          print('   Using local storage fallback.');
+          return null;
+        } else {
+          final errorBody = response.data.toString();
+          final truncatedError = errorBody.length > 200 
+              ? '${errorBody.substring(0, 200)}...' 
+              : errorBody;
+          print('API GET Error: ${response.statusCode} - $truncatedError');
+          return null;
+        }
       } else {
-        // Only print first 200 chars of error to avoid log spam
-        final errorBody = response.body.length > 200 
-            ? '${response.body.substring(0, 200)}...' 
-            : response.body;
-        print('API GET Error: ${response.statusCode} - $errorBody');
-        return null;
+        // Use http package for mobile
+        final response = await http.get(
+          Uri.parse(url),
+          headers: {
+            'Content-Type': 'application/json',
+            ...?headers,
+          },
+        ).timeout(_timeout);
+        
+        if (response.statusCode == 200) {
+          return json.decode(response.body);
+        } else if (response.statusCode == 404) {
+          print('⚠️ API endpoint not found (404): $endpoint');
+          print('   This is expected if Netlify functions are not deployed yet.');
+          print('   Using local storage fallback.');
+          return null;
+        } else {
+          final errorBody = response.body.length > 200 
+              ? '${response.body.substring(0, 200)}...' 
+              : response.body;
+          print('API GET Error: ${response.statusCode} - $errorBody');
+          return null;
+        }
       }
+    } on DioException catch (e) {
+      print('API GET Dio Exception: ${e.type} - ${e.message}');
+      if (e.response != null) {
+        print('   Response: ${e.response?.statusCode} - ${e.response?.data}');
+      }
+      return null;
     } catch (e) {
       print('API GET Exception: $e');
       return null;
@@ -60,33 +109,67 @@ class ApiService {
     Map<String, String>? headers,
   }) async {
     try {
-      final url = Uri.parse('$baseUrl$endpoint');
+      final url = '$baseUrl$endpoint';
       print('API POST: $url');
       
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          ...?headers,
-        },
-        body: json.encode(data),
-      ).timeout(_timeout);
-      
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return json.decode(response.body);
-      } else if (response.statusCode == 404) {
-        // CRITICAL FIX: Netlify functions not found - fail gracefully
-        print('⚠️ API endpoint not found (404): $endpoint');
-        print('   Using local storage fallback.');
-        return null;
+      // Use Dio for web to handle CORS better
+      if (kIsWeb) {
+        final response = await _dio.post(
+          url,
+          data: data,
+          options: Options(
+            headers: headers,
+            validateStatus: (status) => status != null && status < 500,
+          ),
+        );
+        
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          return response.data is String 
+              ? json.decode(response.data) 
+              : response.data;
+        } else if (response.statusCode == 404) {
+          print('⚠️ API endpoint not found (404): $endpoint');
+          print('   Using local storage fallback.');
+          return null;
+        } else {
+          final errorBody = response.data.toString();
+          final truncatedError = errorBody.length > 200 
+              ? '${errorBody.substring(0, 200)}...' 
+              : errorBody;
+          print('API POST Error: ${response.statusCode} - $truncatedError');
+          return null;
+        }
       } else {
-        // Only print first 200 chars of error
-        final errorBody = response.body.length > 200 
-            ? '${response.body.substring(0, 200)}...' 
-            : response.body;
-        print('API POST Error: ${response.statusCode} - $errorBody');
-        return null;
+        // Use http package for mobile
+        final response = await http.post(
+          Uri.parse(url),
+          headers: {
+            'Content-Type': 'application/json',
+            ...?headers,
+          },
+          body: json.encode(data),
+        ).timeout(_timeout);
+        
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          return json.decode(response.body);
+        } else if (response.statusCode == 404) {
+          print('⚠️ API endpoint not found (404): $endpoint');
+          print('   Using local storage fallback.');
+          return null;
+        } else {
+          final errorBody = response.body.length > 200 
+              ? '${response.body.substring(0, 200)}...' 
+              : response.body;
+          print('API POST Error: ${response.statusCode} - $errorBody');
+          return null;
+        }
       }
+    } on DioException catch (e) {
+      print('API POST Dio Exception: ${e.type} - ${e.message}');
+      if (e.response != null) {
+        print('   Response: ${e.response?.statusCode} - ${e.response?.data}');
+      }
+      return null;
     } catch (e) {
       print('API POST Exception: $e');
       return null;
