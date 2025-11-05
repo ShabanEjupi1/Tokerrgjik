@@ -45,6 +45,21 @@
 -keep class com.google.ads.** { *; }
 -dontwarn com.google.android.gms.ads.**
 
+# Google Play Core - Deferred Components (Flutter references but may not use)
+-dontwarn com.google.android.play.core.**
+-keep class com.google.android.play.core.** { *; }
+
+# Flutter Play Store Split Application (deferred components support)
+-keep class io.flutter.app.FlutterPlayStoreSplitApplication { *; }
+-keep class io.flutter.embedding.engine.deferredcomponents.** { *; }
+-dontwarn io.flutter.app.FlutterPlayStoreSplitApplication
+-dontwarn io.flutter.embedding.engine.deferredcomponents.**
+
+# If Play Core is missing, ignore these Flutter classes that reference it
+-dontwarn com.google.android.play.core.splitcompat.SplitCompatApplication
+-dontwarn com.google.android.play.core.splitinstall.**
+-dontwarn com.google.android.play.core.tasks.**
+
 # SQLite / SQLCipher
 -keep class net.sqlcipher.** { *; }
 -keep class net.sqlcipher.database.** { *; }

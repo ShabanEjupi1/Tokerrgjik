@@ -37,11 +37,38 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
-            // Enable minification and ProGuard
-            isMinifyEnabled = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+            // Temporarily disable minification to fix Play Core issue
+            // Re-enable after fixing Play Core dependencies
+            isMinifyEnabled = false
+            isShrinkResources = false
+            // proguardFiles(
+            //     getDefaultProguardFile("proguard-android-optimize.txt"),
+            //     "proguard-rules.pro"
+            // )
+        }
+        debug {
+            // Disable minification for debug builds
+            isMinifyEnabled = false
+        }
+    }
+    
+    // Fix for Play Core missing classes in R8
+    buildFeatures {
+        buildConfig = true
+    }
+    
+    packaging {
+        resources {
+            excludes += setOf(
+                "META-INF/DEPENDENCIES",
+                "META-INF/LICENSE",
+                "META-INF/LICENSE.txt",
+                "META-INF/license.txt",
+                "META-INF/NOTICE",
+                "META-INF/NOTICE.txt",
+                "META-INF/notice.txt",
+                "META-INF/ASL2.0",
+                "META-INF/*.kotlin_module"
             )
         }
     }
@@ -54,6 +81,9 @@ flutter {
 dependencies {
     // Core library desugaring for flutter_local_notifications
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    
+    // Google Play Core for deferred components
+    implementation("com.google.android.play:core:1.10.3")
 }
 
 // Suppress deprecation warnings from third-party dependencies

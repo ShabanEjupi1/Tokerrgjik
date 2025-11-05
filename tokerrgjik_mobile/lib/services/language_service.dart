@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'translations.dart';
 
 class LanguageService extends ChangeNotifier {
   static const String _languageKey = 'app_language';
@@ -14,6 +15,8 @@ class LanguageService extends ChangeNotifier {
   Future<void> _loadLanguage() async {
     final prefs = await SharedPreferences.getInstance();
     _currentLanguage = prefs.getString(_languageKey) ?? 'sq';
+    // Sync with Translations class
+    await Translations.setLanguage(_currentLanguage);
     notifyListeners();
   }
 
@@ -23,6 +26,10 @@ class LanguageService extends ChangeNotifier {
     _currentLanguage = languageCode;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_languageKey, languageCode);
+    
+    // CRITICAL: Sync with the Translations class
+    await Translations.setLanguage(languageCode);
+    
     notifyListeners();
   }
 
@@ -47,6 +54,10 @@ class LanguageService extends ChangeNotifier {
       'multiplayer': 'Shumë lojtarë',
       'practice': 'Praktikë',
       'ranked': 'Me renditje',
+      'vs_ai': 'Luaj kundër AI',
+      'local_multiplayer': 'Luaj me mik (Lokal)',
+      'online': 'Luaj online',
+      'rules': 'Rregullat',
       
       // Common actions
       'login': 'Hyr',
@@ -152,6 +163,10 @@ class LanguageService extends ChangeNotifier {
       'multiplayer': 'Multiplayer',
       'practice': 'Practice',
       'ranked': 'Ranked',
+      'vs_ai': 'Play against AI',
+      'local_multiplayer': 'Play with friend (Local)',
+      'online': 'Play online',
+      'rules': 'Rules',
       
       // Common actions
       'login': 'Login',

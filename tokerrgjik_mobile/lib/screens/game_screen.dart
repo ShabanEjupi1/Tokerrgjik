@@ -43,10 +43,18 @@ class _GameScreenState extends State<GameScreen> {
       _awardCoins(coins, reason);
     };
     
+    // CRITICAL FIX: Set up AI sound callbacks
+    game.onAIPlaceSound = () => SoundService.playPlacePiece();
+    game.onAIMoveSound = () => SoundService.playMovePiece();
+    game.onAIRemoveSound = () => SoundService.playRemovePiece();
+    game.onAIMillSound = () => SoundService.playMill();
+    
     // Configure game based on mode and difficulty
     if (widget.mode == 'ai' && widget.difficulty != null) {
       game.aiEnabled = true;
-      game.aiDifficulty = widget.difficulty ?? 'medium'; // Set AI difficulty
+      // CRITICAL FIX: Ensure difficulty is properly set
+      game.aiDifficulty = widget.difficulty!;
+      print('🎯 Game initialized with AI difficulty: ${game.aiDifficulty}');
     } else if (widget.mode == 'online') {
       // Configure for online play
     }
@@ -154,12 +162,23 @@ class _GameScreenState extends State<GameScreen> {
         }
       }
       
-      // Check for win
-      if (game.checkWinCondition()) {
-        SoundService.playWin();
-        _showWinDialog();
-      }
+      // CRITICAL FIX: Always check win condition after any move
+      _checkWinConditionIfNeeded();
     });
+  }
+
+  // CRITICAL FIX: Dedicated win check method
+  void _checkWinConditionIfNeeded() {
+    if (game.phase != 'gameover' && game.checkWinCondition()) {
+      game.phase = 'gameover'; // Mark game as over
+      SoundService.playWin();
+      // Slight delay to ensure UI updates
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (mounted) {
+          _showWinDialog();
+        }
+      });
+    }
   }
 
   void _notifyTurnChange() {
@@ -237,11 +256,8 @@ class _GameScreenState extends State<GameScreen> {
                       _isProcessing = false;
                     });
                     
-                    // Check for win after AI's full turn
-                    if (game.checkWinCondition()) {
-                      SoundService.playWin();
-                      _showWinDialog();
-                    }
+                    // CRITICAL FIX: Check for win after AI's full turn
+                    _checkWinConditionIfNeeded();
                   }
                 }
               });
@@ -249,11 +265,8 @@ class _GameScreenState extends State<GameScreen> {
               // AI's turn is complete
               _isProcessing = false;
               
-              // Check for win
-              if (game.checkWinCondition()) {
-                SoundService.playWin();
-                _showWinDialog();
-              }
+              // CRITICAL FIX: Check win condition after AI move
+              _checkWinConditionIfNeeded();
             }
           });
         } catch (e) {
@@ -275,6 +288,13 @@ class _GameScreenState extends State<GameScreen> {
       _player1Mills = 0;
       _coinsEarned = 0;
       _isProcessing = false; // Reset processing flag
+      _hintPosition = null;
+      
+      // CRITICAL FIX: Re-setup AI sound callbacks after reset
+      game.onAIPlaceSound = () => SoundService.playPlacePiece();
+      game.onAIMoveSound = () => SoundService.playMovePiece();
+      game.onAIRemoveSound = () => SoundService.playRemovePiece();
+      game.onAIMillSound = () => SoundService.playMill();
     });
   }
 

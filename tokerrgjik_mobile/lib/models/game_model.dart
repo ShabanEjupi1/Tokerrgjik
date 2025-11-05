@@ -24,6 +24,12 @@ class GameModel {
   static const int shilevekBonusCoins = 20; // Bonus coins for shilevek technique
   Function(int coins, String reason)? onBonusEarned; // Callback for awarding bonus coins
   
+  // Sound callbacks for AI moves
+  Function()? onAIPlaceSound;
+  Function()? onAIMoveSound;
+  Function()? onAIRemoveSound;
+  Function()? onAIMillSound;
+  
   // Undo/Redo functionality
   final List<GameSnapshot> _history = [];
   final List<GameSnapshot> _redoStack = [];
@@ -145,7 +151,16 @@ class GameModel {
     piecesLeft[currentPlayer] = piecesLeft[currentPlayer]! - 1;
     piecesOnBoard[currentPlayer] = piecesOnBoard[currentPlayer]! + 1;
 
+    // Play sound if AI is placing
+    if (aiEnabled && currentPlayer == aiPlayer) {
+      onAIPlaceSound?.call();
+    }
+
     if (checkMill(posId)) {
+      // Play mill sound if AI formed a mill
+      if (aiEnabled && currentPlayer == aiPlayer) {
+        onAIMillSound?.call();
+      }
       phase = 'removing';
       return true; // Mill formed - DO NOT switch player, they must remove a piece
     }
@@ -180,6 +195,11 @@ class GameModel {
     board[to] = board[from];
     board[from] = null;
 
+    // Play sound if AI is moving
+    if (aiEnabled && currentPlayer == aiPlayer) {
+      onAIMoveSound?.call();
+    }
+
     // Check if we formed a new mill at the destination
     bool formedMillAtTo = checkMill(to);
     
@@ -188,6 +208,11 @@ class GameModel {
       // This is the true shilevek technique - a strategic master move!
       if (brokeMillAtFrom) {
         onBonusEarned?.call(shilevekBonusCoins, '🌟 SHILEVEK! Theve një dang dhe formove një tjetër! +20 monedha');
+      }
+      
+      // Play mill sound if AI formed a mill
+      if (aiEnabled && currentPlayer == aiPlayer) {
+        onAIMillSound?.call();
       }
       
       phase = 'removing';
@@ -223,6 +248,11 @@ class GameModel {
 
     board[posId] = null;
     piecesOnBoard[opponent] = piecesOnBoard[opponent]! - 1;
+
+    // Play sound if AI is removing
+    if (aiEnabled && currentPlayer == aiPlayer) {
+      onAIRemoveSound?.call();
+    }
 
     // Kthehu në fazën e duhur dhe ndrysho lojtarin
     if (piecesLeft[1]! == 0 && piecesLeft[2]! == 0) {
@@ -356,6 +386,13 @@ class GameModel {
     _history.clear();
     _redoStack.clear();
     _saveState(); // Save initial state
+    
+    // CRITICAL FIX: Clear all callbacks to prevent stale references
+    onBonusEarned = null;
+    onAIPlaceSound = null;
+    onAIMoveSound = null;
+    onAIRemoveSound = null;
+    onAIMillSound = null;
   }
 
   // Get status message

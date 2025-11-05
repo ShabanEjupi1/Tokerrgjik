@@ -1,7 +1,7 @@
 [build]
   # Use pre-built Flutter web files (build locally before committing)
-  command = "cd netlify/functions && npm install && npm ci"
-  publish = "tokerrgjik_mobile/build/web"
+  command = "cd netlify/functions && npm install"
+  publish = "netlify/functions"
   functions = "netlify/functions"
 
 [build.environment]

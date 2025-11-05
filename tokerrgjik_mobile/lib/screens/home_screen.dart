@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:confetti/confetti.dart';
 import '../models/user_profile.dart';
 import '../services/sound_service.dart';
+import '../services/language_service.dart';
 import '../config/app_colors.dart';
 import '../widgets/joystick_icon.dart';
 import 'game_screen.dart';
@@ -261,65 +262,73 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildPlayOptions() {
-    return Column(
-      children: [
-        _buildMenuButton(
-          customIcon: const JoystickIcon(size: 32, color: Color(0xFF667eea)),
-          label: 'Luaj kundër AI',
-          onPressed: () {
-            _showDifficultyDialog();
-          },
-        ),
-        const SizedBox(height: 16),
-        _buildMenuButton(
-          icon: Icons.people,
-          label: 'Luaj me mik (Lokal)',
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const GameScreen(mode: 'local'),
-              ),
-            );
-            SoundService.playClick();
-          },
-        ),
-        const SizedBox(height: 16),
-        _buildMenuButton(
-          icon: Icons.wifi,
-          label: 'Luaj online',
-          onPressed: () {
-            // Navigate to multiplayer lobby instead of directly to game
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const MultiplayerLobbyScreen(),
-              ),
-            );
-            SoundService.playClick();
-          },
-        ),
-      ],
+    return Consumer<LanguageService>(
+      builder: (context, languageService, child) {
+        return Column(
+          children: [
+            _buildMenuButton(
+              customIcon: const JoystickIcon(size: 32, color: Color(0xFF667eea)),
+              label: languageService.translate('vs_ai'),
+              onPressed: () {
+                _showDifficultyDialog();
+              },
+            ),
+            const SizedBox(height: 16),
+            _buildMenuButton(
+              icon: Icons.people,
+              label: languageService.translate('local_multiplayer'),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const GameScreen(mode: 'local'),
+                  ),
+                );
+                SoundService.playClick();
+              },
+            ),
+            const SizedBox(height: 16),
+            _buildMenuButton(
+              icon: Icons.wifi,
+              label: languageService.translate('online'),
+              onPressed: () {
+                // Navigate to multiplayer lobby instead of directly to game
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MultiplayerLobbyScreen(),
+                  ),
+                );
+                SoundService.playClick();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
   Widget _buildSecondaryButtons() {
-    return Wrap(
-      alignment: WrapAlignment.center,
-      spacing: 12,
-      runSpacing: 12,
-      children: [
-        _buildSmallButton(
-          icon: Icons.menu_book,
-          label: 'Rregullat',
-          onPressed: () => _showRulesDialog(context),
-        ),
-        _buildSmallButton(
-          icon: Icons.bar_chart,
-          label: 'Statistikat',
-          onPressed: _showStatsDialog,
-        ),
-      ],
+    return Consumer<LanguageService>(
+      builder: (context, languageService, child) {
+        return Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            _buildSmallButton(
+              icon: Icons.menu_book,
+              label: languageService.translate('rules'),
+              onPressed: () => _showRulesDialog(context),
+            ),
+            _buildSmallButton(
+              icon: Icons.bar_chart,
+              label: languageService.translate('statistics'),
+              onPressed: _showStatsDialog,
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -544,7 +553,11 @@ class _HomeScreenState extends State<HomeScreen> {
         leading: Radio<String>(
           value: value,
           groupValue: profile.difficulty,
-          onChanged: (val) {},
+          onChanged: (val) {
+            if (val != null) {
+              profile.updateSettings(difficulty: val); // Update the difficulty in profile
+            }
+          },
         ),
         title: Text(
           name,
@@ -554,7 +567,14 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         trailing: Text(reward, style: const TextStyle(fontSize: 16)),
         onTap: () {
+          // CRITICAL FIX: Save difficulty BEFORE navigation
+          profile.updateSettings(difficulty: value);
+          SoundService.playClick();
+          
+          // Close dialog first
           Navigator.pop(context);
+          
+          // THEN navigate to game with the selected difficulty
           Navigator.push(
             context,
             MaterialPageRoute(

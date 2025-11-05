@@ -24,18 +24,33 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   }
 
   Future<void> _loadLeaderboard() async {
+    // CRITICAL FIX: Check if widget is still mounted before setState
+    if (!mounted) return;
+    
     setState(() => _loading = true);
     
     final profile = Provider.of<UserProfile>(context, listen: false);
     
-    final leaderboard = await LeaderboardService.getLeaderboard(limit: 100);
-    final userRank = await LeaderboardService.getUserRank(profile.username);
-    
-    setState(() {
-      _leaderboard = leaderboard;
-      _userRank = userRank;
-      _loading = false;
-    });
+    try {
+      final leaderboard = await LeaderboardService.getLeaderboard(limit: 100);
+      final userRank = await LeaderboardService.getUserRank(profile.username);
+      
+      // CRITICAL FIX: Check mounted again after async operations
+      if (!mounted) return;
+      
+      setState(() {
+        _leaderboard = leaderboard;
+        _userRank = userRank;
+        _loading = false;
+      });
+    } catch (e) {
+      print('Error loading leaderboard: $e');
+      if (!mounted) return;
+      
+      setState(() {
+        _loading = false;
+      });
+    }
   }
 
   @override

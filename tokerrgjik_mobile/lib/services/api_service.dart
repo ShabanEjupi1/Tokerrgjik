@@ -33,8 +33,18 @@ class ApiService {
       
       if (response.statusCode == 200) {
         return json.decode(response.body);
+      } else if (response.statusCode == 404) {
+        // CRITICAL FIX: Netlify functions not found - fail gracefully
+        print('⚠️ API endpoint not found (404): $endpoint');
+        print('   This is expected if Netlify functions are not deployed yet.');
+        print('   Using local storage fallback.');
+        return null;
       } else {
-        print('API GET Error: ${response.statusCode} - ${response.body}');
+        // Only print first 200 chars of error to avoid log spam
+        final errorBody = response.body.length > 200 
+            ? '${response.body.substring(0, 200)}...' 
+            : response.body;
+        print('API GET Error: ${response.statusCode} - $errorBody');
         return null;
       }
     } catch (e) {
@@ -64,8 +74,17 @@ class ApiService {
       
       if (response.statusCode == 200 || response.statusCode == 201) {
         return json.decode(response.body);
+      } else if (response.statusCode == 404) {
+        // CRITICAL FIX: Netlify functions not found - fail gracefully
+        print('⚠️ API endpoint not found (404): $endpoint');
+        print('   Using local storage fallback.');
+        return null;
       } else {
-        print('API POST Error: ${response.statusCode} - ${response.body}');
+        // Only print first 200 chars of error
+        final errorBody = response.body.length > 200 
+            ? '${response.body.substring(0, 200)}...' 
+            : response.body;
+        print('API POST Error: ${response.statusCode} - $errorBody');
         return null;
       }
     } catch (e) {

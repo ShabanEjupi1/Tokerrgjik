@@ -150,13 +150,15 @@ class Translations {
     }
     _currentLanguage = languageCode;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('language', languageCode);
+    // Use the same key as LanguageService for consistency
+    await prefs.setString('app_language', languageCode);
   }
   
   /// Load saved language
   static Future<void> loadLanguage() async {
     final prefs = await SharedPreferences.getInstance();
-    _currentLanguage = prefs.getString('language') ?? 'sq';
+    // Use the same key as LanguageService for consistency
+    _currentLanguage = prefs.getString('app_language') ?? 'sq';
   }
   
   /// Get translation
