@@ -103,8 +103,7 @@ export async function handler(event, context) {
               status, 
               board_state, 
               current_turn, 
-              created_at,
-              updated_at
+              created_at
             )
             VALUES (
               ${host_username}, 
@@ -112,7 +111,6 @@ export async function handler(event, context) {
               'waiting', 
               '{"board": [], "phase": "placing", "turn": 1}',
               ${host_username}, 
-              NOW(),
               NOW()
             )
             RETURNING *

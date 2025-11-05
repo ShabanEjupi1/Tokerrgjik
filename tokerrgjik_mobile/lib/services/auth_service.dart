@@ -16,28 +16,27 @@ class AuthService {
   static String? _currentUsername;
   static bool _isGuest = false;
   
-  // Fun random username adjectives and nouns for auto-generated names
-  static const List<String> _adjectives = [
-    'Swift', 'Clever', 'Mighty', 'Bold', 'Quick', 'Sharp', 'Brave', 'Smart',
-    'Wise', 'Calm', 'Epic', 'Super', 'Ultra', 'Mega', 'Alpha', 'Prime',
-    'Elite', 'Royal', 'Golden', 'Silver', 'Crystal', 'Shadow', 'Turbo', 'Speedy',
-    'Lucky', 'Happy', 'Sunny', 'Bright', 'Cool', 'Rad', 'Epic', 'Legendary',
+  // Albanian and gaming-style names for auto-generated usernames
+  static const List<String> _firstNames = [
+    'Enis', 'Linda', 'Arben', 'Besar', 'Luan',
+    'Alban', 'Ilir', 'Dritan', 'Kujtim',
+    'Ardit', 'Besnik', 'Durim', 'Fatmir',
+    'Agron', 'Flamur', 'Korab', 'Enver',
   ];
   
-  static const List<String> _nouns = [
-    'Tiger', 'Eagle', 'Dragon', 'Phoenix', 'Wolf', 'Lion', 'Falcon', 'Hawk',
-    'Panther', 'Bear', 'Fox', 'Shark', 'Ninja', 'Knight', 'Wizard', 'Warrior',
-    'Hunter', 'Champion', 'Master', 'Legend', 'Hero', 'Star', 'Thunder', 'Storm',
-    'Racer', 'Gamer', 'Pro', 'Ace', 'King', 'Queen', 'Chief', 'Boss',
+  static const List<String> _suffixes = [
+    'Gamer', 'Pro', 'Boss', 'Mbreti', 'Drejtori', 'Legend', 'Hero',
+    'Master', 'Warrior', 'Champion', 'Winner', 'Player', 'Fighter', 'Ninja', 'Ace',
+    'Shqipja', 'Shqiptar', 'Kosovar', 'Ilir', 'Eagle', 'Lion', 'Baba',
   ];
   
-  /// Generate a fun random username
+  /// Generate a fun random username (e.g., EnisGamer775, LindaShqipja123)
   static String generateRandomUsername() {
     final random = Random();
-    final adjective = _adjectives[random.nextInt(_adjectives.length)];
-    final noun = _nouns[random.nextInt(_nouns.length)];
+    final firstName = _firstNames[random.nextInt(_firstNames.length)];
+    final suffix = _suffixes[random.nextInt(_suffixes.length)];
     final number = random.nextInt(999);
-    return '$adjective$noun$number';
+    return '$firstName$suffix$number';
   }
   
   /// Register new user
