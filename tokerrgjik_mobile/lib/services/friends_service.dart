@@ -129,7 +129,7 @@ class FriendsService {
         '/friends?user_username=$username&friend_username=$friendUsername'
       );
 
-      return result != null && result['message'] != null;
+      return result;
     } catch (e) {
       print('Error removing friend: $e');
       return false;
