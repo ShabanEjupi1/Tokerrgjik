@@ -1,6 +1,7 @@
 import 'api_service.dart';
 
 /// Friends Service for managing friendships
+/// Updated: 2025-11-05 - Fixed ApiService.delete() return type handling
 class FriendsService {
   /// Send friend request
   static Future<Map<String, dynamic>?> sendFriendRequest({
