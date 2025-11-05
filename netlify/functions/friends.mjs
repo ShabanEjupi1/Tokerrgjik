@@ -183,29 +183,49 @@ export async function handler(event, context) {
 
       // GET ALL FRIENDS (accepted only)
       if (action === 'list' || !action) {
-        const friends = await sql`
+        // Get friends where user is either sender or receiver
+        const friendsAsSender = await sql`
           SELECT 
-            f.*,
-            u.level as friend_level,
-            u.xp as friend_xp,
-            u.total_wins as friend_wins,
-            u.avatar_url as friend_avatar
+            f.id,
+            f.friend_username as username,
+            f.status,
+            f.created_at,
+            u.level,
+            u.xp,
+            u.total_wins,
+            u.total_games,
+            u.avatar_url,
+            u.is_pro
           FROM friends f
-          LEFT JOIN users u ON (
-            CASE 
-              WHEN f.user_username = ${username} THEN u.username = f.friend_username
-              ELSE u.username = f.user_username
-            END
-          )
-          WHERE (f.user_username = ${username} OR f.friend_username = ${username})
+          LEFT JOIN users u ON u.username = f.friend_username
+          WHERE f.user_username = ${username}
             AND f.status = 'accepted'
-          ORDER BY f.created_at DESC
         `;
+
+        const friendsAsReceiver = await sql`
+          SELECT 
+            f.id,
+            f.user_username as username,
+            f.status,
+            f.created_at,
+            u.level,
+            u.xp,
+            u.total_wins,
+            u.total_games,
+            u.avatar_url,
+            u.is_pro
+          FROM friends f
+          LEFT JOIN users u ON u.username = f.user_username
+          WHERE f.friend_username = ${username}
+            AND f.status = 'accepted'
+        `;
+
+        const allFriends = [...friendsAsSender, ...friendsAsReceiver];
 
         return {
           statusCode: 200,
           headers,
-          body: JSON.stringify({ friends }),
+          body: JSON.stringify({ friends: allFriends }),
         };
       }
 
@@ -213,10 +233,16 @@ export async function handler(event, context) {
       if (action === 'pending') {
         const requests = await sql`
           SELECT 
-            f.*,
-            u.level as sender_level,
-            u.xp as sender_xp,
-            u.avatar_url as sender_avatar
+            f.id,
+            f.user_username as from_username,
+            f.status,
+            f.created_at,
+            u.level,
+            u.xp,
+            u.total_wins,
+            u.total_games,
+            u.avatar_url,
+            u.is_pro
           FROM friends f
           LEFT JOIN users u ON u.username = f.user_username
           WHERE f.friend_username = ${username} 
@@ -235,10 +261,16 @@ export async function handler(event, context) {
       if (action === 'sent') {
         const requests = await sql`
           SELECT 
-            f.*,
-            u.level as recipient_level,
-            u.xp as recipient_xp,
-            u.avatar_url as recipient_avatar
+            f.id,
+            f.friend_username as to_username,
+            f.status,
+            f.created_at,
+            u.level,
+            u.xp,
+            u.total_wins,
+            u.total_games,
+            u.avatar_url,
+            u.is_pro
           FROM friends f
           LEFT JOIN users u ON u.username = f.friend_username
           WHERE f.user_username = ${username} 

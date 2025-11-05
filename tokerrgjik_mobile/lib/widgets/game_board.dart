@@ -21,84 +21,94 @@ class GameBoard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: 1,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          double size = constraints.maxWidth;
-          return RepaintBoundary( // Isolate repaints to improve performance
-            child: Container(
-              decoration: BoxDecoration(
-                // Enhanced 3D wood-like board
-                gradient: RadialGradient(
-                center: Alignment.topLeft,
-                radius: 1.5,
-                colors: [
-                  (boardColor ?? const Color(0xFFDAA520)).withOpacity(0.9),
-                  (boardColor ?? const Color(0xFFB8860B)),
-                  (boardColor ?? const Color(0xFF8B6914)),
-                ],
-                stops: const [0.0, 0.5, 1.0],
-              ),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                // Deep outer shadow
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.5),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                  spreadRadius: 2,
-                ),
-                // Inner highlight for 3D effect
-                BoxShadow(
-                  color: Colors.white.withOpacity(0.2),
-                  blurRadius: 10,
-                  offset: const Offset(-5, -5),
-                ),
-                // Ambient shadow
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 30,
-                  offset: const Offset(0, 15),
-                  spreadRadius: 5,
-                ),
-              ],
-              border: Border.all(
-                color: const Color(0xFF654321),
-                width: 6,
-              ),
-              ),
-              child: Container(
-              margin: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  // Inner border shadow for depth
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                    spreadRadius: -2,
+    return Center( // ✅ Added proper centering
+      child: AspectRatio(
+        aspectRatio: 1,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            double size = constraints.maxWidth;
+            return RepaintBoundary( // Isolate repaints to improve performance
+              child: Transform( // ✅ Added 3D perspective
+                transform: Matrix4.identity()
+                  ..setEntry(3, 2, 0.001) // perspective
+                  ..rotateX(-0.15) // tilt forward slightly
+                  ..rotateY(0.0) // no horizontal tilt
+                  ..rotateZ(0.0), // no rotation
+                alignment: FractionalOffset.center,
+                child: Container(
+                  decoration: BoxDecoration(
+                    // Enhanced 3D wood-like board
+                    gradient: RadialGradient(
+                    center: Alignment.topLeft,
+                    radius: 1.5,
+                    colors: [
+                      (boardColor ?? const Color(0xFFDAA520)).withOpacity(0.9),
+                      (boardColor ?? const Color(0xFFB8860B)),
+                      (boardColor ?? const Color(0xFF8B6914)),
+                    ],
+                    stops: const [0.0, 0.5, 1.0],
                   ),
-                ],
-              ),
-              child: Stack(
-                children: [
-                  // Board lines
-                  CustomPaint(
-                    size: Size(size, size),
-                    painter: BoardPainter(boardColor: boardColor),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    // Deep outer shadow
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.6), // ✅ Increased shadow
+                      blurRadius: 30, // ✅ More blur
+                      offset: const Offset(0, 15), // ✅ Larger offset
+                      spreadRadius: 3,
+                    ),
+                    // Inner highlight for 3D effect
+                    BoxShadow(
+                      color: Colors.white.withOpacity(0.25), // ✅ Brighter highlight
+                      blurRadius: 12,
+                      offset: const Offset(-6, -6),
+                    ),
+                    // Ambient shadow
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.25),
+                      blurRadius: 40,
+                      offset: const Offset(0, 20),
+                      spreadRadius: 8,
+                    ),
+                  ],
+                  border: Border.all(
+                    color: const Color(0xFF654321),
+                    width: 6,
                   ),
-                  // Positions and pieces
-                  ...GameModel.positions.map((pos) {
-                    return _buildPosition(pos, size);
-                  }).toList(),
-                ],
+                  ),
+                  child: Container(
+                  margin: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      // Inner border shadow for depth
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.4), // ✅ Darker inner shadow
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
+                        spreadRadius: -2,
+                      ),
+                    ],
+                  ),
+                  child: Stack(
+                    children: [
+                      // Board lines
+                      CustomPaint(
+                        size: Size(size, size),
+                        painter: BoardPainter(boardColor: boardColor),
+                      ),
+                      // Positions and pieces
+                      ...GameModel.positions.map((pos) {
+                        return _buildPosition(pos, size);
+                      }).toList(),
+                    ],
+                  ),
+                ),
+                ),
               ),
-            ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -149,8 +159,8 @@ class GameBoard extends StatelessWidget {
         shape: BoxShape.circle,
         color: piece != null
           ? (piece == 1 
-              ? (player1Color ?? const Color(0xFFFFF8DC)) // Cream color - visible on all themes
-              : (player2Color ?? Colors.black87))
+              ? (player1Color ?? const Color(0xFFFFF8DC)) // Cream/bean color
+              : (player2Color ?? const Color(0xFF8B4513))) // Brown/corn color (changed from black)
           : (isValidMove ? Colors.blue.withOpacity(0.3) : Colors.grey.shade300),
         border: Border.all(
           color: isSelected
@@ -161,8 +171,8 @@ class GameBoard extends StatelessWidget {
                       ? Colors.blue
                       : (piece != null 
                           ? (piece == 1 
-                              ? Colors.black.withOpacity(0.9)  // Dark border for white pieces
-                              : Colors.white.withOpacity(0.9)) // White border for black pieces
+                              ? const Color(0xFFD2B48C).withOpacity(0.9)  // Tan border for beans
+                              : const Color(0xFF654321).withOpacity(0.9)) // Dark brown for corns
                           : Colors.black54),
           width: piece != null 
               ? (isSelected || isRemovable ? 5.0 : 4.5)  // Thicker border for better visibility
@@ -170,46 +180,68 @@ class GameBoard extends StatelessWidget {
         ),
         boxShadow: piece != null || isValidMove
             ? [
+                // ✅ Enhanced 3D shadow for pieces
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.4),
-                  blurRadius: 12,
-                  offset: const Offset(0, 6),
+                  color: Colors.black.withOpacity(0.5),
+                  blurRadius: 15,
+                  offset: const Offset(0, 8),
                 ),
-                // 3D highlight effect
+                // Top-left highlight for 3D effect
                 BoxShadow(
-                  color: Colors.white.withOpacity(0.3),
-                  blurRadius: 4,
-                  offset: const Offset(-2, -2),
+                  color: Colors.white.withOpacity(piece == 1 ? 0.4 : 0.2),
+                  blurRadius: 6,
+                  offset: const Offset(-3, -3),
+                ),
+                // Secondary shadow for depth
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(2, 2),
                 ),
               ]
             : null,
         gradient: piece != null 
             ? RadialGradient(
-                center: const Alignment(-0.3, -0.3),
+                center: const Alignment(-0.4, -0.4), // ✅ Adjusted highlight position
                 colors: [
-                  // Bright highlight for 3D effect
+                  // ✅ Enhanced bean/corn colors with better 3D effect
                   piece == 1 
-                      ? (player1Color ?? Colors.white).withOpacity(1.0)
-                      : (player2Color ?? Colors.black87).withOpacity(1.0),
+                      ? Colors.white.withOpacity(0.95) // Bright white highlight for beans
+                      : const Color(0xFFCD853F).withOpacity(0.9), // Golden highlight for corns
                   piece == 1 
-                      ? (player1Color ?? Colors.white)
-                      : (player2Color?.withOpacity(0.95) ?? Colors.black87),
-                  // Darker edge for depth
+                      ? (player1Color ?? const Color(0xFFFFF8DC)) // Bean color
+                      : (player2Color ?? const Color(0xFF8B4513)), // Corn color
+                  // Darker edges for depth
                   piece == 1 
-                      ? (player1Color?.withOpacity(0.75) ?? Colors.grey.shade300)
-                      : (player2Color?.withOpacity(0.7) ?? Colors.black54),
+                      ? const Color(0xFFD2B48C) // Tan edge for beans
+                      : const Color(0xFF654321), // Dark brown edge for corns
                 ],
-                stops: const [0.0, 0.4, 1.0],
+                stops: const [0.0, 0.5, 1.0],
               )
             : null,
       ),
-      child: isRemovable
-          ? const Icon(
-              Icons.close,
-              color: Colors.red,
-              size: 24,
+      child: piece != null && !isRemovable
+          ? Container(
+              // ✅ Add inner texture for beans/corns
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  center: const Alignment(0.3, 0.3),
+                  colors: [
+                    Colors.transparent,
+                    (piece == 1 ? Colors.black : Colors.white).withOpacity(0.05),
+                  ],
+                  stops: const [0.7, 1.0],
+                ),
+              ),
             )
-          : null,
+          : (isRemovable
+              ? const Icon(
+                  Icons.close,
+                  color: Colors.red,
+                  size: 24,
+                )
+              : null),
     );
   }
 }

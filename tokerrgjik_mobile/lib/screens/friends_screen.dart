@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../models/user_profile.dart';
 import '../services/sound_service.dart';
+import '../services/friends_service.dart';
+import '../services/auth_service.dart';
 
 class FriendsScreen extends StatefulWidget {
   const FriendsScreen({super.key});
@@ -274,17 +276,45 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
               child: const Text('Anulo'),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 final username = controller.text.trim();
                 if (username.isNotEmpty) {
-                  final profile = Provider.of<UserProfile>(context, listen: false);
-                  profile.sendFriendRequest(username);
+                  final currentUsername = AuthService.currentUsername;
+                  if (currentUsername == null) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Duhet të hysh në llogari')),
+                    );
+                    return;
+                  }
+
+                  // Send friend request via API
+                  final result = await FriendsService.sendFriendRequest(
+                    fromUsername: currentUsername,
+                    toUsername: username,
+                  );
+
                   SoundService.playClick();
                   Navigator.pop(context);
-                  
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Kërkesa u dërgua tek $username')),
-                  );
+
+                  if (result != null && result['success'] == true) {
+                    // Also update local profile
+                    final profile = Provider.of<UserProfile>(context, listen: false);
+                    profile.sendFriendRequest(username);
+
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('✅ Kërkesa u dërgua tek $username')),
+                      );
+                      setState(() {}); // Refresh UI
+                    }
+                  } else {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('❌ Gabim: ${result?['error'] ?? 'Nuk u dërgua'}')),
+                      );
+                    }
+                  }
                 }
               },
               child: const Text('Dërgo kërkesë'),
@@ -322,7 +352,7 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
     SoundService.playClick();
   }
 
-  void _removeFriend(BuildContext context, UserProfile profile, String friend) {
+  void _removeFriend(BuildContext context, UserProfile profile, String friend) async {
     showDialog(
       context: context,
       builder: (context) {
@@ -335,14 +365,39 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
               child: const Text('Anulo'),
             ),
             ElevatedButton(
-              onPressed: () {
-                profile.removeFriend(friend);
+              onPressed: () async {
+                final currentUsername = AuthService.currentUsername;
+                if (currentUsername == null) {
+                  Navigator.pop(context);
+                  return;
+                }
+
+                // Remove friend via API
+                final success = await FriendsService.removeFriend(
+                  username: currentUsername,
+                  friendUsername: friend,
+                );
+
                 SoundService.playClick();
                 Navigator.pop(context);
-                
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('$friend u hoq nga miqtë')),
-                );
+
+                if (success) {
+                  // Also update local profile
+                  profile.removeFriend(friend);
+
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('✅ $friend u hoq nga miqtë')),
+                    );
+                    setState(() {}); // Refresh UI
+                  }
+                } else {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('❌ Gabim gjatë heqjes së mikut')),
+                    );
+                  }
+                }
               },
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               child: const Text('Hiq'),
