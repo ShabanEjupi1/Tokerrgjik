@@ -1,7 +1,7 @@
 [build]
-  # Build Flutter web and install function dependencies
-  command = "cd tokerrgjik_mobile && flutter build web --release && cd ../netlify/functions && npm install"
-  publish = "tokerrgjik_mobile/build/web"
+  # Only install function dependencies - Flutter web build done locally
+  command = "cd netlify/functions && npm install"
+  publish = "build/web"
   functions = "netlify/functions"
 
 [build.environment]
