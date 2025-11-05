@@ -1,15 +1,15 @@
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'package:tokerrgjik_mobile/config.dart';
 import 'package:tokerrgjik_mobile/models/game_state.dart';
 
 class SocketService {
-  late IO.Socket _socket;
+  late io.Socket _socket;
   final GameState _gameState;
 
   SocketService(this._gameState);
 
   void connect(String playerName, String gameMode) {
-    _socket = IO.io(GameConfig.serverUrl, <String, dynamic>{
+    _socket = io.io(GameConfig.serverUrl, <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': false,
     });

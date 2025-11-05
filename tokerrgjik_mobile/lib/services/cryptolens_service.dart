@@ -21,6 +21,7 @@ class CryptolensService {
   // Never hardcode these values! Use GitHub Secrets for CI/CD.
   // See SECURE_KEYS_SETUP.md for full setup instructions.
   
+  // ignore: unused_field
   static const String _rsaPublicKey = String.fromEnvironment(
     'CRYPTOLENS_RSA_PUBLIC_KEY',
     defaultValue: '', // Empty = Development mode (no license check)

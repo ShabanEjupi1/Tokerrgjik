@@ -1,6 +1,4 @@
 import 'package:audioplayers/audioplayers.dart';
-import 'package:flutter/services.dart';
-import 'dart:io' show Platform;
 
 class SoundService {
   static final AudioPlayer _effectPlayer = AudioPlayer();

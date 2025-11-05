@@ -5,12 +5,10 @@ import '../services/sound_service.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/language_service.dart';
-import '../services/translations.dart';
 import '../services/cryptolens_service.dart';
 import '../config/themes.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'developer_info_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -488,7 +486,6 @@ class SettingsScreen extends StatelessWidget {
     // Custom theme costs 5000 coins
     bool isCustomTheme = key == 'custom';
     int customCost = 5000;
-    bool hasCustom = profile.unlockedThemes.contains('custom');
     // Other premium themes need to be bought from shop or have Pro
     bool isUnlocked = isFreeTheme || profile.unlockedThemes.contains(key) || profile.isPro;
     

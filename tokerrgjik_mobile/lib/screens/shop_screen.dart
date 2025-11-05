@@ -931,7 +931,6 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
       }
 
       // Open approval URL in browser
-      final approvalUrl = Uri.parse(order['approval_url']);
       await PayPalService.purchaseProSubscription(context: context, months: months);
 
       // After user finishes in browser, client must verify with server

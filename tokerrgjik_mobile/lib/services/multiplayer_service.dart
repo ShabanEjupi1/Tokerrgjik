@@ -1,6 +1,5 @@
 import 'dart:async';
-import 'dart:convert';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import '../config/api_keys.dart';
@@ -13,9 +12,10 @@ import '../config/api_keys.dart';
 /// - Friend invitations
 /// - Spectator mode
 class MultiplayerService {
-  IO.Socket? _socket;
+  io.Socket? _socket;
   bool _isConnected = false;
   String? _currentRoomId;
+  // ignore: unused_field
   String? _playerId;
   RoomType _currentRoomType = RoomType.none;
   
@@ -63,9 +63,9 @@ class MultiplayerService {
     final url = serverUrl ?? ApiKeys.currentServerUrl;
 
     try {
-      _socket = IO.io(
+      _socket = io.io(
         url,
-        IO.OptionBuilder()
+        io.OptionBuilder()
             .setTransports(['websocket'])
             .enableAutoConnect()
             .enableReconnection()

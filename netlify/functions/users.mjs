@@ -222,6 +222,20 @@ export async function handler(event, context) {
       const finalIsPro = is_pro !== undefined ? is_pro : user.is_pro;
       const finalProExpires = pro_expires_at !== undefined ? pro_expires_at : user.pro_expires_at;
 
+      // If username is changing, update game_history first to maintain referential integrity
+      if (new_username && new_username !== old_username) {
+        try {
+          await sql`
+            UPDATE game_history 
+            SET username = ${finalUsername}
+            WHERE username = ${old_username}
+          `;
+        } catch (historyError) {
+          console.error('Error updating game_history:', historyError);
+          // Continue anyway - game history update is not critical
+        }
+      }
+
       const result = await sql`
         UPDATE users 
         SET username = ${finalUsername},

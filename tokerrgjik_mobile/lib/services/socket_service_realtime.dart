@@ -1,12 +1,12 @@
 import 'package:flutter/foundation.dart';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_client/socket_io_client.dart' as io;
 
 class SocketServiceRealtime {
   static final SocketServiceRealtime _instance = SocketServiceRealtime._internal();
   factory SocketServiceRealtime() => _instance;
   SocketServiceRealtime._internal();
 
-  IO.Socket? _socket;
+  io.Socket? _socket;
   String? _username;
   String? _currentSessionId;
   
@@ -32,7 +32,7 @@ class SocketServiceRealtime {
     
     debugPrint('🔌 Connecting to Socket.IO server: $url');
     
-    _socket = IO.io(url, <String, dynamic>{
+    _socket = io.io(url, <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': false,
     });

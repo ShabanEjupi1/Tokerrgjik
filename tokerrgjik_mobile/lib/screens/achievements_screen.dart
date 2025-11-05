@@ -25,7 +25,6 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
 
     try {
       // Get default achievements
-      final service = AchievementsService();
       final defaultAchievements = AchievementsService.defaultAchievements;
       final profile = Provider.of<UserProfile>(context, listen: false);
 
@@ -86,7 +85,6 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final profile = Provider.of<UserProfile>(context);
     final unlockedCount = _achievements.where((a) => a.isUnlocked).length;
     final totalCount = _achievements.length;
 

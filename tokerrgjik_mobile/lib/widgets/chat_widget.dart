@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:tokerrgjik_mobile/services/socket_service.dart';
-import 'package:provider/provider.dart';
 import '../services/chat_service.dart';
 
 /// Enhanced Chat Widget for in-game messaging

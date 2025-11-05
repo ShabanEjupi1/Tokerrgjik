@@ -24,8 +24,6 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
     // Auto-refresh friend requests every 30 seconds
     _refreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
       if (mounted) {
-        // Refresh the friends list from provider
-        final profile = Provider.of<UserProfile>(context, listen: false);
         // Force rebuild to show new friend requests
         setState(() {});
       }
