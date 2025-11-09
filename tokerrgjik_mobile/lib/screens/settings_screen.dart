@@ -88,11 +88,11 @@ class SettingsScreen extends StatelessWidget {
               // Sound Settings
               _buildSection(
                 context,
-                title: '🔊 Tinguj',
+                title: '🔊 ${languageService.translate('sounds')}',
                 children: [
                   SwitchListTile(
-                    title: const Text('Efektet e zërit'),
-                    subtitle: const Text('Tinguj për lëvizje dhe veprime'),
+                    title: Text(languageService.translate('sound_effects')),
+                    subtitle: Text(languageService.translate('sound_effects_subtitle')),
                     value: profile.soundEnabled,
                     onChanged: (value) {
                       profile.updateSettings(sound: value);
@@ -101,8 +101,8 @@ class SettingsScreen extends StatelessWidget {
                     },
                   ),
                   SwitchListTile(
-                    title: const Text('Dridhje'),
-                    subtitle: const Text('Feedback haptik për veprime'),
+                    title: Text(languageService.translate('vibration')),
+                    subtitle: Text(languageService.translate('vibration_subtitle')),
                     value: profile.vibrateEnabled,
                     onChanged: (value) {
                       profile.updateSettings(vibrate: value);
@@ -114,11 +114,11 @@ class SettingsScreen extends StatelessWidget {
               // Difficulty Settings
               _buildSection(
                 context,
-                title: '🎯 Nivelet e AI',
+                title: '🎯 ${languageService.translate('ai_difficulty')}',
                 children: [
                   RadioListTile<String>(
-                    title: const Text('E lehtë'),
-                    subtitle: const Text('Perfekt për fillestarë - 3 monedha për fitore'),
+                    title: Text(languageService.translate('difficulty_easy')),
+                    subtitle: Text(languageService.translate('difficulty_easy_subtitle')),
                     value: 'easy',
                     groupValue: profile.difficulty,
                     onChanged: (value) {
@@ -127,8 +127,8 @@ class SettingsScreen extends StatelessWidget {
                     },
                   ),
                   RadioListTile<String>(
-                    title: const Text('Mesatare'),
-                    subtitle: const Text('Sfidë e balancuar - 5 monedha për fitore'),
+                    title: Text(languageService.translate('difficulty_medium')),
+                    subtitle: Text(languageService.translate('difficulty_medium_subtitle')),
                     value: 'medium',
                     groupValue: profile.difficulty,
                     onChanged: (value) {
@@ -137,8 +137,8 @@ class SettingsScreen extends StatelessWidget {
                     },
                   ),
                   RadioListTile<String>(
-                    title: const Text('E vështirë'),
-                    subtitle: const Text('Për lojtarë të përvojshëm - 8 monedha për fitore'),
+                    title: Text(languageService.translate('difficulty_hard')),
+                    subtitle: Text(languageService.translate('difficulty_hard_subtitle')),
                     value: 'hard',
                     groupValue: profile.difficulty,
                     onChanged: (value) {
@@ -147,8 +147,8 @@ class SettingsScreen extends StatelessWidget {
                     },
                   ),
                   RadioListTile<String>(
-                    title: const Text('Ekspert'),
-                    subtitle: const Text('Sfida maksimale! - 12 monedha për fitore'),
+                    title: Text(languageService.translate('difficulty_expert')),
+                    subtitle: Text(languageService.translate('difficulty_expert_subtitle')),
                     value: 'expert',
                     groupValue: profile.difficulty,
                     onChanged: (value) {
@@ -162,11 +162,11 @@ class SettingsScreen extends StatelessWidget {
               // Appearance
               _buildSection(
                 context,
-                title: '🎨 Pamja',
+                title: '🎨 ${languageService.translate('appearance')}',
                 children: [
                   ListTile(
-                    title: const Text('Ngjyra e lojtarit 1'),
-                    subtitle: const Text('100 Monedha për ndryshim'),
+                    title: Text(languageService.translate('player1_color')),
+                    subtitle: Text(languageService.translate('color_change_cost')),
                     trailing: Container(
                       width: 40,
                       height: 40,
@@ -182,11 +182,12 @@ class SettingsScreen extends StatelessWidget {
                       profile.player1Color,
                       (color) => profile.updateTheme(player1: color),
                       100,
+                      languageService,
                     ),
                   ),
                   ListTile(
-                    title: const Text('Ngjyra e lojtarit 2'),
-                    subtitle: const Text('100 Monedha për ndryshim'),
+                    title: Text(languageService.translate('player2_color')),
+                    subtitle: Text(languageService.translate('color_change_cost')),
                     trailing: Container(
                       width: 40,
                       height: 40,
@@ -202,11 +203,12 @@ class SettingsScreen extends StatelessWidget {
                       profile.player2Color,
                       (color) => profile.updateTheme(player2: color),
                       100,
+                      languageService,
                     ),
                   ),
                   ListTile(
-                    title: const Text('Ngjyra e tabelës'),
-                    subtitle: const Text('100 Monedha për ndryshim'),
+                    title: Text(languageService.translate('board_color')),
+                    subtitle: Text(languageService.translate('color_change_cost')),
                     trailing: Container(
                       width: 40,
                       height: 40,
@@ -222,13 +224,14 @@ class SettingsScreen extends StatelessWidget {
                       profile.boardColor,
                       (color) => profile.updateTheme(board: color),
                       100,
+                      languageService,
                     ),
                   ),
                   ListTile(
-                    title: const Text('Temë paravendosur'),
-                    subtitle: Text('Aktuale: ${_getThemeName(profile.boardTheme)}'),
+                    title: Text(languageService.translate('preset_theme')),
+                    subtitle: Text('${languageService.translate('current_theme')}${_getThemeName(profile.boardTheme)}'),
                     trailing: const Icon(Icons.palette),
-                    onTap: () => _showThemeSelector(context, profile),
+                    onTap: () => _showThemeSelector(context, profile, languageService),
                   ),
                 ],
               ),
@@ -236,22 +239,22 @@ class SettingsScreen extends StatelessWidget {
               // Account
               _buildSection(
                 context,
-                title: '👤 Llogaria',
+                title: '👤 ${languageService.translate('account')}',
                 children: [
                   ListTile(
-                    title: const Text('Emri i lojtarit'),
+                    title: Text(languageService.translate('player_name')),
                     subtitle: Text(profile.username),
                     trailing: const Icon(Icons.edit),
-                    onTap: () => _showUsernameDialog(context, profile),
+                    onTap: () => _showUsernameDialog(context, profile, languageService),
                   ),
                   ListTile(
                     title: Text(
-                      profile.isPro ? '✨ Llogari PRO' : 'Kalo në PRO',
+                      profile.isPro ? '✨ ${languageService.translate('pro_account')}' : languageService.translate('upgrade_to_pro'),
                     ),
                     subtitle: Text(
                       profile.isPro 
-                        ? 'Pa reklama, Themes ekskluzive' 
-                        : 'Hiq reklamat dhe merr avantazhe',
+                        ? languageService.translate('pro_features')
+                        : languageService.translate('upgrade_benefits'),
                     ),
                     trailing: profile.isPro 
                       ? const Icon(Icons.check_circle, color: Colors.green)
@@ -263,9 +266,9 @@ class SettingsScreen extends StatelessWidget {
                   if (AuthService.isLoggedIn)
                     ListTile(
                       leading: const Icon(Icons.logout, color: Colors.red),
-                      title: const Text('Dil nga llogaria'),
-                      subtitle: const Text('Shkyçu nga llogaria aktuale'),
-                      onTap: () => _showLogoutDialog(context),
+                      title: Text(languageService.translate('logout_title')),
+                      subtitle: Text(languageService.translate('logout_subtitle')),
+                      onTap: () => _showLogoutDialog(context, languageService),
                     ),
                 ],
               ),
@@ -273,29 +276,29 @@ class SettingsScreen extends StatelessWidget {
               // About
               _buildSection(
                 context,
-                title: 'ℹ️ Informacion',
+                title: 'ℹ️ ${languageService.translate('information')}',
                 children: [
                   ListTile(
                     leading: const Icon(Icons.info_outline, color: Color(0xFF3498DB)),
-                    title: const Text('Versioni i aplikacionit'),
+                    title: Text(languageService.translate('app_version')),
                     subtitle: const Text('1.0.0'),
                   ),
                   ListTile(
-                    title: const Text('🔐 License Status'),
+                    title: Text('🔐 ${languageService.translate('license_status')}'),
                     subtitle: Text(
                       CryptolensService.isLicensed 
-                        ? '✅ Licensed & Protected' 
-                        : '⚠️ No License - Limited Features'
+                        ? '✅ ${languageService.translate('licensed_protected')}' 
+                        : '⚠️ ${languageService.translate('no_license_limited')}'
                     ),
                     trailing: Icon(
                       CryptolensService.isLicensed ? Icons.verified_user : Icons.warning,
                       color: CryptolensService.isLicensed ? Colors.green : Colors.orange,
                     ),
-                    onTap: () => _showLicenseInfo(context),
+                    onTap: () => _showLicenseInfo(context, languageService),
                   ),
                   ListTile(
                     leading: const Icon(Icons.email, color: Color(0xFF3498DB)),
-                    title: const Text('Mbështetje'),
+                    title: Text(languageService.translate('support')),
                     subtitle: const Text('info@shabanejupi.engineer'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                     onTap: () async {
@@ -386,6 +389,7 @@ class SettingsScreen extends StatelessWidget {
     Color current,
     Function(Color) onColorChanged,
     int cost,
+    LanguageService languageService,
   ) {
     showDialog(
       context: context,
@@ -394,7 +398,7 @@ class SettingsScreen extends StatelessWidget {
         return AlertDialog(
           title: Row(
             children: [
-              const Text('Zgjedh ngjyrën'),
+              Text(languageService.translate('choose_color')),
               const Spacer(),
               Row(
                 children: [
@@ -423,7 +427,7 @@ class SettingsScreen extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Anulo'),
+              child: Text(languageService.translate('cancel')),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -432,7 +436,7 @@ class SettingsScreen extends StatelessWidget {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Nuk ke mjaftueshëm monedha! Nevojiten $cost monedha.'),
+                      content: Text(languageService.translate('not_enough_coins').replaceAll('{cost}', cost.toString())),
                       backgroundColor: Colors.red,
                     ),
                   );
@@ -446,12 +450,12 @@ class SettingsScreen extends StatelessWidget {
                 
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Ngjyra u ndryshua! (-$cost monedha)'),
+                    content: Text(languageService.translate('color_changed').replaceAll('{cost}', cost.toString())),
                     backgroundColor: Colors.green,
                   ),
                 );
               },
-              child: const Text('Ruaj dhe Blej'),
+              child: Text(languageService.translate('save_and_buy')),
             ),
           ],
         );
@@ -459,18 +463,18 @@ class SettingsScreen extends StatelessWidget {
     );
   }
   
-  void _showThemeSelector(BuildContext context, UserProfile profile) {
+  void _showThemeSelector(BuildContext context, UserProfile profile, LanguageService languageService) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Zgjedh temën'),
+          title: Text(languageService.translate('choose_theme')),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: AppThemes.themeKeys.map((key) {
                 final theme = AppThemes.getTheme(key);
-                return _themeOptionNew(context, key, theme, profile);
+                return _themeOptionNew(context, key, theme, profile, languageService);
               }).toList(),
             ),
           ),
@@ -479,7 +483,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
   
-  Widget _themeOptionNew(BuildContext context, String key, GameTheme theme, UserProfile profile) {
+  Widget _themeOptionNew(BuildContext context, String key, GameTheme theme, UserProfile profile, LanguageService languageService) {
     bool isSelected = profile.boardTheme == key;
     // Free themes: classic, dark
     bool isFreeTheme = key == 'classic' || key == 'dark';
@@ -584,7 +588,7 @@ class SettingsScreen extends StatelessWidget {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Nuk ke mjaftueshëm monedha! Nevojiten $customCost monedha për temën e personalizuar.'),
+                  content: Text(languageService.translate('not_enough_coins').replaceAll('{cost}', customCost.toString())),
                   backgroundColor: Colors.red,
                   duration: const Duration(seconds: 4),
                 ),
@@ -596,16 +600,16 @@ class SettingsScreen extends StatelessWidget {
             final confirm = await showDialog<bool>(
               context: context,
               builder: (context) => AlertDialog(
-                title: const Text('Blej Temë të Personalizuar'),
-                content: Text('Dëshiron të blesh temën e personalizuar për $customCost monedha?\n\nKjo do të të lejojë të zgjedhësh ngjyrat e tua të preferuara!'),
+                title: Text(languageService.translate('buy_custom_theme')),
+                content: Text(languageService.translate('buy_custom_theme_message').replaceAll('{cost}', customCost.toString())),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context, false),
-                    child: const Text('Anulo'),
+                    child: Text(languageService.translate('cancel')),
                   ),
                   ElevatedButton(
                     onPressed: () => Navigator.pop(context, true),
-                    child: const Text('Blej'),
+                    child: Text(languageService.translate('buy')),
                   ),
                 ],
               ),
@@ -625,7 +629,7 @@ class SettingsScreen extends StatelessWidget {
               
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Tema e personalizuar u hap! (-$customCost monedha)'),
+                  content: Text(languageService.translate('theme_unlocked').replaceAll('{cost}', customCost.toString())),
                   backgroundColor: Colors.green,
                 ),
               );
@@ -640,7 +644,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
   
-  void _showUsernameDialog(BuildContext context, UserProfile profile) {
+  void _showUsernameDialog(BuildContext context, UserProfile profile, LanguageService languageService) {
     final controller = TextEditingController(text: profile.username);
     bool isLoading = false;
     
@@ -650,17 +654,17 @@ class SettingsScreen extends StatelessWidget {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: const Text('Ndrysho emrin'),
+              title: Text(languageService.translate('change_name')),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextField(
                     controller: controller,
                     enabled: !isLoading,
-                    decoration: const InputDecoration(
-                      labelText: 'Emri i ri',
-                      border: OutlineInputBorder(),
-                      hintText: 'Shkruaj emrin e ri...',
+                    decoration: InputDecoration(
+                      labelText: languageService.translate('new_name'),
+                      border: const OutlineInputBorder(),
+                      hintText: languageService.translate('enter_new_name'),
                     ),
                     maxLength: 20,
                   ),
@@ -674,7 +678,7 @@ class SettingsScreen extends StatelessWidget {
               actions: [
                 TextButton(
                   onPressed: isLoading ? null : () => Navigator.pop(context),
-                  child: const Text('Anulo'),
+                  child: Text(languageService.translate('cancel')),
                 ),
                 ElevatedButton(
                   onPressed: isLoading ? null : () async {
@@ -683,7 +687,7 @@ class SettingsScreen extends StatelessWidget {
                     // Validate username
                     if (newUsername.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Emri nuk mund të jetë bosh!')),
+                        SnackBar(content: Text(languageService.translate('name_cannot_be_empty'))),
                       );
                       return;
                     }
@@ -695,7 +699,7 @@ class SettingsScreen extends StatelessWidget {
                     
                     if (newUsername.length < 3) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Emri duhet të jetë së paku 3 karaktere!')),
+                        SnackBar(content: Text(languageService.translate('name_min_length'))),
                       );
                       return;
                     }
@@ -725,7 +729,7 @@ class SettingsScreen extends StatelessWidget {
                           Navigator.pop(context);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('✅ Emri u ndryshua në "$newUsername"!'),
+                              content: Text(languageService.translate('name_changed').replaceAll('{username}', newUsername)),
                               backgroundColor: Colors.green,
                             ),
                           );
@@ -735,8 +739,8 @@ class SettingsScreen extends StatelessWidget {
                         if (context.mounted) {
                           setState(() => isLoading = false);
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('❌ Emri është i zënë ose gabim në server!'),
+                            SnackBar(
+                              content: Text(languageService.translate('name_taken_or_error')),
                               backgroundColor: Colors.red,
                             ),
                           );
@@ -747,14 +751,14 @@ class SettingsScreen extends StatelessWidget {
                         setState(() => isLoading = false);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('❌ Gabim: ${e.toString()}'),
+                            content: Text('❌ ${languageService.translate('error')}: ${e.toString()}'),
                             backgroundColor: Colors.red,
                           ),
                         );
                       }
                     }
                   },
-                  child: const Text('Ruaj'),
+                  child: Text(languageService.translate('save')),
                 ),
               ],
             );
@@ -764,7 +768,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
   
-  void _showLicenseInfo(BuildContext context) async {
+  void _showLicenseInfo(BuildContext context, LanguageService languageService) async {
     final licenseStatus = await CryptolensService.getLicenseStatus();
     
     if (!context.mounted) return;
@@ -855,25 +859,22 @@ class SettingsScreen extends StatelessWidget {
     );
   }
   
-  void _showLogoutDialog(BuildContext context) {
+  void _showLogoutDialog(BuildContext context, LanguageService languageService) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.logout, color: Colors.red),
-            SizedBox(width: 8),
-            Text('Dil nga llogaria?'),
+            const Icon(Icons.logout, color: Colors.red),
+            const SizedBox(width: 8),
+            Text(languageService.translate('logout_confirm')),
           ],
         ),
-        content: const Text(
-          'A jeni i sigurt që dëshironi të dilni nga llogaria? '
-          'Të gjitha të dhënat e pashpëtuara do të humbasin.',
-        ),
+        content: Text(languageService.translate('logout_confirm_message')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Anulo'),
+            child: Text(languageService.translate('cancel')),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -883,8 +884,8 @@ class SettingsScreen extends StatelessWidget {
                 Navigator.pop(context); // Close dialog
                 Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('✅ U shkëputët me sukses'),
+                  SnackBar(
+                    content: Text('✅ ${languageService.translate('logged_out')}'),
                     backgroundColor: Colors.green,
                   ),
                 );
@@ -894,7 +895,7 @@ class SettingsScreen extends StatelessWidget {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Dil'),
+            child: Text(languageService.translate('logout_title')),
           ),
         ],
       ),

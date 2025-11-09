@@ -125,13 +125,14 @@ io.on('connection', (socket) => {
     session.guestUsername = username;
     
     socket.sessionId = sessionId;
+    socket.username = username;
     socket.join(`session_${sessionId}`);
     
     // Update database
     try {
       await sql`
         UPDATE game_sessions
-        SET guest_username = ${username}, status = 'active'
+        SET guest_username = ${username}, status = 'active', updated_at = NOW()
         WHERE id = ${sessionId}
       `;
     } catch (error) {
@@ -141,15 +142,31 @@ io.on('connection', (socket) => {
     // Remove from waiting list
     waitingPlayers.delete(sessionId);
     
-    console.log(`${username} joined session ${sessionId}`);
+    console.log(`✅ ${username} joined session ${sessionId}`);
     
-    // Notify both players
+    // Notify HOST that a player joined
+    io.to(session.hostSocket).emit('playerJoined', {
+      username: username,
+      message: `${username} has joined your game!`,
+      sessionId: sessionId
+    });
+    
+    // Notify both players that game is starting
     io.to(`session_${sessionId}`).emit('game_started', {
       sessionId,
       host: session.hostUsername,
       guest: username,
       currentTurn: session.currentTurn,
       board: session.board,
+    });
+    
+    // Broadcast session update
+    io.to(`session_${sessionId}`).emit('sessionUpdate', {
+      sessionId,
+      status: 'active',
+      host: session.hostUsername,
+      guest: username,
+      currentTurn: session.currentTurn
     });
     
     // Update lobby

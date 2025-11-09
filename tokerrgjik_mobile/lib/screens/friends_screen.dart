@@ -23,13 +23,35 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     
+    // Load friend requests when screen opens
+    _loadFriendRequests();
+    
     // Auto-refresh friend requests every 30 seconds
     _refreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
       if (mounted) {
-        // Force rebuild to show new friend requests
-        setState(() {});
+        _loadFriendRequests();
       }
     });
+  }
+  
+  Future<void> _loadFriendRequests() async {
+    final currentUsername = AuthService.currentUsername;
+    if (currentUsername == null) return;
+    
+    // Load pending requests from API
+    final pendingRequests = await FriendsService.getPendingRequests(currentUsername);
+    
+    if (mounted) {
+      final profile = Provider.of<UserProfile>(context, listen: false);
+      // Update the profile with pending requests
+      for (var request in pendingRequests) {
+        final fromUsername = request['from_username'] ?? request['user_username'];
+        if (fromUsername != null && !profile.friendRequests.contains(fromUsername)) {
+          profile.friendRequests.add(fromUsername);
+        }
+      }
+      setState(() {});
+    }
   }
 
   @override
@@ -310,9 +332,38 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
                     }
                   } else {
                     if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('❌ Gabim: ${result?['error'] ?? 'Nuk u dërgua'}')),
-                      );
+                      final errorMsg = result?['error'] ?? 'Nuk u dërgua';
+                      final status = result?['status'];
+                      
+                      // Check if it's a duplicate request error
+                      if (errorMsg.contains('already exists') || errorMsg.contains('Friend request already exists')) {
+                        if (status == 'pending') {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('ℹ️ Kërkesa është dërguar tashmë tek $username. Prit përgjigjen.'),
+                              backgroundColor: Colors.orange,
+                            ),
+                          );
+                        } else if (status == 'accepted') {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('✅ Ju jeni tashmë miq me $username!'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('ℹ️ Lidhje ekzistuese me $username (Status: ${status ?? 'unknown'})'),
+                              backgroundColor: Colors.orange,
+                            ),
+                          );
+                        }
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('❌ Gabim: $errorMsg')),
+                        );
+                      }
                     }
                   }
                 }

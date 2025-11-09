@@ -945,28 +945,39 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
               TextButton(onPressed: () => Navigator.pop(context), child: const Text('Anulo')),
               ElevatedButton(
                 onPressed: () async {
+                  if (!context.mounted) return;
                   Navigator.pop(context);
+                  
+                  if (!context.mounted) return;
                   // Verify payment with server
                   showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
+                  
                   final verification = await ApiService.post('/payments', {
                     'action': 'verify_payment',
                     'order_id': order['order_id'],
                     'username': AuthService.currentUsername ?? LocalStorageService().getUser()?['username'],
                     'package_id': months == 12 ? 'pro_yearly' : 'pro_monthly',
                   });
+                  
+                  if (!context.mounted) return;
                   Navigator.pop(context);
+                  
                   if (verification != null && verification['success'] == true) {
                     profile.upgradeToPro();
                     profile.addCoins(months == 12 ? 1000 : months == 6 ? 500 : 100);
                     SoundService.playCoin();
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(verification['message'] ?? 'Pro activated!'), backgroundColor: Colors.green),
-                    );
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(verification['message'] ?? 'Pro activated!'), backgroundColor: Colors.green),
+                      );
+                    }
                   } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Verifikimi i pagesës dështoi.'), backgroundColor: Colors.red),
-                    );
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Verifikimi i pagesës dështoi.'), backgroundColor: Colors.red),
+                      );
+                    }
                   }
                 },
                 child: const Text('Kam paguar'),
@@ -1025,8 +1036,10 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                 ),
                 ElevatedButton(
                   onPressed: () async {
+                    if (!context.mounted) return;
                     Navigator.pop(context);
                     
+                    if (!context.mounted) return;
                     // Show loading
                     showDialog(
                       context: context,
@@ -1042,25 +1055,30 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                       'package_id': 'coins_$coins',
                     });
                     
+                    if (!context.mounted) return;
                     Navigator.pop(context); // Close loading
                     
                     if (verification != null && verification['success'] == true) {
                       profile.addCoins(coins);
                       SoundService.playCoin();
                       
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(verification['message'] ?? '🪙 Morët $coins monedha!'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(verification['message'] ?? '🪙 Morët $coins monedha!'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      }
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('❌ Verifikimi i pagesës dështoi. Kontaktoni suportin.'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('❌ Verifikimi i pagesës dështoi. Kontaktoni suportin.'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
                     }
                   },
                   child: const Text('Kam paguar'),
