@@ -138,6 +138,70 @@ class Translations {
     // Notifications
     'ai_moves': {'sq': 'AI Lëvizjet', 'en': 'AI Moves'},
     'ai_moves_desc': {'sq': 'Njoftime për lëvizjet e AI', 'en': 'Notifications for AI moves'},
+    
+    // Game Screen
+    'surrender': {'sq': 'Dorëzohu', 'en': 'Surrender'},
+    'surrender_title': {'sq': 'Dorëzohesh?', 'en': 'Surrender?'},
+    'player_will_win': {'sq': 'Lojtari {player} do të fitojë!', 'en': 'Player {player} will win!'},
+    'new_game': {'sq': 'Lojë e re', 'en': 'New Game'},
+    'human': {'sq': 'Njeri', 'en': 'Human'},
+    'ai_won': {'sq': 'AI fitoi!', 'en': 'AI won!'},
+    'ai_stronger': {'sq': 'AI ishte më i fortë këtë herë!\n\nProvoje përsëri dhe fito!', 'en': 'AI was stronger this time!\n\nTry again and win!'},
+    'player_1_won': {'sq': 'Lojtari 1 fitoi!', 'en': 'Player 1 won!'},
+    'player_2_won': {'sq': 'Lojtari 2 fitoi!', 'en': 'Player 2 won!'},
+    'congratulations': {'sq': 'Urime për fitoren!', 'en': 'Congratulations on winning!'},
+    'mills': {'sq': 'Mills', 'en': 'Mills'},
+    'coins_won': {'sq': 'Monedha fituar', 'en': 'Coins won'},
+    'shilevek_bonus': {'sq': 'Shilevek bonus! 🌟', 'en': 'Shilevek bonus! 🌟'},
+    'total_coins_won': {'sq': 'Total monedha fituar', 'en': 'Total coins won'},
+    
+    // Multiplayer
+    'multiplayer': {'sq': 'Shumëlojtarë', 'en': 'Multiplayer'},
+    'refresh': {'sq': 'Rifresko', 'en': 'Refresh'},
+    'create_game': {'sq': 'Krijo Lojë', 'en': 'Create Game'},
+    'waiting': {'sq': 'Duke pritur', 'en': 'Waiting'},
+    'active': {'sq': 'Aktiv', 'en': 'Active'},
+    'finished': {'sq': 'Përfunduar', 'en': 'Finished'},
+    'your_game': {'sq': 'Loja jote', 'en': 'Your Game'},
+    'join': {'sq': 'Bashkohu', 'en': 'Join'},
+    'status': {'sq': 'Statusi', 'en': 'Status'},
+    'error': {'sq': 'Gabim', 'en': 'Error'},
+    'no_sessions': {'sq': 'Nuk ka lojëra të disponueshme', 'en': 'No available games'},
+    'creating_session': {'sq': 'Duke krijuar lojën...', 'en': 'Creating game...'},
+    
+    // Friends Screen
+    'friends_title': {'sq': '👥 Miqtë', 'en': '👥 Friends'},
+    'invite_friends': {'sq': 'Fto Miq', 'en': 'Invite Friends'},
+    'online': {'sq': '● Online', 'en': '● Online'},
+    'offline': {'sq': '● Offline', 'en': '● Offline'},
+    'challenge': {'sq': 'Sfidoje', 'en': 'Challenge'},
+    'message': {'sq': 'Mesazh', 'en': 'Message'},
+    'remove': {'sq': 'Hiq', 'en': 'Remove'},
+    'wants_to_be_friend': {'sq': 'Dëshiron të bëhet mik', 'en': 'Wants to be friends'},
+    'accepted_request_from': {'sq': 'Pranove kërkesën nga {username}', 'en': 'Accepted request from {username}'},
+    'rejected_request_from': {'sq': 'Refuzove kërkesën nga {username}', 'en': 'Rejected request from {username}'},
+    'add_friend': {'sq': 'Shto mik', 'en': 'Add Friend'},
+    'send_request': {'sq': 'Dërgo kërkesë', 'en': 'Send Request'},
+    'must_login': {'sq': 'Duhet të hysh në llogari', 'en': 'Must login'},
+    'request_sent_to': {'sq': '✅ Kërkesa u dërgua tek {username}', 'en': '✅ Request sent to {username}'},
+    'error_sending': {'sq': '❌ Gabim: {error}', 'en': '❌ Error: {error}'},
+    'not_sent': {'sq': 'Nuk u dërgua', 'en': 'Not sent'},
+    'challenge_sent_to': {'sq': 'Sfidë u dërgua tek {friend}! Prit përgjigjen...', 'en': 'Challenge sent to {friend}! Wait for response...'},
+    'chat_with': {'sq': 'Chat me {friend} do të hapet së shpejti...', 'en': 'Chat with {friend} will open soon...'},
+    'remove_friend_title': {'sq': 'Hiq mik', 'en': 'Remove Friend'},
+    'remove_friend_confirm': {'sq': 'Je i sigurt që dëshiron të heqësh {friend} nga miqtë?', 'en': 'Are you sure you want to remove {friend} from friends?'},
+    'friend_removed': {'sq': '✅ {friend} u hoq nga miqtë', 'en': '✅ {friend} removed from friends'},
+    'error_removing_friend': {'sq': '❌ Gabim gjatë heqjes së mikut', 'en': '❌ Error removing friend'},
+    
+    // Login Screen
+    'continue_as_guest': {'sq': 'Vazhdo si vizitor', 'en': 'Continue as guest'},
+    'or': {'sq': 'OSE', 'en': 'OR'},
+    'registration_successful': {'sq': 'Regjistrimi u krye me sukses!', 'en': 'Registration successful!'},
+    'operation_failed': {'sq': 'Operacioni dështoi', 'en': 'Operation failed'},
+    
+    // Developer Info
+    'about_app': {'sq': 'Rreth aplikacionit', 'en': 'About App'},
+    'technologies': {'sq': 'Teknologjitë', 'en': 'Technologies'},
   };
   
   /// Get current language

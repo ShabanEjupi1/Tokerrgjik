@@ -380,9 +380,45 @@ class _GameScreenState extends State<GameScreen> {
 
 
   void _showWinDialog() {
-    // checkWinCondition() returns true when the OPPONENT of currentPlayer has lost
-    // This means currentPlayer is the WINNER (not the loser)
-    final winner = game.currentPlayer; // Current player is the winner!
+    // checkWinCondition() returns true in these cases:
+    // 1. Opponent has < 3 pieces -> currentPlayer wins
+    // 2. Opponent is blocked -> currentPlayer wins  
+    // 3. CurrentPlayer is blocked -> opponent wins
+    // We need to check WHO actually won
+    
+    int winner;
+    final opponent = game.currentPlayer == 1 ? 2 : 1;
+    
+    // Check if opponent lost (< 3 pieces or blocked)
+    if (game.piecesOnBoard[opponent]! < 3 && game.piecesLeft[opponent]! == 0) {
+      winner = game.currentPlayer; // Current player wins (opponent has < 3 pieces)
+    } else if (game.phase == 'moving' && game.piecesLeft[opponent]! == 0) {
+      // Check if opponent is blocked
+      bool opponentCanMove = false;
+      for (int i = 0; i < 24; i++) {
+        if (game.board[i] == opponent) {
+          if (game.piecesOnBoard[opponent]! == 3) {
+            if (game.board.any((piece) => piece == null)) {
+              opponentCanMove = true;
+              break;
+            }
+          } else {
+            final adjacent = game.connections[i];
+            if (adjacent != null && adjacent.any((pos) => game.board[pos] == null)) {
+              opponentCanMove = true;
+              break;
+            }
+          }
+        }
+      }
+      if (!opponentCanMove) {
+        winner = game.currentPlayer; // Current player wins (opponent is blocked)
+      } else {
+        winner = opponent; // Opponent wins (current player is blocked)
+      }
+    } else {
+      winner = opponent; // Opponent wins (current player is blocked)
+    }
     
     // Check for shilevek bonus (opponent reduced to exactly 3 pieces)
     final loser = winner == 1 ? 2 : 1;

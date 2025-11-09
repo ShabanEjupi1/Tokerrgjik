@@ -124,6 +124,7 @@ export async function handler(event, context) {
             body: JSON.stringify({ 
               success: true,
               message: 'Game session created',
+              session_id: session[0].id,
               session: session[0] 
             }),
           };

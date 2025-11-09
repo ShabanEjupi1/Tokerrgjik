@@ -358,17 +358,29 @@ class ApiService {
   
   /// Send friend request
   static Future<bool> sendFriendRequest(String fromUsername, String toUsername) async {
-    final result = await post('/friends/request', {
-      'from_username': fromUsername,
-      'to_username': toUsername,
+    final result = await post('/friends', {
+      'action': 'send_request',
+      'user_username': fromUsername,
+      'friend_username': toUsername,
     });
-    return result != null;
+    return result != null && result['success'] == true;
   }
   
   /// Accept friend request
   static Future<bool> acceptFriendRequest(String username, String friendUsername) async {
-    final result = await post('/friends/accept', {
-      'username': username,
+    final result = await post('/friends', {
+      'action': 'accept',
+      'user_username': username,
+      'friend_username': friendUsername,
+    });
+    return result != null;
+  }
+  
+  /// Reject friend request
+  static Future<bool> rejectFriendRequest(String username, String friendUsername) async {
+    final result = await post('/friends', {
+      'action': 'reject',
+      'user_username': username,
       'friend_username': friendUsername,
     });
     return result != null;
@@ -376,7 +388,7 @@ class ApiService {
   
   /// Get user's friends list
   static Future<List<Map<String, dynamic>>> getFriends(String username) async {
-    final result = await get('/friends/$username');
+    final result = await get('/friends?username=$username&action=list');
     if (result != null && result['friends'] != null) {
       return List<Map<String, dynamic>>.from(result['friends']);
     }
@@ -385,7 +397,7 @@ class ApiService {
   
   /// Get pending friend requests
   static Future<List<Map<String, dynamic>>> getFriendRequests(String username) async {
-    final result = await get('/friends/$username/requests');
+    final result = await get('/friends?username=$username&action=requests');
     if (result != null && result['requests'] != null) {
       return List<Map<String, dynamic>>.from(result['requests']);
     }

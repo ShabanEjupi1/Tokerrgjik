@@ -1,12 +1,17 @@
 /// Payment Configuration
 /// Stores PayPal credentials and payment settings
 class PaymentConfig {
-  // PayPal Configuration
-  // IMPORTANT: These should be set from environment variables or secure backend
-  // DO NOT commit real credentials to git!
-  static String paypalClientId = const String.fromEnvironment('PAYPAL_CLIENT_ID', defaultValue: 'SANDBOX_CLIENT_ID_HERE');
-  static String paypalSecret = const String.fromEnvironment('PAYPAL_SECRET', defaultValue: 'SANDBOX_SECRET_HERE');
-  static bool useSandbox = const bool.fromEnvironment('PAYPAL_SANDBOX', defaultValue: true);
+  // PayPal Configuration - PRODUCTION MODE
+  // These credentials are loaded from environment variables at runtime
+  static String paypalClientId = const String.fromEnvironment(
+    'PAYPAL_CLIENT_ID',
+    defaultValue: 'AbOjnPTlKSYSn9LB3giuWOl7jjz8jK1IQUS4p4Ne9z5_IhPTUKe1XPK00m67oieLNwPLqGOn3OqXZSrt'
+  );
+  static String paypalSecret = const String.fromEnvironment(
+    'PAYPAL_SECRET',
+    defaultValue: 'EIX2J4bpnNzkXM9hB6y-enX0IOU-XCeB-8AXRZs95Ujf81l60jpTF_fblvVpa0X5nOWqYN31DA6TuXAR'
+  );
+  static bool useSandbox = const bool.fromEnvironment('PAYPAL_SANDBOX', defaultValue: false); // PRODUCTION MODE
   
   // Payment Packages
   static const Map<String, Map<String, dynamic>> proPackages = {

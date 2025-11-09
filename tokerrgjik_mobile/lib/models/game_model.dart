@@ -335,9 +335,9 @@ class GameModel {
           }
         }
       }
-      // If current player can't move, switch to opponent so they're declared winner
+      // FIXED: If current player can't move, they lose (opponent wins)
+      // DO NOT switch player - currentPlayer is the one who is blocked (loser)
       if (!canMove) {
-        switchPlayer();
         return true;
       }
     }
