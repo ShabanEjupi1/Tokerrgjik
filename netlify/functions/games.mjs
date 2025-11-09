@@ -50,6 +50,7 @@ export async function handler(event, context) {
         const { host_username, guest_username, is_private } = data;
         
         if (!host_username) {
+          console.error('❌ CREATE SESSION FAILED: Missing host_username');
           return {
             statusCode: 400,
             headers,
@@ -57,45 +58,68 @@ export async function handler(event, context) {
           };
         }
         
+        console.log(`🎮 Creating game session for host: ${host_username}`);
+        
         // Ensure host user exists in users table
         try {
           const existingUser = await sql`
-            SELECT username FROM users WHERE username = ${host_username}
+            SELECT username FROM users WHERE username = ${host_username} LIMIT 1
           `;
           
           if (existingUser.length === 0) {
+            console.error(`❌ Host user not found: ${host_username}`);
             return {
               statusCode: 404,
               headers,
-              body: JSON.stringify({ error: 'Host user not found. Please login first.' }),
+              body: JSON.stringify({ 
+                error: 'Host user not found. Please login first.',
+                debug: { host_username }
+              }),
             };
           }
+          
+          console.log(`✅ Host user verified: ${host_username}`);
           
           // Verify guest user exists if provided
           if (guest_username) {
             const guestExists = await sql`
-              SELECT username FROM users WHERE username = ${guest_username}
+              SELECT username FROM users WHERE username = ${guest_username} LIMIT 1
             `;
             
             if (guestExists.length === 0) {
+              console.error(`❌ Guest user not found: ${guest_username}`);
               return {
                 statusCode: 404,
                 headers,
                 body: JSON.stringify({ error: 'Guest user not found' }),
               };
             }
+            console.log(`✅ Guest user verified: ${guest_username}`);
           }
         } catch (userError) {
-          console.error('Error checking user existence:', userError);
+          console.error('❌ Error checking user existence:', userError);
           return {
             statusCode: 500,
             headers,
-            body: JSON.stringify({ error: 'Failed to verify users', details: userError.message }),
+            body: JSON.stringify({ 
+              error: 'Failed to verify users', 
+              details: userError.message,
+              hint: 'Database might not be properly configured'
+            }),
           };
         }
         
         // Create game session with proper initial state
         try {
+          console.log('📝 Inserting game session into database...');
+          
+          const boardState = JSON.stringify({
+            board: [],
+            phase: 'placing',
+            turn: 1,
+            pieces: { host: [], guest: [] }
+          });
+          
           const session = await sql`
             INSERT INTO game_sessions (
               host_username, 
@@ -110,7 +134,7 @@ export async function handler(event, context) {
               ${host_username}, 
               ${guest_username || null}, 
               'waiting', 
-              '{"board": [], "phase": "placing", "turn": 1}',
+              ${boardState},
               ${host_username}, 
               NOW(),
               NOW()
@@ -118,24 +142,35 @@ export async function handler(event, context) {
             RETURNING *
           `;
           
+          console.log(`✅ Game session created successfully! ID: ${session[0].id}`);
+          
           return {
             statusCode: 201,
             headers,
             body: JSON.stringify({ 
               success: true,
-              message: 'Game session created',
+              message: 'Game session created successfully',
               session_id: session[0].id,
               session: session[0] 
             }),
           };
         } catch (sessionError) {
-          console.error('Error creating game session:', sessionError);
+          console.error('❌ Error creating game session:', sessionError);
+          console.error('Error details:', {
+            message: sessionError.message,
+            code: sessionError.code,
+            detail: sessionError.detail
+          });
+          
           return {
             statusCode: 500,
             headers,
             body: JSON.stringify({ 
               error: 'Failed to create game session', 
-              details: sessionError.message 
+              details: sessionError.message,
+              hint: sessionError.code === '42P01' 
+                ? 'Table game_sessions does not exist. Run setup-database.sql first.'
+                : 'Check database connection and table structure'
             }),
           };
         }
@@ -145,33 +180,136 @@ export async function handler(event, context) {
       if (action === 'join_session') {
         const { session_id, username } = data;
         
-        await sql`
-          UPDATE game_sessions
-          SET guest_username = ${username}, status = 'active'
-          WHERE id = ${session_id}
-        `;
+        if (!session_id || !username) {
+          console.error('❌ JOIN SESSION FAILED: Missing required fields');
+          return {
+            statusCode: 400,
+            headers,
+            body: JSON.stringify({ error: 'Missing session_id or username' }),
+          };
+        }
         
-        return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify({ message: 'Joined session', session_id }),
-        };
+        console.log(`🎮 User ${username} attempting to join session ${session_id}`);
+        
+        try {
+          // Check if session exists and is available
+          const existingSession = await sql`
+            SELECT * FROM game_sessions 
+            WHERE id = ${session_id} 
+            LIMIT 1
+          `;
+          
+          if (existingSession.length === 0) {
+            console.error(`❌ Session ${session_id} not found`);
+            return {
+              statusCode: 404,
+              headers,
+              body: JSON.stringify({ error: 'Game session not found' }),
+            };
+          }
+          
+          const session = existingSession[0];
+          
+          // Validate session status
+          if (session.status !== 'waiting') {
+            console.error(`❌ Session ${session_id} is not available (status: ${session.status})`);
+            return {
+              statusCode: 400,
+              headers,
+              body: JSON.stringify({ 
+                error: 'Game session is not available',
+                status: session.status 
+              }),
+            };
+          }
+          
+          // Prevent host from joining own game
+          if (session.host_username === username) {
+            console.error(`❌ Host ${username} cannot join own game`);
+            return {
+              statusCode: 400,
+              headers,
+              body: JSON.stringify({ error: 'Cannot join your own game session' }),
+            };
+          }
+          
+          // Update session with guest
+          const updated = await sql`
+            UPDATE game_sessions
+            SET guest_username = ${username}, 
+                status = 'active',
+                updated_at = NOW()
+            WHERE id = ${session_id}
+            RETURNING *
+          `;
+          
+          console.log(`✅ User ${username} joined session ${session_id} successfully`);
+          
+          return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify({ 
+              success: true,
+              message: 'Successfully joined game session', 
+              session_id,
+              session: updated[0]
+            }),
+          };
+        } catch (joinError) {
+          console.error('❌ Error joining session:', joinError);
+          return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({ 
+              error: 'Failed to join game session',
+              details: joinError.message
+            }),
+          };
+        }
       }
 
       // LIST AVAILABLE SESSIONS (POST support)
       if (action === 'list_sessions') {
-        const sessions = await sql`
-          SELECT * FROM game_sessions 
-          WHERE status = 'waiting'
-          ORDER BY created_at DESC
-          LIMIT 20
-        `;
-        
-        return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify({ sessions }),
-        };
+        try {
+          console.log('📋 Fetching available game sessions...');
+          
+          const sessions = await sql`
+            SELECT 
+              gs.*,
+              u.level as host_level,
+              u.total_wins as host_wins
+            FROM game_sessions gs
+            JOIN users u ON gs.host_username = u.username
+            WHERE gs.status = 'waiting'
+            ORDER BY gs.created_at DESC
+            LIMIT 20
+          `;
+          
+          console.log(`✅ Found ${sessions.length} available sessions`);
+          
+          return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify({ 
+              success: true,
+              count: sessions.length,
+              sessions 
+            }),
+          };
+        } catch (listError) {
+          console.error('❌ Error listing sessions:', listError);
+          return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({ 
+              error: 'Failed to list game sessions',
+              details: listError.message,
+              hint: listError.code === '42P01' 
+                ? 'Table game_sessions does not exist. Run setup-database.sql first.'
+                : null
+            }),
+          };
+        }
       }
 
       // MAKE MOVE
@@ -299,39 +437,98 @@ export async function handler(event, context) {
       if (action === 'get_state') {
         const sessionId = params.get('session_id');
         
-        const session = await sql`
-          SELECT * FROM game_sessions WHERE id = ${sessionId}
-        `;
-        
-        if (session.length === 0) {
+        if (!sessionId) {
           return {
-            statusCode: 404,
+            statusCode: 400,
             headers,
-            body: JSON.stringify({ error: 'Session not found' }),
+            body: JSON.stringify({ error: 'Missing session_id parameter' }),
           };
         }
         
-        return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify(session[0]),
-        };
+        try {
+          const session = await sql`
+            SELECT 
+              gs.*,
+              h.level as host_level,
+              h.avatar_url as host_avatar,
+              g.level as guest_level,
+              g.avatar_url as guest_avatar
+            FROM game_sessions gs
+            LEFT JOIN users h ON gs.host_username = h.username
+            LEFT JOIN users g ON gs.guest_username = g.username
+            WHERE gs.id = ${sessionId}
+            LIMIT 1
+          `;
+          
+          if (session.length === 0) {
+            return {
+              statusCode: 404,
+              headers,
+              body: JSON.stringify({ error: 'Session not found' }),
+            };
+          }
+          
+          return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify({ 
+              success: true,
+              session: session[0] 
+            }),
+          };
+        } catch (stateError) {
+          console.error('❌ Error getting session state:', stateError);
+          return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({ 
+              error: 'Failed to get session state',
+              details: stateError.message
+            }),
+          };
+        }
       }
 
       // LIST AVAILABLE SESSIONS
       if (action === 'list_sessions') {
-        const sessions = await sql`
-          SELECT * FROM game_sessions 
-          WHERE status = 'waiting'
-          ORDER BY created_at DESC
-          LIMIT 20
-        `;
-        
-        return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify({ sessions }),
-        };
+        try {
+          console.log('📋 Fetching available game sessions (GET)...');
+          
+          const sessions = await sql`
+            SELECT 
+              gs.*,
+              u.level as host_level,
+              u.total_wins as host_wins,
+              u.avatar_url as host_avatar
+            FROM game_sessions gs
+            JOIN users u ON gs.host_username = u.username
+            WHERE gs.status = 'waiting'
+            ORDER BY gs.created_at DESC
+            LIMIT 20
+          `;
+          
+          console.log(`✅ Found ${sessions.length} available sessions`);
+          
+          return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify({ 
+              success: true,
+              count: sessions.length,
+              sessions 
+            }),
+          };
+        } catch (listError) {
+          console.error('❌ Error listing sessions:', listError);
+          return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({ 
+              error: 'Failed to list game sessions',
+              details: listError.message
+            }),
+          };
+        }
       }
 
       // GET GAME HISTORY (original functionality)

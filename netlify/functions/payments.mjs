@@ -80,10 +80,15 @@ export async function handler(event, context) {
 
       // Step 1: Get PayPal Access Token
       console.log('Requesting PayPal access token...');
+      
+      // Create base64 encoded credentials for Basic Auth
+      // Note: btoa() works in serverless edge functions, Buffer.from() doesn't
+      const credentials = btoa(`${PAYPAL_CLIENT_ID}:${PAYPAL_SECRET}`);
+      
       const authResponse = await fetch(`${PAYPAL_API_URL}/v1/oauth2/token`, {
         method: 'POST',
         headers: {
-          'Authorization': 'Basic ' + Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_SECRET}`).toString('base64'),
+          'Authorization': `Basic ${credentials}`,
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: 'grant_type=client_credentials',

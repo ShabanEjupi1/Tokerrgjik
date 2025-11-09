@@ -403,7 +403,7 @@ class _GameScreenState extends State<GameScreen> {
               break;
             }
           } else {
-            final adjacent = game.connections[i];
+            final adjacent = GameModel.connections[i];
             if (adjacent != null && adjacent.any((pos) => game.board[pos] == null)) {
               opponentCanMove = true;
               break;

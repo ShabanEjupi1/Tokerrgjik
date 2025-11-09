@@ -5,11 +5,12 @@ const sql = neon(process.env.NEON_DATABASE_URL || process.env.NETLIFY_DATABASE_U
 
 // Email configuration - uses environment variables
 const EMAIL_CONFIG = {
-  FROM_EMAIL: process.env.FROM_EMAIL || 'noreply@tokerrgjik.com',
+  FROM_EMAIL: process.env.FROM_EMAIL || process.env.GMAIL_USER || 'noreply@tokerrgjik.com',
   FROM_NAME: 'Tokerrgjik Game',
   SMTP_HOST: process.env.SMTP_HOST || 'smtp.gmail.com',
-  SMTP_PORT: parseInt(process.env.SMTP_PORT) || 587,
+  SMTP_PORT: parseInt(process.env.SMTP_PORT || '587'),
   APP_PASSWORD: process.env.APP_PASSWORD,
+  GMAIL_USER: process.env.GMAIL_USER,
 };
 
 // Create email transporter with Gmail SMTP
@@ -28,12 +29,15 @@ const createTransporter = () => {
   });
 
   try {
+    // Use GMAIL_USER if available, otherwise use FROM_EMAIL
+    const authUser = EMAIL_CONFIG.GMAIL_USER || EMAIL_CONFIG.FROM_EMAIL;
+    
     return nodemailer.createTransporter({
       host: EMAIL_CONFIG.SMTP_HOST,
       port: EMAIL_CONFIG.SMTP_PORT,
       secure: false, // Use TLS
       auth: {
-        user: EMAIL_CONFIG.FROM_EMAIL,
+        user: authUser,
         pass: EMAIL_CONFIG.APP_PASSWORD,
       },
       tls: {
