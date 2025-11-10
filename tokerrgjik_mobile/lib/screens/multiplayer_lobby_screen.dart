@@ -160,21 +160,33 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
 
       try {
         final sessions = await ApiService.getActiveSessions();
+        
+        // Debug: Print all sessions
+        print('📋 Polling sessions. Total available: ${sessions.length}');
+        print('🔍 Looking for session: $sessionId');
+        
         final session = sessions.firstWhere(
-          (s) => s['session_id'].toString() == sessionId || s['id'].toString() == sessionId,
+          (s) {
+            final sId = (s['id'] ?? s['session_id'] ?? '').toString();
+            print('  Checking session: $sId (status: ${s['status']})');
+            return sId == sessionId;
+          },
           orElse: () => {},
         );
 
         if (session.isEmpty) {
+          print('❌ Session not found in active sessions list');
           timer.cancel();
           if (mounted && Navigator.of(context).canPop()) {
             Navigator.of(context).pop(); // Close waiting dialog
-            _showErrorDialog('Sesioni u mbyll ose nuk u gjet.');
+            _showErrorDialog('Sesioni u mbyll, skadoi ose nuk u gjet. Ju lutem krijoni një lojë të re ose bashkohuni në një tjetër.');
           }
           return;
         }
 
         final status = session['status'] ?? 'waiting';
+        print('📊 Session status: $status');
+        
         if (status == 'active' || status == 'in_progress') {
           // Both players have joined - start the game!
           timer.cancel();

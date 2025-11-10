@@ -207,7 +207,26 @@ CREATE INDEX IF NOT EXISTS idx_transactions_username ON transactions(username);
 CREATE INDEX IF NOT EXISTS idx_transactions_status ON transactions(status);
 
 -- ============================================
--- 10. HEALTH CHECK TABLE
+-- 10. CHALLENGES TABLE (Friend Challenges)
+-- ============================================
+CREATE TABLE IF NOT EXISTS challenges (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    from_username VARCHAR(50) NOT NULL REFERENCES users(username) ON DELETE CASCADE,
+    to_username VARCHAR(50) NOT NULL REFERENCES users(username) ON DELETE CASCADE,
+    session_id UUID REFERENCES game_sessions(id) ON DELETE SET NULL,
+    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'declined', 'expired')),
+    created_at TIMESTAMP DEFAULT NOW(),
+    responded_at TIMESTAMP
+);
+
+-- Create indexes for challenges queries
+CREATE INDEX IF NOT EXISTS idx_challenges_from ON challenges(from_username);
+CREATE INDEX IF NOT EXISTS idx_challenges_to ON challenges(to_username);
+CREATE INDEX IF NOT EXISTS idx_challenges_status ON challenges(status);
+CREATE INDEX IF NOT EXISTS idx_challenges_created ON challenges(created_at DESC);
+
+-- ============================================
+-- 11. HEALTH CHECK TABLE
 -- ============================================
 CREATE TABLE IF NOT EXISTS health_check (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -304,6 +323,7 @@ BEGIN
     RAISE NOTICE '   - user_achievements';
     RAISE NOTICE '   - statistics';
     RAISE NOTICE '   - transactions';
+    RAISE NOTICE '   - challenges';
     RAISE NOTICE '   - health_check';
     RAISE NOTICE '🔧 Triggers and functions configured';
     RAISE NOTICE '🎯 Sample achievements inserted';

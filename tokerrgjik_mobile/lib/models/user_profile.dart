@@ -387,15 +387,78 @@ class UserProfile extends ChangeNotifier {
     notifyListeners();
   }
   
-  void acceptFriendRequest(String username) {
+  void acceptFriendRequest(String username) async {
+    // Remove from local list first
     _friendRequests.remove(username);
+    
+    // Call backend API to accept the request
+    try {
+      final currentUsername = _username;
+      if (currentUsername != null) {
+        await ApiService.acceptFriendRequest(currentUsername, username);
+        
+        // Reload friends list from server to sync
+        await loadFriendsFromServer();
+        
+        // Reload requests to remove accepted ones
+        await loadFriendRequestsFromServer();
+      }
+    } catch (e) {
+      print('Error accepting friend request: $e');
+    }
+    
+    // Add to friends locally
     addFriend(username);
   }
   
-  void declineFriendRequest(String username) {
+  void declineFriendRequest(String username) async {
     _friendRequests.remove(username);
+    
+    // Call backend API to reject the request
+    try {
+      final currentUsername = _username;
+      if (currentUsername != null) {
+        await ApiService.rejectFriendRequest(currentUsername, username);
+        
+        // Reload requests to remove declined ones
+        await loadFriendRequestsFromServer();
+      }
+    } catch (e) {
+      print('Error declining friend request: $e');
+    }
+    
     saveProfile();
     notifyListeners();
+  }
+  
+  // Load friends from server
+  Future<void> loadFriendsFromServer() async {
+    try {
+      final currentUsername = _username;
+      if (currentUsername != null && currentUsername.isNotEmpty) {
+        final friendsList = await ApiService.getFriends(currentUsername);
+        _friends = friendsList.map((f) => f['username'].toString()).toList();
+        saveProfile();
+        notifyListeners();
+      }
+    } catch (e) {
+      print('Error loading friends from server: $e');
+    }
+  }
+  
+  // Load friend requests from server
+  Future<void> loadFriendRequestsFromServer() async {
+    try {
+      final currentUsername = _username;
+      if (currentUsername != null && currentUsername.isNotEmpty) {
+        final requests = await ApiService.getFriendRequests(currentUsername);
+        _friendRequests = requests.map((r) => r['from_username'].toString()).toList();
+        saveProfile();
+        notifyListeners();
+      }
+    } catch (e) {
+      print('Error loading friend requests from server: $e');
+    }
   }
   
   // Theme management

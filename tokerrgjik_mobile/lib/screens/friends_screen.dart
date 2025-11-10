@@ -387,17 +387,56 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
     SoundService.playClick();
   }
 
-  void _challengeFriend(String friend) {
-    // Navigate to multiplayer lobby to create a game session
+  void _challengeFriend(String friend) async {
+    final currentUsername = AuthService.currentUsername;
+    if (currentUsername == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ju lutem hyni në llogari për të dërguar sfidë')),
+      );
+      return;
+    }
+
     SoundService.playClick();
-    Navigator.pushNamed(context, '/multiplayer_lobby').then((_) {
-      // After returning from lobby, show message
+    
+    try {
+      // Create a game session first
+      final sessionResult = await ApiService.createGameSession(hostUsername: currentUsername);
+      
+      if (sessionResult != null && sessionResult['session_id'] != null) {
+        final sessionId = sessionResult['session_id'].toString();
+        
+        // Send challenge with session ID
+        final challengeResult = await ApiService.post('/challenges', {
+          'action': 'send',
+          'from_username': currentUsername,
+          'to_username': friend,
+          'session_id': sessionId,
+        });
+        
+        if (challengeResult != null && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('✅ Sfida u dërgua tek $friend! Prit përgjigjen...'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else {
+          throw Exception('Failed to send challenge');
+        }
+      } else {
+        throw Exception('Failed to create session');
+      }
+    } catch (e) {
+      print('Error sending challenge: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Sfido $friend duke krijuar një lojë në sallën shumëlojtarësh!')),
+          SnackBar(
+            content: Text('❌ Nuk u arrit të dërgohet sfida. Provoni përsëri.'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
-    });
+    }
   }
 
   void _openChat(String friend) {
