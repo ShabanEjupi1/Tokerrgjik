@@ -140,8 +140,6 @@ class LanguageService extends ChangeNotifier {
       'no_license_limited': 'No License - Limited Features',
       'support': 'Mbështetje',
       'choose_color': 'Zgjedh ngjyrën',
-      'save': 'Ruaj',
-      'cancel': 'Anulo',
       'save_and_buy': 'Ruaj dhe Blej',
       'not_enough_coins': 'Nuk ke mjaftueshëm monedha! Nevojiten {cost} monedha.',
       'color_changed': 'Ngjyra u ndryshua! (-{cost} monedha)',
@@ -175,7 +173,6 @@ class LanguageService extends ChangeNotifier {
       'logged_out': 'U shkëputët me sukses',
       'buy_custom_theme': 'Blej Temë të Personalizuar',
       'buy_custom_theme_message': 'Dëshiron të blesh temën e personalizuar për {cost} monedha?\n\nKjo do të të lejojë të zgjedhësh ngjyrat e tua të preferuara!',
-      'buy': 'Blej',
       
       // Game
       'your_turn': 'Radha jote',
@@ -321,8 +318,6 @@ class LanguageService extends ChangeNotifier {
       'no_license_limited': 'No License - Limited Features',
       'support': 'Support',
       'choose_color': 'Choose Color',
-      'save': 'Save',
-      'cancel': 'Cancel',
       'save_and_buy': 'Save and Buy',
       'not_enough_coins': 'Not enough coins! Need {cost} coins.',
       'color_changed': 'Color changed! (-{cost} coins)',
@@ -356,7 +351,6 @@ class LanguageService extends ChangeNotifier {
       'logged_out': 'Logged out successfully',
       'buy_custom_theme': 'Buy Custom Theme',
       'buy_custom_theme_message': 'Do you want to buy the custom theme for {cost} coins?\n\nThis will allow you to choose your preferred colors!',
-      'buy': 'Buy',
       
       // Game
       'your_turn': 'Your turn',
