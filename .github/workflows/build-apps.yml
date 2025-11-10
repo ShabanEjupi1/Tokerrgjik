@@ -96,8 +96,7 @@ jobs:
       
       - name: Analyze Dart code
         working-directory: tokerrgjik_mobile
-        run: flutter analyze --no-fatal-infos
-        continue-on-error: true
+        run: flutter analyze --no-fatal-infos || true
       
       - name: Build APK (Release)
         working-directory: tokerrgjik_mobile
