@@ -1,9 +1,8 @@
 [build]
   # Only install function dependencies - Flutter web build done locally
-  command = "cd ../netlify/functions && npm install"
+  command = "cd netlify/functions && npm install"
   publish = "build/web"
-  functions = "../netlify/functions"
-  base = "tokerrgjik_mobile"
+  functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "20"
@@ -15,22 +14,24 @@
   to = "/.netlify/functions/:splat"
   status = 200
 
+# SPA fallback - exclude function paths
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+  force = false
 
 [functions]
   node_bundler = "esbuild"
 
 [context.production]
-  command = "cd ../netlify/functions && npm install"
+  command = "cd netlify/functions && npm install"
 
 [context.deploy-preview]
-  command = "cd ../netlify/functions && npm install"
+  command = "cd netlify/functions && npm install"
 
 [context.branch-deploy]
-  command = "cd ../netlify/functions && npm install"
+  command = "cd netlify/functions && npm install"
 
 # Headers for security and caching
 [[headers]]

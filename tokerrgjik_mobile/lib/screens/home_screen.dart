@@ -342,29 +342,36 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildFooter() {
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        children: const [
-          Text(
-            'Zhvilluar nga',
-            style: TextStyle(color: Colors.white60, fontSize: 14),
-          ),
-          SizedBox(height: 5),
-          Text(
-            'DogaCode Solutions',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+    return GestureDetector(
+      onTap: () {
+        // Navigate to settings screen at version/contact section
+        Navigator.pushNamed(context, '/settings');
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          children: const [
+            Text(
+              'Zhvilluar nga',
+              style: TextStyle(color: Colors.white60, fontSize: 14),
             ),
-          ),
-          SizedBox(height: 5),
-          Text(
-            'Lojë tradicionale shqiptare - 2025',
-            style: TextStyle(color: Colors.white60, fontSize: 14),
-          ),
-        ],
+            SizedBox(height: 5),
+            Text(
+              'Dogacode solutions',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                decoration: TextDecoration.underline,
+              ),
+            ),
+            SizedBox(height: 5),
+            Text(
+              'Lojë tradicionale shqiptare - 2025',
+              style: TextStyle(color: Colors.white60, fontSize: 14),
+            ),
+          ],
+        ),
       ),
     );
   }

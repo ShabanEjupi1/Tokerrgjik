@@ -80,18 +80,13 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
       );
       
       if (result != null && result['session_id'] != null && mounted) {
+        final sessionId = result['session_id'].toString();
         setState(() {
           _isCreatingSession = false;
         });
 
-        // Navigate to game screen as host
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => const GameScreen(
-              mode: 'online',
-            ),
-          ),
-        );
+        // Show waiting dialog until another player joins
+        _showWaitingDialog(sessionId, isHost: true);
       } else {
         throw Exception('Failed to create session');
       }
@@ -101,19 +96,113 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
         setState(() {
           _isCreatingSession = false;
         });
-        _showErrorDialog('Failed to create game session. Please try again.');
+        _showErrorDialog('Nuk u arrit të krijohet sesioni i lojës. Ju lutem provoni përsëri.');
       }
     }
   }
 
+  void _showWaitingDialog(String sessionId, {required bool isHost}) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => WillPopScope(
+        onWillPop: () async => false,
+        child: AlertDialog(
+          title: Row(
+            children: const [
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              SizedBox(width: 16),
+              Text('Duke pritur...'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                isHost 
+                    ? 'Duke pritur që një lojtarë të bashkohet...'
+                    : 'Duke u lidhur me lojtarin tjetër...',
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Kodi i sesionit:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                sessionId,
+                style: const TextStyle(fontSize: 18, color: Colors.teal),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Anulo'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    // Poll session status every 2 seconds
+    Timer.periodic(const Duration(seconds: 2), (timer) async {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+
+      try {
+        final sessions = await ApiService.getActiveSessions();
+        final session = sessions.firstWhere(
+          (s) => s['session_id'].toString() == sessionId || s['id'].toString() == sessionId,
+          orElse: () => {},
+        );
+
+        if (session.isEmpty) {
+          timer.cancel();
+          if (mounted && Navigator.of(context).canPop()) {
+            Navigator.of(context).pop(); // Close waiting dialog
+            _showErrorDialog('Sesioni u mbyll ose nuk u gjet.');
+          }
+          return;
+        }
+
+        final status = session['status'] ?? 'waiting';
+        if (status == 'active' || status == 'in_progress') {
+          // Both players have joined - start the game!
+          timer.cancel();
+          if (mounted && Navigator.of(context).canPop()) {
+            Navigator.of(context).pop(); // Close waiting dialog
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const GameScreen(
+                  mode: 'online',
+                ),
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        print('Error polling session: $e');
+      }
+    });
+  }
+
   Future<void> _joinSession(String sessionId, String hostUsername) async {
     if (_currentUsername == null) {
-      _showErrorDialog('Please log in to join a game');
+      _showErrorDialog('Ju lutem hyni në llogari për të bashkuar në një lojë');
       return;
     }
 
     if (_currentUsername == hostUsername) {
-      _showErrorDialog('You cannot join your own game session');
+      _showErrorDialog('Nuk mund të bashkoheni në lojën tuaj');
       return;
     }
 
@@ -121,20 +210,14 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
       final result = await ApiService.joinGameSession(sessionId, _currentUsername!);
       
       if (result != null && mounted) {
-        // Navigate to game screen as guest
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => const GameScreen(
-              mode: 'online',
-            ),
-          ),
-        );
+        // Show brief waiting dialog then navigate to game
+        _showWaitingDialog(sessionId, isHost: false);
       } else {
-        _showErrorDialog('Failed to join session. It may be full or no longer available.');
+        _showErrorDialog('Nuk u arrit të bashkoheni në sesion. Mund të jetë plot ose jo më në dispozicion.');
       }
     } catch (e) {
       print('Error joining session: $e');
-      _showErrorDialog('Failed to join game session. Please try again.');
+      _showErrorDialog('Nuk u arrit të bashkoheni në sesionin e lojës. Ju lutem provoni përsëri.');
     }
   }
 
@@ -142,7 +225,7 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Error'),
+        title: const Text('Gabim'),
         content: Text(message),
         actions: [
           TextButton(
@@ -158,13 +241,13 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Multiplayer'),
+        title: const Text('Shumëlojtarësh'),
         backgroundColor: Colors.teal, // Changed from deepPurple
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _loadAvailableSessions,
-            tooltip: 'Refresh',
+            tooltip: 'Rifresko',
           ),
         ],
       ),
@@ -181,7 +264,7 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
                 child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
               )
             : const Icon(Icons.add),
-        label: Text(_isCreatingSession ? 'Creating...' : 'Create game'),
+        label: Text(_isCreatingSession ? 'Duke krijuar...' : 'Krijo lojë'),
       ),
     );
   }
@@ -199,7 +282,7 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'No games available',
+              'Nuk ka lojëra të disponueshme',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -208,7 +291,7 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Create a new game to get started!',
+              'Krijo një lojë të re për të filluar!',
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey[500],
@@ -231,25 +314,25 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
 
   Widget _buildSessionCard(Map<String, dynamic> session) {
     final sessionId = session['id'] ?? session['session_id'] ?? 'unknown';
-    final hostUsername = session['host_username'] ?? 'Unknown';
+    final hostUsername = session['host_username'] ?? 'Pa emër';
     final status = session['status'] ?? 'waiting';
     final createdAt = session['created_at'];
     
     // Parse created time
-    String timeAgo = 'Just now';
+    String timeAgo = 'Sapo tani';
     if (createdAt != null) {
       try {
         final createdTime = DateTime.parse(createdAt);
         final difference = DateTime.now().difference(createdTime);
         if (difference.inMinutes < 1) {
-          timeAgo = 'Just now';
+          timeAgo = 'Sapo tani';
         } else if (difference.inMinutes < 60) {
-          timeAgo = '${difference.inMinutes}m ago';
+          timeAgo = '${difference.inMinutes} min më parë';
         } else {
-          timeAgo = '${difference.inHours}h ago';
+          timeAgo = '${difference.inHours} orë më parë';
         }
       } catch (e) {
-        // Keep default "Just now"
+        // Keep default "Sapo tani"
       }
     }
 
@@ -273,7 +356,7 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
           ),
         ),
         title: Text(
-          'Host: $hostUsername',
+          'Pritës: $hostUsername',
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -283,10 +366,10 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 4),
-            Text('Status: ${_formatStatus(status)}'),
+            Text('Statusi: ${_formatStatus(status)}'),
             const SizedBox(height: 2),
             Text(
-              'Created $timeAgo',
+              'Krijuar $timeAgo',
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.grey[600],
@@ -296,7 +379,7 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
         ),
         trailing: isMySession
             ? Chip(
-                label: const Text('Your Game'),
+                label: const Text('Loja juaj'),
                 backgroundColor: Colors.green[100],
                 labelStyle: const TextStyle(
                   color: Colors.green,
@@ -306,7 +389,7 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
             : ElevatedButton.icon(
                 onPressed: () => _joinSession(sessionId.toString(), hostUsername),
                 icon: const Icon(Icons.login, size: 18),
-                label: const Text('Join'),
+                label: const Text('Bashkohu'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.teal, // Changed from deepPurple
                   foregroundColor: Colors.white,
@@ -322,11 +405,12 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
   String _formatStatus(String status) {
     switch (status.toLowerCase()) {
       case 'waiting':
-        return '🟡 Waiting for player';
+        return '🟡 Duke pritur lojtarë';
       case 'active':
-        return '🟢 In progress';
+      case 'in_progress':
+        return '🟢 Në progres';
       case 'finished':
-        return '⚪ Finished';
+        return '⚪ Përfunduar';
       default:
         return status;
     }

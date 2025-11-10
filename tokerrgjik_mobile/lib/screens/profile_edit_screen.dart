@@ -95,22 +95,40 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('✅ Profile updated successfully!'),
+                content: Text('✅ Profili u përditësua me sukses!'),
                 backgroundColor: Colors.green,
               ),
             );
             Navigator.pop(context, true); // Return true to indicate success
           }
         } else {
-          throw Exception(result?['message'] ?? 'Update failed');
+          // Check if username is taken or server error
+          final errorMsg = result?['error'] ?? result?['message'] ?? 'Përditësimi dështoi';
+          
+          if (errorMsg.contains('exists') || errorMsg.contains('taken') || errorMsg.contains('already')) {
+            throw Exception('Emri i përdoruesit është i zënë. Ju lutem zgjidhni një tjetër.');
+          } else {
+            throw Exception('Gabim në server: $errorMsg');
+          }
+        }
+      } else {
+        // No username change, just update other fields if needed
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Nuk ka ndryshime për të ruajtur.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
         }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e'),
+            content: Text(e.toString().replaceAll('Exception: ', '')),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
           ),
         );
       }

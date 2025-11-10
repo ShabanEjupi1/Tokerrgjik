@@ -111,6 +111,7 @@ class ApiService {
     try {
       final url = '$baseUrl$endpoint';
       print('API POST: $url');
+      print('   Payload: ${json.encode(data)}');
       
       // Use Dio for web to handle CORS better
       if (kIsWeb) {
@@ -123,12 +124,16 @@ class ApiService {
           ),
         );
         
+        print('   Response Status: ${response.statusCode}');
+        
         if (response.statusCode == 200 || response.statusCode == 201) {
           return response.data is String 
               ? json.decode(response.data) 
               : response.data;
         } else if (response.statusCode == 404) {
-          print('⚠️ API endpoint not found (404): $endpoint');
+          print('! API endpoint not found (404): $endpoint');
+          print('   Full URL: $url');
+          print('   Response: ${response.data}');
           print('   Using local storage fallback.');
           return null;
         } else {

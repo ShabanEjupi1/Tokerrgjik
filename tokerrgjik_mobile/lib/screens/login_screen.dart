@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
+import '../models/user_profile.dart';
 import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -40,15 +42,22 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (result != null && result['success'] == true) {
       if (_isLoginMode) {
-        // Login successful - navigate to home
+        // Login successful - sync username with UserProfile
+        final profile = Provider.of<UserProfile>(context, listen: false);
+        await profile.syncUsernameFromAuth();
+        
+        // Navigate to home
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const HomeScreen()),
         );
       } else {
-        // Registration successful - show message and switch to login
+        // Registration successful - sync username and show message
+        final profile = Provider.of<UserProfile>(context, listen: false);
+        await profile.syncUsernameFromAuth();
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(result['message'] ?? 'Registration successful!'),
+            content: Text(result['message'] ?? 'Regjistrimi u krye me sukses!'),
             backgroundColor: Colors.green,
           ),
         );
@@ -57,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result?['message'] ?? 'Operation failed'),
+          content: Text(result?['error'] ?? result?['message'] ?? 'Operacioni dështoi'),
           backgroundColor: Colors.red,
         ),
       );
@@ -67,6 +76,13 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleGuestLogin() async {
     setState(() => _isLoading = true);
     await AuthService.loginAsGuest();
+    
+    // Sync username with UserProfile for guest too
+    if (mounted) {
+      final profile = Provider.of<UserProfile>(context, listen: false);
+      await profile.syncUsernameFromAuth();
+    }
+    
     setState(() => _isLoading = false);
 
     if (!mounted) return;

@@ -329,6 +329,17 @@ class UserProfile extends ChangeNotifier {
     notifyListeners();
   }
   
+  // Sync username from AuthService (called after login/register)
+  Future<void> syncUsernameFromAuth() async {
+    final authUsername = AuthService.currentUsername;
+    if (authUsername != null && authUsername != _username) {
+      _username = authUsername;
+      await saveProfile();
+      notifyListeners();
+      print('✅ Username synced from AuthService: $_username');
+    }
+  }
+  
   // Customization
   void updateTheme({
     String? theme,

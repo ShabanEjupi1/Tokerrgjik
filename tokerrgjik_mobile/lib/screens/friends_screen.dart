@@ -388,19 +388,24 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
   }
 
   void _challengeFriend(String friend) {
-    // In real implementation, this would send a challenge request
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Sfidë u dërgua tek $friend! Prit përgjigjen...')),
-    );
+    // Navigate to multiplayer lobby to create a game session
     SoundService.playClick();
+    Navigator.pushNamed(context, '/multiplayer_lobby').then((_) {
+      // After returning from lobby, show message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Sfido $friend duke krijuar një lojë në sallën shumëlojtarësh!')),
+        );
+      }
+    });
   }
 
   void _openChat(String friend) {
-    // Navigate to chat screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Chat me $friend do të hapet së shpejti...')),
-    );
+    // Show message that chat will be available during game
     SoundService.playClick();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Chat me $friend do të hapet gjatë lojës së shumëlojtarëve.')),
+    );
   }
 
   void _removeFriend(BuildContext context, UserProfile profile, String friend) async {

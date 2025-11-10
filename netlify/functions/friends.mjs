@@ -65,10 +65,19 @@ export async function handler(event, context) {
         `;
 
         if (usersExist.length < 2) {
+          const existingUsernames = usersExist.map(u => u.username);
+          const missingUsers = [user_username, friend_username].filter(u => !existingUsernames.includes(u));
+          
+          console.log('Missing users:', missingUsers);
+          
           return {
             statusCode: 404,
             headers,
-            body: JSON.stringify({ error: 'One or both users not found' }),
+            body: JSON.stringify({ 
+              error: 'One or both users not found',
+              missing_users: missingUsers,
+              message: `Users not found in database: ${missingUsers.join(', ')}`
+            }),
           };
         }
 
