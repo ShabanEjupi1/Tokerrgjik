@@ -77,7 +77,7 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
 
     setState(() {
       _isSearching = true;
-      _matchmakingCountdown = 10;
+      _matchmakingCountdown = 100;
     });
 
     // First, try to find and join an available game

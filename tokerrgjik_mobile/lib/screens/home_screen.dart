@@ -4,6 +4,7 @@ import 'package:confetti/confetti.dart';
 import '../models/user_profile.dart';
 import '../services/sound_service.dart';
 import '../services/language_service.dart';
+import '../services/challenges_service.dart';
 import '../config/app_colors.dart';
 import '../widgets/joystick_icon.dart';
 import 'game_screen.dart';
@@ -20,17 +21,42 @@ class _HomeScreenState extends State<HomeScreen> {
   late ConfettiController _confettiController;
   bool _showLoginReward = false;
   int _loginBonus = 0;
+  int _challengeCount = 0;
 
   @override
   void initState() {
     super.initState();
     _confettiController = ConfettiController(duration: const Duration(seconds: 3));
     _checkDailyLogin();
+    _initializeChallenges();
+  }
+  
+  void _initializeChallenges() {
+    // Start polling for challenges
+    ChallengesService.startPolling();
+    
+    // Listen for challenge count updates
+    ChallengesService.addListener(_onChallengeCountChanged);
+    
+    // Set initial count
+    setState(() {
+      _challengeCount = ChallengesService.pendingCount;
+    });
+  }
+  
+  void _onChallengeCountChanged(int count) {
+    if (mounted) {
+      setState(() {
+        _challengeCount = count;
+      });
+    }
   }
 
   @override
   void dispose() {
     _confettiController.dispose();
+    ChallengesService.removeListener(_onChallengeCountChanged);
+    ChallengesService.stopPolling();
     super.dispose();
   }
 
@@ -200,6 +226,45 @@ class _HomeScreenState extends State<HomeScreen> {
                       Navigator.pushNamed(context, '/friends');
                       SoundService.playClick();
                     },
+                  ),
+                  // Challenges button with notification badge
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.emoji_events, color: Colors.white),
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/challenges');
+                          SoundService.playClick();
+                        },
+                      ),
+                      if (_challengeCount > 0)
+                        Positioned(
+                          right: 4,
+                          top: 4,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 1.5),
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 20,
+                              minHeight: 20,
+                            ),
+                            child: Text(
+                              _challengeCount > 9 ? '9+' : '$_challengeCount',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                   IconButton(
                     icon: const Icon(Icons.leaderboard, color: Colors.white),
