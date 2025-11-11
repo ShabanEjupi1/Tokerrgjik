@@ -17,8 +17,11 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
   List<Map<String, dynamic>> _availableSessions = [];
   bool _isLoading = true;
   bool _isCreatingSession = false;
+  bool _isSearching = false;
   Timer? _refreshTimer;
+  Timer? _matchmakingTimer;
   String? _currentUsername;
+  int _matchmakingCountdown = 10;
 
   @override
   void initState() {
@@ -29,6 +32,7 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
   @override
   void dispose() {
     _refreshTimer?.cancel();
+    _matchmakingTimer?.cancel();
     super.dispose();
   }
 
@@ -62,6 +66,215 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
         });
       }
     }
+  }
+
+  /// Smart matchmaking - tries to join existing game first, creates new one if none available
+  Future<void> _startMatchmaking() async {
+    if (_currentUsername == null) {
+      _showErrorDialog('Ju lutem hyni në llogari për të luajtur online');
+      return;
+    }
+
+    setState(() {
+      _isSearching = true;
+      _matchmakingCountdown = 10;
+    });
+
+    // First, try to find and join an available game
+    await _loadAvailableSessions();
+    
+    // Filter out my own sessions
+    final availableGames = _availableSessions
+        .where((s) => s['host_username'] != _currentUsername && s['status'] == 'waiting')
+        .toList();
+
+    if (availableGames.isNotEmpty) {
+      // Found a game! Join it immediately
+      final game = availableGames.first;
+      final sessionId = game['id'] ?? game['session_id'];
+      final hostUsername = game['host_username'];
+      
+      setState(() {
+        _isSearching = false;
+      });
+      
+      await _joinSession(sessionId.toString(), hostUsername);
+      return;
+    }
+
+    // No games found - create one and show matchmaking dialog with countdown
+    _showMatchmakingDialog();
+  }
+
+  void _showMatchmakingDialog() async {
+    // Create session in background
+    String? sessionId;
+    
+    try {
+      final result = await ApiService.createGameSession(
+        hostUsername: _currentUsername!,
+      );
+      
+      if (result != null && result['session_id'] != null) {
+        sessionId = result['session_id'].toString();
+      } else {
+        if (mounted) {
+          setState(() {
+            _isSearching = false;
+          });
+          _showErrorDialog('Nuk u arrit të krijohet sesioni. Provoni përsëri.');
+        }
+        return;
+      }
+    } catch (e) {
+      print('Error creating session: $e');
+      if (mounted) {
+        setState(() {
+          _isSearching = false;
+        });
+        _showErrorDialog('Nuk u arrit të krijohet sesioni. Provoni përsëri.');
+      }
+      return;
+    }
+
+    if (!mounted) return;
+
+    // Show countdown dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          // Start countdown timer
+          if (_matchmakingTimer == null || !_matchmakingTimer!.isActive) {
+            _matchmakingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+              if (_matchmakingCountdown > 0) {
+                setDialogState(() {
+                  _matchmakingCountdown--;
+                });
+              } else {
+                timer.cancel();
+                if (mounted && Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                  setState(() {
+                    _isSearching = false;
+                  });
+                  _showErrorDialog(
+                    'Nuk u gjet asnjë lojtarë në ${_matchmakingCountdown + 10}s. Provoni përsëri ose ftoni një mik!',
+                  );
+                }
+              }
+            });
+          }
+
+          return WillPopScope(
+            onWillPop: () async => false,
+            child: AlertDialog(
+              title: Row(
+                children: const [
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  SizedBox(width: 16),
+                  Text('Duke kërkuar lojtarë...'),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Duke pritur që një lojtarë të bashkohet...',
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    '$_matchmakingCountdown sekonda',
+                    style: const TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.teal,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Kodi i sesionit:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    sessionId ?? '',
+                    style: const TextStyle(fontSize: 18, color: Colors.teal),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    _matchmakingTimer?.cancel();
+                    Navigator.of(context).pop();
+                    setState(() {
+                      _isSearching = false;
+                    });
+                    // TODO: Cancel/delete the session from backend
+                  },
+                  child: const Text('Anulo'),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+
+    // Poll for players joining
+    Timer.periodic(const Duration(seconds: 1), (timer) async {
+      if (!mounted || !_isSearching) {
+        timer.cancel();
+        return;
+      }
+
+      try {
+        final sessions = await ApiService.getActiveSessions();
+        final session = sessions.firstWhere(
+          (s) => (s['id'] ?? s['session_id'] ?? '').toString() == sessionId,
+          orElse: () => {},
+        );
+
+        if (session.isNotEmpty) {
+          final status = session['status'] ?? 'waiting';
+          
+          if (status == 'active' || status == 'in_progress') {
+            // Player joined!
+            timer.cancel();
+            _matchmakingTimer?.cancel();
+            
+            if (mounted && Navigator.of(context).canPop()) {
+              Navigator.of(context).pop(); // Close dialog
+              
+              final guestUsername = session['guest_username'] ?? '';
+              
+              setState(() {
+                _isSearching = false;
+              });
+              
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => GameScreen(
+                    mode: 'online',
+                    sessionId: sessionId,
+                    opponentUsername: guestUsername,
+                  ),
+                ),
+              );
+            }
+          }
+        }
+      } catch (e) {
+        print('Error polling session: $e');
+      }
+    });
   }
 
   Future<void> _createNewSession() async {
@@ -192,10 +405,18 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
           timer.cancel();
           if (mounted && Navigator.of(context).canPop()) {
             Navigator.of(context).pop(); // Close waiting dialog
-            Navigator.of(context).push(
+            
+            // Get opponent username
+            final hostUsername = session['host_username'] ?? '';
+            final guestUsername = session['guest_username'] ?? '';
+            final opponentUsername = isHost ? guestUsername : hostUsername;
+            
+            Navigator.of(context).pushReplacement(
               MaterialPageRoute(
-                builder: (context) => const GameScreen(
+                builder: (context) => GameScreen(
                   mode: 'online',
+                  sessionId: sessionId,
+                  opponentUsername: opponentUsername,
                 ),
               ),
             );
@@ -254,7 +475,7 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Shumëlojtarësh'),
-        backgroundColor: Colors.teal, // Changed from deepPurple
+        backgroundColor: Colors.teal,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -266,17 +487,39 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _buildLobbyContent(),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _isCreatingSession ? null : _createNewSession,
-        backgroundColor: Colors.teal, // Changed from deepPurple
-        icon: _isCreatingSession
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-              )
-            : const Icon(Icons.add),
-        label: Text(_isCreatingSession ? 'Duke krijuar...' : 'Krijo lojë'),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Quick Match button (primary action)
+          FloatingActionButton.extended(
+            heroTag: 'quickMatch',
+            onPressed: _isSearching || _isCreatingSession ? null : _startMatchmaking,
+            backgroundColor: Colors.orange,
+            icon: _isSearching
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                  )
+                : const Icon(Icons.flash_on),
+            label: Text(_isSearching ? 'Duke kërkuar...' : 'Lojë e shpejtë'),
+          ),
+          const SizedBox(height: 12),
+          // Manual create game button (secondary)
+          FloatingActionButton.extended(
+            heroTag: 'createGame',
+            onPressed: _isCreatingSession || _isSearching ? null : _createNewSession,
+            backgroundColor: Colors.teal,
+            icon: _isCreatingSession
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                  )
+                : const Icon(Icons.add),
+            label: Text(_isCreatingSession ? 'Duke krijuar...' : 'Krijo lojë'),
+          ),
+        ],
       ),
     );
   }

@@ -93,29 +93,44 @@ async function sendEmail(to, subject, html) {
   }
 }
 
-export default async (req, res) => {
-  // Enable CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+/**
+ * Email endpoint handler
+ * Sends email notifications to users
+ */
+export async function handler(event, context) {
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Content-Type': 'application/json',
+  };
+
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 200, headers, body: '' };
   }
   
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  if (event.httpMethod !== 'POST') {
+    return {
+      statusCode: 405,
+      headers,
+      body: JSON.stringify({ error: 'Method not allowed' }),
+    };
   }
   
   try {
+    const data = JSON.parse(event.body);
     console.log('📧 Email function called');
-    console.log('Request body:', JSON.stringify(req.body, null, 2));
+    console.log('Request body:', JSON.stringify(data, null, 2));
     
-    const { type, username, data } = req.body;
+    const { type, username, data: emailData } = data;
     
     if (!username || !type) {
       console.error('❌ Missing required fields');
-      return res.status(400).json({ error: 'Missing required fields: username and type' });
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'Missing required fields: username and type' }),
+      };
     }
     
     // Get user email
@@ -127,7 +142,11 @@ export default async (req, res) => {
     
     if (user.length === 0) {
       console.error('❌ User not found:', username);
-      return res.status(404).json({ error: 'User not found', username });
+      return {
+        statusCode: 404,
+        headers,
+        body: JSON.stringify({ error: 'User not found', username }),
+      };
     }
     
     const userEmail = user[0].email;
@@ -140,7 +159,7 @@ export default async (req, res) => {
     
     // FRIEND REQUEST
     if (type === 'friend_request') {
-      const fromUsername = data.from_username;
+      const fromUsername = emailData.from_username;
       subject = `🎮 Kërkesë miqësie nga ${fromUsername} - TokerrGjik`;
       html = `
         <h2>Përshëndetje ${fullName}!</h2>
@@ -151,9 +170,22 @@ export default async (req, res) => {
       `;
     }
     
+    // FRIEND REQUEST ACCEPTED
+    else if (type === 'friend_request_accepted') {
+      const acceptedBy = emailData.accepted_by;
+      subject = `✅ ${acceptedBy} pranoi kërkesën tuaj - TokerrGjik`;
+      html = `
+        <h2>Lajme të mira ${fullName}!</h2>
+        <p><strong>${acceptedBy}</strong> pranoi kërkesën tuaj të miqësisë!</p>
+        <p>Tani mund të luani së bashku dhe të sfidoni njëri-tjetrin.</p>
+        <br>
+        <p>Suksese në lojëra! 🎮🎉</p>
+      `;
+    }
+    
     // GAME INVITE
     else if (type === 'game_invite') {
-      const fromUsername = data.from_username;
+      const fromUsername = emailData.from_username;
       subject = `🎲 Ftesë loje nga ${fromUsername} - TokerrGjik`;
       html = `
         <h2>Përshëndetje ${fullName}!</h2>
@@ -166,14 +198,14 @@ export default async (req, res) => {
     
     // ACHIEVEMENT UNLOCKED
     else if (type === 'achievement_unlocked') {
-      const achievementTitle = data.achievement_title;
-      const achievementIcon = data.achievement_icon || '🏆';
+      const achievementTitle = emailData.achievement_title;
+      const achievementIcon = emailData.achievement_icon || '🏆';
       subject = `${achievementIcon} Arritje e re e fituar - TokerrGjik`;
       html = `
         <h2>Urime ${fullName}!</h2>
         <p>Keni hapur një arritje të re:</p>
         <h3>${achievementIcon} ${achievementTitle}</h3>
-        <p>${data.achievement_description || ''}</p>
+        <p>${emailData.achievement_description || ''}</p>
         <br>
         <p>Vazhdoni të luani për të hapur më shumë arritje! 🎮</p>
       `;
@@ -181,8 +213,8 @@ export default async (req, res) => {
     
     // PRO PURCHASE CONFIRMATION
     else if (type === 'pro_purchase') {
-      const months = data.months || 1;
-      const amount = data.amount || '€2.99';
+      const months = emailData.months || 1;
+      const amount = emailData.amount || '€2.99';
       subject = `✅ Konfirmim blerje PRO - TokerrGjik`;
       html = `
         <h2>Faleminderit ${fullName}!</h2>
@@ -206,8 +238,8 @@ export default async (req, res) => {
     
     // COINS PURCHASE CONFIRMATION
     else if (type === 'coins_purchase') {
-      const coins = data.coins || 100;
-      const amount = data.amount || '€0.99';
+      const coins = emailData.coins || 100;
+      const amount = emailData.amount || '€0.99';
       subject = `💰 Konfirmim blerje monedhash - TokerrGjik`;
       html = `
         <h2>Faleminderit ${fullName}!</h2>
@@ -224,7 +256,7 @@ export default async (req, res) => {
     
     // PASSWORD RESET
     else if (type === 'password_reset') {
-      const resetToken = data.reset_token || 'DEMO_TOKEN';
+      const resetToken = emailData.reset_token || 'DEMO_TOKEN';
       const resetLink = `https://tokerrgjik.netlify.app/reset-password?token=${resetToken}`;
       subject = `🔐 Rivendosni fjalëkalimin - TokerrGjik`;
       html = `
@@ -239,7 +271,11 @@ export default async (req, res) => {
     
     else {
       console.error('❌ Invalid email type:', type);
-      return res.status(400).json({ error: 'Invalid email type', type });
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'Invalid email type', type }),
+      };
     }
     
     // Send email
@@ -247,19 +283,27 @@ export default async (req, res) => {
     await sendEmail(userEmail, subject, html);
     
     console.log('✅ Email function completed successfully');
-    return res.status(200).json({
-      message: 'Email sent successfully',
-      to: userEmail,
-      type,
-    });
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        message: 'Email sent successfully',
+        to: userEmail,
+        type,
+      }),
+    };
     
   } catch (error) {
     console.error('❌ Email function error:', error);
     console.error('Error stack:', error.stack);
-    return res.status(500).json({ 
-      error: 'Internal server error', 
-      message: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-    });
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ 
+        error: 'Internal server error', 
+        message: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      }),
+    };
   }
-};
+}

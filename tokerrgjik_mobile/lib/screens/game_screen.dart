@@ -13,8 +13,16 @@ import '../services/hints_service.dart';
 class GameScreen extends StatefulWidget {
   final String? mode;
   final String? difficulty;
+  final String? sessionId; // Added for online multiplayer
+  final String? opponentUsername; // Added for online multiplayer
   
-  const GameScreen({super.key, this.mode, this.difficulty});
+  const GameScreen({
+    super.key, 
+    this.mode, 
+    this.difficulty,
+    this.sessionId,
+    this.opponentUsername,
+  });
 
   @override
   State<GameScreen> createState() => _GameScreenState();

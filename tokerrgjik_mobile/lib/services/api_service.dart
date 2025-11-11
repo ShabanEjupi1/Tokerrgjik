@@ -368,6 +368,16 @@ class ApiService {
       'user_username': fromUsername,
       'friend_username': toUsername,
     });
+    
+    // Send email notification to the recipient
+    if (result != null && result['success'] == true) {
+      await sendEmailNotification(
+        username: toUsername,
+        type: 'friend_request',
+        data: {'from_username': fromUsername},
+      );
+    }
+    
     return result != null && result['success'] == true;
   }
   
@@ -378,6 +388,16 @@ class ApiService {
       'user_username': username,
       'friend_username': friendUsername,
     });
+    
+    // Send email notification to the original sender
+    if (result != null) {
+      await sendEmailNotification(
+        username: friendUsername,
+        type: 'friend_request_accepted',
+        data: {'accepted_by': username},
+      );
+    }
+    
     return result != null;
   }
   
@@ -407,6 +427,27 @@ class ApiService {
       return List<Map<String, dynamic>>.from(result['requests']);
     }
     return [];
+  }
+
+  // ==================== EMAIL ENDPOINTS ====================
+  
+  /// Send email notification
+  static Future<bool> sendEmailNotification({
+    required String username,
+    required String type,
+    Map<String, dynamic>? data,
+  }) async {
+    try {
+      final result = await post('/email', {
+        'username': username,
+        'type': type,
+        if (data != null) 'data': data,
+      });
+      return result != null;
+    } catch (e) {
+      print('Error sending email notification: $e');
+      return false; // Don't fail the whole operation if email fails
+    }
   }
   
   // ==================== MULTIPLAYER ENDPOINTS ====================
