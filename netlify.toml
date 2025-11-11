@@ -16,25 +16,13 @@
   to = "/.netlify/functions/:splat"
   status = 200
 
-# Allow direct access to verification files
-[[redirects]]
-  from = "/BingSiteAuth.xml"
-  to = "/BingSiteAuth.xml"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/google9d4f44d9d273f067.html"
-  to = "/google9d4f44d9d273f067.html"
-  status = 200
-  force = true
-
-# SPA fallback - exclude function paths
+# SPA fallback - exclude static files and function paths
+# This will only redirect to index.html if the file doesn't exist
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-  force = false
+  conditions = {Force = false}
 
 [functions]
   node_bundler = "esbuild"
