@@ -64,7 +64,7 @@ class ChallengesService {
         },
       );
 
-      if (response['success'] == true) {
+      if (response != null && response['success'] == true) {
         _pendingChallenges = List<Map<String, dynamic>>.from(
           response['challenges'] ?? []
         );
@@ -90,7 +90,7 @@ class ChallengesService {
         },
       );
 
-      if (response['success'] == true) {
+      if (response != null && response['success'] == true) {
         return List<Map<String, dynamic>>.from(response['challenges'] ?? []);
       }
       return [];
@@ -114,7 +114,7 @@ class ChallengesService {
         'session_id': sessionId,
       });
 
-      return response['success'] == true;
+      return response != null && response['success'] == true;
     } catch (e) {
       print('Error sending challenge: $e');
       return false;
@@ -133,7 +133,7 @@ class ChallengesService {
         'to_username': username,
       });
 
-      if (response['success'] == true) {
+      if (response != null && response['success'] == true) {
         // Refresh challenges
         await _checkChallenges();
         return true;
@@ -157,7 +157,7 @@ class ChallengesService {
         'to_username': username,
       });
 
-      if (response['success'] == true) {
+      if (response != null && response['success'] == true) {
         // Refresh challenges
         await _checkChallenges();
         return true;
@@ -183,7 +183,7 @@ class ChallengesService {
         },
       );
 
-      if (response['success'] == true) {
+      if (response != null && response['success'] == true) {
         return List<Map<String, dynamic>>.from(response['challenges'] ?? []);
       }
       return [];
@@ -207,7 +207,7 @@ class ChallengesService {
         },
       );
 
-      if (response['success'] == true) {
+      if (response != null && response['success'] == true) {
         return true;
       }
       return false;

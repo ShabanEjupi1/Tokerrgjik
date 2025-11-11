@@ -33,9 +33,17 @@ class ApiService {
   }
   
   /// Make GET request
-  static Future<Map<String, dynamic>?> get(String endpoint, {Map<String, String>? headers}) async {
+  static Future<Map<String, dynamic>?> get(String endpoint, {Map<String, String>? headers, Map<String, String>? queryParams}) async {
     try {
-      final url = '$baseUrl$endpoint';
+      // Build URL with query parameters if provided
+      String url = '$baseUrl$endpoint';
+      if (queryParams != null && queryParams.isNotEmpty) {
+        final queryString = queryParams.entries
+            .map((e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+            .join('&');
+        url = '$url?$queryString';
+      }
+      
       print('API GET: $url');
       
       // Use Dio for web to handle CORS better
@@ -213,9 +221,18 @@ class ApiService {
   }
   
   /// Make DELETE request
-  static Future<bool> delete(String endpoint, {Map<String, String>? headers}) async {
+  static Future<Map<String, dynamic>?> delete(String endpoint, {Map<String, String>? headers, Map<String, String>? queryParams}) async {
     try {
-      final url = Uri.parse('$baseUrl$endpoint');
+      // Build URL with query parameters if provided
+      String urlString = '$baseUrl$endpoint';
+      if (queryParams != null && queryParams.isNotEmpty) {
+        final queryString = queryParams.entries
+            .map((e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+            .join('&');
+        urlString = '$urlString?$queryString';
+      }
+      
+      final url = Uri.parse(urlString);
       print('API DELETE: $url');
       
       final response = await http.delete(
@@ -226,10 +243,22 @@ class ApiService {
         },
       ).timeout(_timeout);
       
-      return response.statusCode == 200 || response.statusCode == 204;
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        // Try to parse response body if available
+        if (response.body.isNotEmpty) {
+          try {
+            return json.decode(response.body);
+          } catch (e) {
+            // If JSON parsing fails, return success indicator
+            return {'success': true};
+          }
+        }
+        return {'success': true};
+      }
+      return {'success': false};
     } catch (e) {
       print('API DELETE Exception: $e');
-      return false;
+      return {'success': false};
     }
   }
   

@@ -184,7 +184,7 @@ class _ChallengesScreenState extends State<ChallengesScreen>
                     ],
                   ),
                 ),
-                const Icon(Icons.swords, color: Color(0xFFE74C3C), size: 30),
+                const Icon(Icons.sports_mma, color: Color(0xFFE74C3C), size: 30),
               ],
             ),
             const SizedBox(height: 12),
@@ -381,7 +381,7 @@ class _ChallengesScreenState extends State<ChallengesScreen>
         Navigator.pop(context); // Close loading dialog
 
         if (success) {
-          SoundService.playSuccess();
+          SoundService.playWin();
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('✅ Sfida u pranua! Duke filluar lojën...'),
@@ -428,7 +428,7 @@ class _ChallengesScreenState extends State<ChallengesScreen>
     );
 
     if (success) {
-      SoundService.playMove();
+      SoundService.playMovePiece();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Sfida u refuzua'),
@@ -456,7 +456,7 @@ class _ChallengesScreenState extends State<ChallengesScreen>
     );
 
     if (success) {
-      SoundService.playMove();
+      SoundService.playMovePiece();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Sfida u anulua'),
