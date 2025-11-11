@@ -273,11 +273,21 @@ export async function handler(event, context) {
         try {
           console.log('📋 Fetching available game sessions...');
           
+          // Clean up old sessions first (older than 30 minutes)
+          const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+          await sql`
+            UPDATE game_sessions
+            SET status = 'expired'
+            WHERE status = 'waiting' 
+              AND created_at < ${thirtyMinutesAgo}
+          `;
+          
           const sessions = await sql`
             SELECT 
               gs.*,
               u.level as host_level,
-              u.total_wins as host_wins
+              u.total_wins as host_wins,
+              u.avatar_url as host_avatar
             FROM game_sessions gs
             JOIN users u ON gs.host_username = u.username
             WHERE gs.status = 'waiting'
@@ -446,13 +456,25 @@ export async function handler(event, context) {
         }
         
         try {
+          // Check if session is too old and expire it
+          const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+          await sql`
+            UPDATE game_sessions
+            SET status = 'expired'
+            WHERE id = ${sessionId}
+              AND status IN ('waiting', 'active')
+              AND created_at < ${thirtyMinutesAgo}
+          `;
+          
           const session = await sql`
             SELECT 
               gs.*,
               h.level as host_level,
               h.avatar_url as host_avatar,
+              h.total_wins as host_wins,
               g.level as guest_level,
-              g.avatar_url as guest_avatar
+              g.avatar_url as guest_avatar,
+              g.total_wins as guest_wins
             FROM game_sessions gs
             LEFT JOIN users h ON gs.host_username = h.username
             LEFT JOIN users g ON gs.guest_username = g.username
@@ -464,7 +486,10 @@ export async function handler(event, context) {
             return {
               statusCode: 404,
               headers,
-              body: JSON.stringify({ error: 'Session not found' }),
+              body: JSON.stringify({ 
+                error: 'Session not found',
+                message: 'The session may have expired or been deleted' 
+              }),
             };
           }
           
@@ -493,6 +518,15 @@ export async function handler(event, context) {
       if (action === 'list_sessions') {
         try {
           console.log('📋 Fetching available game sessions (GET)...');
+          
+          // Clean up old sessions first (older than 30 minutes)
+          const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+          await sql`
+            UPDATE game_sessions
+            SET status = 'expired'
+            WHERE status = 'waiting' 
+              AND created_at < ${thirtyMinutesAgo}
+          `;
           
           const sessions = await sql`
             SELECT 

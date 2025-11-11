@@ -89,11 +89,74 @@ export async function handler(event, context) {
       };
     }
 
-    // POST /users - Create new user
+    // POST /users - Create new user OR update stats
     if (method === 'POST') {
       const data = JSON.parse(event.body);
-      const { username, email, password } = data;
+      const { action, username, email, password, userId, coins, wins, losses, draws, winStreak, bestStreak, isPro } = data;
 
+      // Handle UPDATE_STATS action (sync from mobile app)
+      if (action === 'update_stats') {
+        if (!username) {
+          return {
+            statusCode: 400,
+            headers,
+            body: JSON.stringify({ error: 'Username is required for update_stats' }),
+          };
+        }
+
+        // Check if user exists
+        const existingUser = await sql`
+          SELECT * FROM users WHERE username = ${username} LIMIT 1
+        `;
+
+        // If user doesn't exist, create them (guest user registration)
+        if (existingUser.length === 0) {
+          const newUser = await sql`
+            INSERT INTO users (username, email, coins, level, xp, total_wins, total_losses, total_draws, current_win_streak, best_win_streak, is_pro, created_at)
+            VALUES (${username}, ${email || null}, ${coins || 100}, 1, 0, ${wins || 0}, ${losses || 0}, ${draws || 0}, ${winStreak || 0}, ${bestStreak || 0}, ${isPro || false}, NOW())
+            RETURNING *
+          `;
+          
+          return {
+            statusCode: 201,
+            headers,
+            body: JSON.stringify({ 
+              success: true, 
+              message: 'User created via stats sync',
+              user: newUser[0] 
+            }),
+          };
+        }
+
+        // User exists - update their stats
+        const user = existingUser[0];
+        
+        const updatedUser = await sql`
+          UPDATE users 
+          SET coins = ${coins !== undefined ? coins : user.coins},
+              total_wins = ${wins !== undefined ? wins : user.total_wins},
+              total_losses = ${losses !== undefined ? losses : user.total_losses},
+              total_draws = ${draws !== undefined ? draws : user.total_draws},
+              current_win_streak = ${winStreak !== undefined ? winStreak : user.current_win_streak},
+              best_win_streak = ${bestStreak !== undefined ? bestStreak : user.best_win_streak},
+              is_pro = ${isPro !== undefined ? isPro : user.is_pro},
+              updated_at = NOW()
+          WHERE username = ${username}
+          RETURNING *
+        `;
+
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({ 
+            success: true, 
+            message: 'Stats updated successfully',
+            user: updatedUser[0] 
+          }),
+        };
+      }
+
+      // Default: CREATE NEW USER
       if (!username) {
         return {
           statusCode: 400,
