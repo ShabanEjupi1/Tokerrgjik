@@ -11,6 +11,9 @@ tokerrgjik_mobile/.packages
 # Keep build/web for Netlify deployment
 tokerrgjik_mobile/build/*
 !tokerrgjik_mobile/build/web/
+# Also keep root build/web for verification files and deployment
+!build/
+!build/web/
 tokerrgjik_mobile/android/.gradle/
 tokerrgjik_mobile/android/build/
 tokerrgjik_mobile/.flutter-plugins

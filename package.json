@@ -1,0 +1,19 @@
+{
+  "name": "tokerrgjik",
+  "version": "1.0.0",
+  "description": "Tokerrgjik - Albanian Chess Game",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "chess",
+    "flutter",
+    "netlify"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  }
+}
