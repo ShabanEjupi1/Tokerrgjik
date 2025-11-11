@@ -3,6 +3,8 @@
   command = "npm install --prefix netlify/functions"
   publish = "build/web"
   functions = "netlify/functions"
+  # Base directory is the root, not tokerrgjik_mobile
+  base = ""
 
 [build.environment]
   NODE_VERSION = "20"
