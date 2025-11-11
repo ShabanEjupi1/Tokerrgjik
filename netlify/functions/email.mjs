@@ -152,7 +152,21 @@ export async function handler(event, context) {
     const userEmail = user[0].email;
     const fullName = username;
     
-    console.log('✅ User found:', userEmail);
+    console.log('✅ User found. Email:', userEmail);
+    
+    // Check if user has an email address
+    if (!userEmail || userEmail.trim() === '') {
+      console.error('❌ User has no email address');
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ 
+          error: 'User has no email address registered',
+          username,
+          note: 'User must update their profile to add an email address'
+        }),
+      };
+    }
     
     let subject = '';
     let html = '';

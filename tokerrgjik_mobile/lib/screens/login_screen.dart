@@ -41,27 +41,29 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
 
     if (result != null && result['success'] == true) {
+      // Sync username with UserProfile (both login and registration)
+      final profile = Provider.of<UserProfile>(context, listen: false);
+      await profile.syncUsernameFromAuth();
+      
       if (_isLoginMode) {
-        // Login successful - sync username with UserProfile
-        final profile = Provider.of<UserProfile>(context, listen: false);
-        await profile.syncUsernameFromAuth();
-        
-        // Navigate to home
+        // Login successful - navigate to home
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const HomeScreen()),
         );
       } else {
-        // Registration successful - sync username and show message
-        final profile = Provider.of<UserProfile>(context, listen: false);
-        await profile.syncUsernameFromAuth();
-        
+        // Registration successful - show success message and auto-navigate to home
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(result['message'] ?? 'Regjistrimi u krye me sukses!'),
+            content: Text(result['message'] ?? 'Regjistrimi u krye me sukses! Mirë se vini!'),
             backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
           ),
         );
-        setState(() => _isLoginMode = true);
+        
+        // Navigate to home screen after successful registration
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
