@@ -10,6 +10,7 @@
     "all": "node database-inspector.mjs all"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^0.10.4"
+    "@neondatabase/serverless": "^0.10.4",
+    "dotenv": "^16.4.5"
   }
 }

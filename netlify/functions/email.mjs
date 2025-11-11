@@ -136,7 +136,7 @@ export async function handler(event, context) {
     // Get user email
     console.log('🔍 Looking up user:', username);
     const user = await sql`
-      SELECT email, full_name FROM users
+      SELECT email, username FROM users
       WHERE username = ${username}
     `;
     
@@ -150,7 +150,7 @@ export async function handler(event, context) {
     }
     
     const userEmail = user[0].email;
-    const fullName = user[0].full_name || username;
+    const fullName = username;
     
     console.log('✅ User found:', userEmail);
     
@@ -280,16 +280,22 @@ export async function handler(event, context) {
     
     // Send email
     console.log('📤 Sending email to:', userEmail);
-    await sendEmail(userEmail, subject, html);
+    const emailSent = await sendEmail(userEmail, subject, html);
     
     console.log('✅ Email function completed successfully');
+    
+    // Indicate if email was actually sent or just logged
+    const actuallyConfigured = !!EMAIL_CONFIG.APP_PASSWORD;
+    
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({
-        message: 'Email sent successfully',
+        message: actuallyConfigured ? 'Email sent successfully' : 'Email logged (SMTP not configured)',
         to: userEmail,
         type,
+        emailConfigured: actuallyConfigured,
+        note: actuallyConfigured ? undefined : 'Set APP_PASSWORD environment variable to send actual emails'
       }),
     };
     

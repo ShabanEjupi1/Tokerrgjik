@@ -203,7 +203,7 @@ jobs:
           name: android-apks
           path: |
             tokerrgjik_mobile/build/app/outputs/flutter-apk/*.apk
-          retention-days: 90
+          retention-days: 7
       
       - name: Upload AAB artifacts
         uses: actions/upload-artifact@v4
@@ -211,7 +211,7 @@ jobs:
           name: android-aab
           path: |
             tokerrgjik_mobile/build/app/outputs/bundle/release/*.aab
-          retention-days: 90
+          retention-days: 7
       
       - name: Build Summary
         if: always()
@@ -334,7 +334,7 @@ jobs:
         with:
           name: ios-ipa
           path: tokerrgjik_mobile/build/ios/ipa/*.ipa
-          retention-days: 90
+          retention-days: 7
       
       - name: Create Release (if tag)
         if: startsWith(github.ref, 'refs/tags/v')
@@ -434,4 +434,4 @@ jobs:
         with:
           name: web-build
           path: tokerrgjik_mobile/build/web/
-          retention-days: 90
+          retention-days: 7

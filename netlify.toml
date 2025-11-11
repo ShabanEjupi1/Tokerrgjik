@@ -1,6 +1,6 @@
 [build]
   # Only install function dependencies - Flutter web build done locally
-  command = "cd netlify/functions && npm install"
+  command = "npm install --prefix netlify/functions"
   publish = "build/web"
   functions = "netlify/functions"
 
@@ -25,13 +25,13 @@
   node_bundler = "esbuild"
 
 [context.production]
-  command = "cd netlify/functions && npm install"
+  command = "npm install --prefix netlify/functions"
 
 [context.deploy-preview]
-  command = "cd netlify/functions && npm install"
+  command = "npm install --prefix netlify/functions"
 
 [context.branch-deploy]
-  command = "cd netlify/functions && npm install"
+  command = "npm install --prefix netlify/functions"
 
 # Headers for security and caching
 [[headers]]
