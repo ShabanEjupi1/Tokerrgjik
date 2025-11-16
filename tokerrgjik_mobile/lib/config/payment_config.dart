@@ -1,8 +1,10 @@
 /// Payment Configuration
 /// Stores PayPal credentials and payment settings
 class PaymentConfig {
-  // PayPal Configuration - PRODUCTION MODE
+  // PayPal Configuration - LIVE/PRODUCTION MODE
+  // WARNING: Currently set to LIVE mode but using sandbox credentials
   // These credentials are loaded from environment variables at runtime
+  // You MUST replace with production PayPal credentials for live transactions to work
   static String paypalClientId = const String.fromEnvironment(
     'PAYPAL_CLIENT_ID',
     defaultValue: 'AbOjnPTlKSYSn9LB3giuWOl7jjz8jK1IQUS4p4Ne9z5_IhPTUKe1XPK00m67oieLNwPLqGOn3OqXZSrt'
@@ -11,7 +13,7 @@ class PaymentConfig {
     'PAYPAL_SECRET',
     defaultValue: 'EIX2J4bpnNzkXM9hB6y-enX0IOU-XCeB-8AXRZs95Ujf81l60jpTF_fblvVpa0X5nOWqYN31DA6TuXAR'
   );
-  static bool useSandbox = const bool.fromEnvironment('PAYPAL_SANDBOX', defaultValue: false); // PRODUCTION MODE
+  static bool useSandbox = const bool.fromEnvironment('PAYPAL_SANDBOX', defaultValue: false); // LIVE MODE - Will likely fail with sandbox credentials
   
   // Payment Packages
   static const Map<String, Map<String, dynamic>> proPackages = {

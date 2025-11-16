@@ -17,7 +17,7 @@
   <!-- Board background -->
   <rect x="162" y="162" width="700" height="700" rx="80" fill="url(#boardGradient)" stroke="#654321" stroke-width="8"/>
   
-  <!-- Nine Men's Morris board lines -->
+  <!-- Tokerrgjik board lines -->
   <!-- Outer square -->
   <rect x="212" y="212" width="600" height="600" fill="none" stroke="#654321" stroke-width="12"/>
   <!-- Middle square -->

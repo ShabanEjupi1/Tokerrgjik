@@ -75,7 +75,7 @@ class Translations {
     'expert': {'sq': 'Ekspert', 'en': 'Expert'},
     
     // Rules
-    'how_to_play': {'sq': 'Si të luash tokerrgjik', 'en': 'How to play Nine Men\'s Morris'},
+    'how_to_play': {'sq': 'Si të luash tokerrgjik', 'en': 'How to play tokerrgjik'},
     'objective': {'sq': 'Qëllimi', 'en': 'Objective'},
     'objective_text': {'sq': 'Formo "rrathë" (3 figura në radhë) për të hequr figurat e kundërshtarit.', 'en': 'Form "mills" (3 pieces in a row) to remove opponent\'s pieces.'},
     'phases': {'sq': 'Fazat', 'en': 'Phases'},

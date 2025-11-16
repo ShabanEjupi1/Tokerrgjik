@@ -13,7 +13,7 @@ const hf = HF_TOKEN ? new HfInference(HF_TOKEN, { baseUrl: HF_ENDPOINT }) : null
 
 /**
  * AI Move Generator using Hugging Face models
- * Provides intelligent game moves for Nine Men's Morris (Tokerrgjik)
+ * Provides intelligent game moves for (Tokerrgjik)
  * 
  * SETUP: Add HUGGINGFACE_TOKEN to Netlify environment variables
  */
@@ -93,7 +93,7 @@ async function getAIMove(board, phase, difficulty, player, validMoves) {
   try {
     // Create a text representation of the game state
     const gameState = `
-Nine Men's Morris Game State:
+Tokerrgjik Game State:
 Phase: ${phase}
 Player: ${player}
 Difficulty: ${difficulty}

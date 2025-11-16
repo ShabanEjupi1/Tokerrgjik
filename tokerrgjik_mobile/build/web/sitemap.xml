@@ -1,20 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
-  <!-- Main Page -->
+  <!-- Main Page - TokerrGjik Albanian Traditional Game -->
   <url>
     <loc>https://tokerrgjik.netlify.app/</loc>
-    <lastmod>2025-11-11</lastmod>
-    <changefreq>weekly</changefreq>
+    <lastmod>2025-11-16</lastmod>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="sq" href="https://tokerrgjik.netlify.app/" />
+    <xhtml:link rel="alternate" hreflang="sq-AL" href="https://tokerrgjik.netlify.app/" />
+    <xhtml:link rel="alternate" hreflang="sq-XK" href="https://tokerrgjik.netlify.app/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokerrgjik.netlify.app/" />
   </url>
   <!-- License Page -->
   <url>
     <loc>https://tokerrgjik.netlify.app/license.html</loc>
-    <lastmod>2025-11-11</lastmod>
+    <lastmod>2025-11-16</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.3</priority>
   </url>
 </urlset>
