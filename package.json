@@ -4,7 +4,12 @@
   "description": "Tokerrgjik - Albanian Chess Game",
   "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "netlify deploy --prod",
+    "deploy:preview": "netlify deploy",
+    "push:deploy": "git push && npm run deploy",
+    "build:flutter": "cd tokerrgjik_mobile && flutter build web --release",
+    "build:deploy": "npm run build:flutter && npm run deploy"
   },
   "keywords": [
     "chess",
