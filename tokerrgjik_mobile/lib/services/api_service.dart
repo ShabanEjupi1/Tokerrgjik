@@ -4,8 +4,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../config/api_keys.dart';
 
-/// API Service to communicate with Neon PostgreSQL backend
-/// Handles all HTTP requests to the server
+/// API Service to communicate with the self-hosted backend.
+/// Handles all HTTP requests to the server.
 class ApiService {
   static const Duration _timeout = Duration(seconds: 10);
   
@@ -23,14 +23,11 @@ class ApiService {
     },
   ));
   
-  /// Base URL for API requests
-  static String get baseUrl {
-    // For web, use netlify functions or your backend URL
-    if (kIsWeb) {
-      return 'https://tokerrgjik.netlify.app/.netlify/functions';
-    }
-    return ApiKeys.currentServerUrl;
-  }
+  /// Base URL for API requests.
+  ///
+  /// The web build is served from the same host that fronts the API, so this is
+  /// same-origin there and no CORS preflight is involved.
+  static String get baseUrl => ApiKeys.currentServerUrl;
   
   /// Make GET request
   static Future<Map<String, dynamic>?> get(String endpoint, {Map<String, String>? headers, Map<String, String>? queryParams}) async {

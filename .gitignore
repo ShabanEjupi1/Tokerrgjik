@@ -40,8 +40,10 @@ Thumbs.db
 *.tmp
 *.temp
 
-# API Keys & Secrets - NEVER COMMIT THESE!
-tokerrgjik_mobile/lib/config/api_keys.dart
+# Secrets - NEVER COMMIT THESE!
+# (lib/config/api_keys.dart is intentionally TRACKED: it holds only public
+#  client values. Real secrets live in deploy/.env on the server.)
+deploy/.env
 *.keystore
 *.jks
 key.properties

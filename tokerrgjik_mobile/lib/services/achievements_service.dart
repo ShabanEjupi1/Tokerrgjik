@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../config/api_keys.dart';
 
 class Achievement {
   final String id;
@@ -41,7 +42,7 @@ class AchievementsService {
   factory AchievementsService() => _instance;
   AchievementsService._internal();
 
-  static const String baseUrl = 'https://tokerrgjik.netlify.app/.netlify/functions';
+  static String get baseUrl => ApiKeys.currentServerUrl;
 
   // Predefined achievements
   static final List<Map<String, dynamic>> defaultAchievements = [

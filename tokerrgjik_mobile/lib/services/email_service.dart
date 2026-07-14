@@ -1,13 +1,14 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import '../config/api_keys.dart';
 
 class EmailService {
   static final EmailService _instance = EmailService._internal();
   factory EmailService() => _instance;
   EmailService._internal();
 
-  static const String baseUrl = 'https://tokerrgjik.netlify.app/.netlify/functions';
+  static String get baseUrl => ApiKeys.currentServerUrl;
 
   // Send friend request notification
   Future<bool> sendFriendRequestEmail({

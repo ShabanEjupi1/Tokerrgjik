@@ -2,7 +2,7 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
-const { neon } = require('@neondatabase/serverless');
+const { neon } = require('./db');
 
 const app = express();
 const server = http.createServer(app);
@@ -21,8 +21,7 @@ const io = socketIo(server, {
   }
 });
 
-// Initialize Neon database
-const sql = neon(process.env.NEON_DATABASE_URL);
+const sql = neon(process.env.DATABASE_URL);
 
 // Store active game sessions
 const activeSessions = new Map();

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../config/payment_config.dart';
+import '../config/api_keys.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// PayPal Payment Service for in-app purchases
@@ -69,12 +70,12 @@ class PayPalService {
             }
           ],
           'application_context': {
-            'return_url': PaymentConfig.useSandbox 
-                ? 'https://tokerrgjik.netlify.app/?payment=success&sandbox=true'
-                : 'https://tokerrgjik.netlify.app/?payment=success',
+            'return_url': PaymentConfig.useSandbox
+                ? '${ApiKeys.siteUrl}/?payment=success&sandbox=true'
+                : '${ApiKeys.siteUrl}/?payment=success',
             'cancel_url': PaymentConfig.useSandbox
-                ? 'https://tokerrgjik.netlify.app/?payment=cancelled&sandbox=true'
-                : 'https://tokerrgjik.netlify.app/?payment=cancelled',
+                ? '${ApiKeys.siteUrl}/?payment=cancelled&sandbox=true'
+                : '${ApiKeys.siteUrl}/?payment=cancelled',
           }
         }),
       );

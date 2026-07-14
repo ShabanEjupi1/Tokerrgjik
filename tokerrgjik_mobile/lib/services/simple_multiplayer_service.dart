@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'api_service.dart';
 import 'local_storage_service.dart';
 
@@ -15,7 +15,8 @@ class SimpleMultiplayerService {
   factory SimpleMultiplayerService() => _instance;
   SimpleMultiplayerService._internal();
 
-  static String get baseUrl => kIsWeb ? 'https://tokerrgjik.netlify.app/.netlify/functions' : ApiService.baseUrl;
+  // Web and mobile now share one backend origin, so there is no kIsWeb split.
+  static String get baseUrl => ApiService.baseUrl;
   Timer? _pollTimer;
   String? _currentSessionId;
 

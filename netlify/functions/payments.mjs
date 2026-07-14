@@ -1,8 +1,6 @@
-import { neon } from '@neondatabase/serverless';
+import { neon } from './db.mjs';
 
-const connectionString = process.env.NEON_DATABASE_URL 
-  || process.env.NETLIFY_DATABASE_URL 
-  || process.env.DATABASE_URL;
+const connectionString = process.env.DATABASE_URL;
 
 const sql = connectionString ? neon(connectionString) : null;
 

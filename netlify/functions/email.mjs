@@ -1,55 +1,47 @@
-import { neon } from '@neondatabase/serverless';
+import { neon } from './db.mjs';
 import nodemailer from 'nodemailer';
 
-const sql = neon(process.env.NEON_DATABASE_URL || process.env.NETLIFY_DATABASE_URL);
+const sql = neon(process.env.DATABASE_URL);
 
-// Email configuration - uses environment variables
+// SMTP configuration. We send through our own Mailcow, so the from-address must
+// be a real mailbox on a domain Mailcow signs with DKIM - otherwise the mail is
+// accepted here and then dropped as spam downstream.
 const EMAIL_CONFIG = {
-  FROM_EMAIL: process.env.FROM_EMAIL || process.env.GMAIL_USER || 'noreply@tokerrgjik.com',
-  FROM_NAME: 'Tokerrgjik Game',
-  SMTP_HOST: process.env.SMTP_HOST || 'smtp.gmail.com',
-  SMTP_PORT: parseInt(process.env.SMTP_PORT || '587'),
-  APP_PASSWORD: process.env.APP_PASSWORD,
-  GMAIL_USER: process.env.GMAIL_USER,
+  FROM_EMAIL: process.env.SMTP_USER || 'tokerrgjik@shabanejupi.tech',
+  FROM_NAME: 'Tokerrgjik',
+  SMTP_HOST: process.env.SMTP_HOST || 'mail.spacecode.tech',
+  SMTP_PORT: parseInt(process.env.SMTP_PORT || '587', 10),
+  SMTP_USER: process.env.SMTP_USER,
+  SMTP_PASS: process.env.SMTP_PASS,
 };
 
-// Create email transporter with Gmail SMTP
+// Built once: nodemailer pools connections, and rebuilding per send would open a
+// new SMTP session for every email.
+let transporter;
+
 const createTransporter = () => {
-  if (!EMAIL_CONFIG.APP_PASSWORD) {
-    console.warn('⚠️  APP_PASSWORD not set. Emails will only be logged to console.');
-    return null;
+  if (transporter !== undefined) return transporter;
+
+  if (!EMAIL_CONFIG.SMTP_USER || !EMAIL_CONFIG.SMTP_PASS) {
+    console.warn('⚠️  SMTP_USER/SMTP_PASS not set. Emails will only be logged.');
+    transporter = null;
+    return transporter;
   }
 
-  console.log('📧 Email transporter config:', {
+  // 465 is implicit TLS; 587 upgrades via STARTTLS.
+  transporter = nodemailer.createTransport({
     host: EMAIL_CONFIG.SMTP_HOST,
     port: EMAIL_CONFIG.SMTP_PORT,
-    from: EMAIL_CONFIG.FROM_EMAIL,
-    secure: false, // TLS
-    hasPassword: !!EMAIL_CONFIG.APP_PASSWORD
+    secure: EMAIL_CONFIG.SMTP_PORT === 465,
+    requireTLS: EMAIL_CONFIG.SMTP_PORT === 587,
+    auth: {
+      user: EMAIL_CONFIG.SMTP_USER,
+      pass: EMAIL_CONFIG.SMTP_PASS,
+    },
+    pool: true,
   });
 
-  try {
-    // Use GMAIL_USER if available, otherwise use FROM_EMAIL
-    const authUser = EMAIL_CONFIG.GMAIL_USER || EMAIL_CONFIG.FROM_EMAIL;
-    
-    return nodemailer.createTransporter({
-      host: EMAIL_CONFIG.SMTP_HOST,
-      port: EMAIL_CONFIG.SMTP_PORT,
-      secure: false, // Use TLS
-      auth: {
-        user: authUser,
-        pass: EMAIL_CONFIG.APP_PASSWORD,
-      },
-      tls: {
-        rejectUnauthorized: false // Accept self-signed certificates
-      },
-      logger: true, // Enable logging
-      debug: true, // Show SMTP traffic
-    });
-  } catch (error) {
-    console.error('❌ Failed to create transporter:', error);
-    return null;
-  }
+  return transporter;
 };
 
 // Send email via SMTP
@@ -61,35 +53,27 @@ async function sendEmail(to, subject, html) {
   console.log(`From: ${EMAIL_CONFIG.FROM_NAME} <${EMAIL_CONFIG.FROM_EMAIL}>`);
   console.log(`Subject: ${subject}`);
   console.log('----------------------------------------');
-  
-  const transporter = createTransporter();
-  
-  if (!transporter) {
-    console.log('⚠️  Email SMTP not configured. Email content:');
-    console.log(html);
-    console.log('========================================\n');
-    return true; // Return success so workflow doesn't break
+
+  const mailer = createTransporter();
+
+  if (!mailer) {
+    console.log('⚠️  Email SMTP not configured; nothing sent.');
+    return false;
   }
 
   try {
-    const info = await transporter.sendMail({
+    const info = await mailer.sendMail({
       from: `"${EMAIL_CONFIG.FROM_NAME}" <${EMAIL_CONFIG.FROM_EMAIL}>`,
-      to: to,
-      subject: subject,
-      html: html,
+      to,
+      subject,
+      html,
     });
-    
-    console.log('✅ Email sent successfully!');
-    console.log('Message ID:', info.messageId);
-    console.log('========================================\n');
+
+    console.log('✅ Email sent. Message ID:', info.messageId);
     return true;
   } catch (error) {
     console.error('❌ Error sending email:', error.message);
-    console.log('Email content (backup):');
-    console.log(html);
-    console.log('========================================\n');
-    // Return true anyway so the function doesn't fail
-    return true;
+    return false;
   }
 }
 
@@ -295,24 +279,20 @@ export async function handler(event, context) {
     // Send email
     console.log('📤 Sending email to:', userEmail);
     const emailSent = await sendEmail(userEmail, subject, html);
-    
-    console.log('✅ Email function completed successfully');
-    
-    // Indicate if email was actually sent or just logged
-    const actuallyConfigured = !!EMAIL_CONFIG.APP_PASSWORD;
-    
+
+    // Report what actually happened. This used to always claim success, which
+    // hid the fact that no mail was going out at all.
     return {
-      statusCode: 200,
+      statusCode: emailSent ? 200 : 502,
       headers,
       body: JSON.stringify({
-        message: actuallyConfigured ? 'Email sent successfully' : 'Email logged (SMTP not configured)',
+        message: emailSent ? 'Email sent successfully' : 'Email could not be sent',
         to: userEmail,
         type,
-        emailConfigured: actuallyConfigured,
-        note: actuallyConfigured ? undefined : 'Set APP_PASSWORD environment variable to send actual emails'
+        emailConfigured: !!(EMAIL_CONFIG.SMTP_USER && EMAIL_CONFIG.SMTP_PASS),
       }),
     };
-    
+
   } catch (error) {
     console.error('❌ Email function error:', error);
     console.error('Error stack:', error.stack);

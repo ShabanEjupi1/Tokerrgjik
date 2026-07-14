@@ -7,6 +7,7 @@ import '../services/sound_service.dart';
 import '../services/friends_service.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
+import '../config/api_keys.dart';
 
 class FriendsScreen extends StatefulWidget {
   const FriendsScreen({super.key});
@@ -381,7 +382,7 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
     Share.share(
       'Eja të luajmë Tokerrgjik! 🎮\n\n'
       'Shkarkoje aplikacionin dhe më sfido:\n'
-      'https://tokerrgjik.netlify.app\n\n'
+      '${ApiKeys.siteUrl}\n\n'
       'Emri im: ${Provider.of<UserProfile>(context, listen: false).username}',
       subject: 'Fto për Tokerrgjik',
     );

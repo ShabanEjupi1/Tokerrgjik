@@ -9,6 +9,7 @@ import '../services/cryptolens_service.dart';
 import '../config/themes.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../config/api_keys.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -826,7 +827,7 @@ class SettingsScreen extends StatelessWidget {
               onPressed: () async {
                 Navigator.pop(context);
                 // Open license purchase page in browser
-                const licenseUrl = 'https://tokerrgjik.netlify.app/license.html';
+                final licenseUrl = '${ApiKeys.siteUrl}/license.html';
                 try {
                   final uri = Uri.parse(licenseUrl);
                   if (await canLaunchUrl(uri)) {
@@ -834,9 +835,9 @@ class SettingsScreen extends StatelessWidget {
                   } else {
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Nuk mund të hapet faqja e licencës. Provoni manualisht: https://tokerrgjik.netlify.app/license.html'),
-                          duration: Duration(seconds: 5),
+                        SnackBar(
+                          content: Text('Nuk mund të hapet faqja e licencës. Provoni manualisht: $licenseUrl'),
+                          duration: const Duration(seconds: 5),
                         ),
                       );
                     }
