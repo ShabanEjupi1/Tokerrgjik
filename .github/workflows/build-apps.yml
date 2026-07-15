@@ -38,28 +38,50 @@ jobs:
           echo "📦 Setting up Android SDK..."
           # Flutter action already includes Android SDK
           echo "✅ Android SDK available via Flutter"
-        
+
+      - name: Decode release keystore
+        working-directory: tokerrgjik_mobile/android
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          # build.gradle.kts signs release builds with this keystore when key.properties
+          # is present, and silently falls back to the DEBUG key when it is not — and a
+          # debug-signed AAB is rejected by the Play Store. The keystore is gitignored, so
+          # it is delivered here as a base64 secret. On fork PRs the secret is empty (GitHub
+          # withholds secrets from fork workflows), so those builds fall back to debug — fine
+          # for a PR check, never for a release. Guard the release path in the tag job below.
+          if [ -z "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "⚠️  No ANDROID_KEYSTORE_BASE64 secret — this build will use the DEBUG key."
+            echo "    Not uploadable to the Play Store. Set the signing secrets on the repo."
+            exit 0
+          fi
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > app/release.jks
+          cat > key.properties <<EOF
+          storeFile=release.jks
+          storePassword=$ANDROID_STORE_PASSWORD
+          keyAlias=$ANDROID_KEY_ALIAS
+          keyPassword=$ANDROID_KEY_PASSWORD
+          EOF
+          echo "✅ Release keystore in place; release builds will be signed with the upload key."
+
       - name: Generate API keys
         working-directory: tokerrgjik_mobile
         run: |
-          # Copy template file to actual config
+          # api_keys.dart is gitignored; CI builds it from the committed template.
+          # Every value in the template is public by design (see the file header),
+          # so no secrets are needed here. The old fallback wrote a stub ApiKeys
+          # missing half the getters the app reads, so the build failed ~200 lines
+          # later with "getter isn't defined"; fail fast and legibly instead.
           if [ -f lib/config/api_keys.dart.template ]; then
             cp lib/config/api_keys.dart.template lib/config/api_keys.dart
             echo "✅ API keys generated from template"
           else
-            echo "⚠️  No template found, creating empty config"
-            cat > lib/config/api_keys.dart <<EOF
-          class ApiKeys {
-            static const String admobAppIdAndroid = '';
-            static const String admobAppIdIos = '';
-            static const String admobBannerAndroid = '';
-            static const String admobBannerIos = '';
-            static const String admobInterstitialAndroid = '';
-            static const String admobInterstitialIos = '';
-            static const String admobRewardedAndroid = '';
-            static const String admobRewardedIos = '';
-          }
-          EOF
+            echo "❌ lib/config/api_keys.dart.template is missing — cannot build."
+            echo "   It must stay in sync with every member the app reads off ApiKeys."
+            exit 1
           fi
       
       - name: Get dependencies
@@ -272,24 +294,18 @@ jobs:
       - name: Generate API keys
         working-directory: tokerrgjik_mobile
         run: |
-          # Copy template file to actual config
+          # api_keys.dart is gitignored; CI builds it from the committed template.
+          # Every value in the template is public by design (see the file header),
+          # so no secrets are needed here. The old fallback wrote a stub ApiKeys
+          # missing half the getters the app reads, so the build failed ~200 lines
+          # later with "getter isn't defined"; fail fast and legibly instead.
           if [ -f lib/config/api_keys.dart.template ]; then
             cp lib/config/api_keys.dart.template lib/config/api_keys.dart
             echo "✅ API keys generated from template"
           else
-            echo "⚠️  No template found, creating empty config"
-            cat > lib/config/api_keys.dart <<EOF
-          class ApiKeys {
-            static const String admobAppIdAndroid = '';
-            static const String admobAppIdIos = '';
-            static const String admobBannerAndroid = '';
-            static const String admobBannerIos = '';
-            static const String admobInterstitialAndroid = '';
-            static const String admobInterstitialIos = '';
-            static const String admobRewardedAndroid = '';
-            static const String admobRewardedIos = '';
-          }
-          EOF
+            echo "❌ lib/config/api_keys.dart.template is missing — cannot build."
+            echo "   It must stay in sync with every member the app reads off ApiKeys."
+            exit 1
           fi
       
       - name: Get dependencies
@@ -369,24 +385,18 @@ jobs:
       - name: Generate API keys
         working-directory: tokerrgjik_mobile
         run: |
-          # Copy template file to actual config
+          # api_keys.dart is gitignored; CI builds it from the committed template.
+          # Every value in the template is public by design (see the file header),
+          # so no secrets are needed here. The old fallback wrote a stub ApiKeys
+          # missing half the getters the app reads, so the build failed ~200 lines
+          # later with "getter isn't defined"; fail fast and legibly instead.
           if [ -f lib/config/api_keys.dart.template ]; then
             cp lib/config/api_keys.dart.template lib/config/api_keys.dart
             echo "✅ API keys generated from template"
           else
-            echo "⚠️  No template found, creating empty config"
-            cat > lib/config/api_keys.dart <<EOF
-          class ApiKeys {
-            static const String admobAppIdAndroid = '';
-            static const String admobAppIdIos = '';
-            static const String admobBannerAndroid = '';
-            static const String admobBannerIos = '';
-            static const String admobInterstitialAndroid = '';
-            static const String admobInterstitialIos = '';
-            static const String admobRewardedAndroid = '';
-            static const String admobRewardedIos = '';
-          }
-          EOF
+            echo "❌ lib/config/api_keys.dart.template is missing — cannot build."
+            echo "   It must stay in sync with every member the app reads off ApiKeys."
+            exit 1
           fi
       
       - name: Get dependencies
