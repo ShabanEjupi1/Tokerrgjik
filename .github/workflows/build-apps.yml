@@ -100,6 +100,7 @@ jobs:
           keyAlias=$ANDROID_KEY_ALIAS
           keyPassword=$ANDROID_KEY_PASSWORD
           EOF
+          echo "SIGNED=true" >> "$GITHUB_ENV"
 
       - name: Ndërto AAB-në
         working-directory: tokerrgjik_mobile
@@ -111,10 +112,14 @@ jobs:
         working-directory: tokerrgjik_mobile
         run: flutter build apk --release
 
+      # 🚨 Kushti lexon një ndryshore mjedisi të shkruar te $GITHUB_ENV nga hapi më
+      # sipër, dhe JO `secrets.…` drejtpërdrejt: konteksti `secrets` nuk është i
+      # disponueshëm te `if` i një hapi. I shkruar ashtu, kushti del gjithmonë
+      # false dhe kontrolli kapërcehet në heshtje — pra rrjeta që duhet të kapë
+      # një AAB të nënshkruar me debug nuk ekziston fare. Pikërisht kjo ndodhi te
+      # ndërtimi i parë; AAB-ja doli e nënshkruar si duhet, por askush s'e provoi.
       - name: Kontrollo se AAB-ja NUK është nënshkruar me çelësin e debug-ut
-        if: ${{ env.HAS_KEYSTORE == 'true' }}
-        env:
-          HAS_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        if: env.SIGNED == 'true'
         run: |
           # Një AAB i nënshkruar me debug ngarkohet, duket i rregullt dhe
           # refuzohet vetëm nga Play Console — pasi ke pritur ndërtimin.
