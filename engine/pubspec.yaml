@@ -1,0 +1,16 @@
+name: tokerrgjik_engine
+description: >-
+  Rregullat dhe inteligjenca e lojës Tokërrgjik (Nine Men's Morris), Dart i pastër
+  pa asnjë varësi nga Flutter — që të mund të testohet pa emulator dhe pa telefon.
+publish_to: 'none'
+version: 2.0.0
+
+# 🚨 Kufiri i poshtëm NUK është kozmetik: ai përcakton *versionin e gjuhës* me të
+# cilin analizohet ky paketë. Testet ndodh të ekzekutohen nën një Dart shumë më të
+# ri se ai i Flutter-it në CI, dhe pa këtë kufi një veçori e re e gjuhës do të
+# kalonte këtu dhe do të dështonte vetëm në ndërtimin e aplikacionit.
+environment:
+  sdk: '>=3.5.0 <4.0.0'
+
+dev_dependencies:
+  test: ^1.25.0
