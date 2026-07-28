@@ -5,24 +5,22 @@ allprojects {
     }
 }
 
-// Configure Kotlin and Java for all subprojects to ensure consistency
+// Java 17 kudo. Pa këtë, një shtojcë e vetme e ndërtuar për Java 11 e ndal të
+// gjithë ndërtimin me një gabim që flet për "bytecode target" dhe jo për
+// shtojcën fajtore.
 subprojects {
-    // Set Java compatibility for all subprojects
     afterEvaluate {
         extensions.findByType<com.android.build.gradle.BaseExtension>()?.apply {
-            compileSdkVersion(36)  // Required by sqflite_android-2.4.2+2 which uses BAKLAVA (Android 36)
+            compileSdkVersion(36)
             compileOptions {
                 sourceCompatibility = JavaVersion.VERSION_17
                 targetCompatibility = JavaVersion.VERSION_17
             }
         }
     }
-    
-    // Set Kotlin options for all subprojects
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         kotlinOptions {
             jvmTarget = "17"
-            languageVersion = "1.9"  // Ensure Kotlin 1.9+ for all modules (required by Sentry)
         }
     }
 }

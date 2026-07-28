@@ -1,213 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html lang="sq">
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="TokerrGjik - Lojë strategjike tradicionale shqiptare. Luaj online falas kundër AI ose miqve. Loja më e vjetër e bordit në botë. Disponueshme për Android, iOS dhe Web.">
-  <meta name="keywords" content="tokerrgjik, tokergjik, lojë shqiptare, lojë strategjike, lojë online, lojë tradicionale, lojë falas, multiplayer game, lojë bord, board game, strategy game, shqip, albania, kosova, kosovo game, burrec mos u zemëro, cic mic, tokerrgjiks">
-  <meta name="author" content="TokerrGjik Team">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-  <meta name="googlebot" content="index, follow">
-  <meta name="google" content="notranslate">
-  
-  <!-- Geo Location Tags for Kosovo/Albania -->
-  <meta name="geo.region" content="XK">
-  <meta name="geo.placename" content="Kosovo">
-  <meta name="geo.position" content="42.602636;20.902977">
-  <meta name="ICBM" content="42.602636, 20.902977">
-  
-  <!-- Additional Albanian Language Tags -->
-  <meta property="og:locale" content="sq_AL">
-  <meta property="og:locale:alternate" content="sq_XK">
-  
-  <!-- Schema.org markup for better SEO -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "VideoGame",
-    "name": "TokerrGjik",
-    "alternateName": ["Tokergjik", "Tokerrgjiks", "Cic Mic", "Burrec mos u zemëro"],
-    "description": "Lojë strategjike tradicionale shqiptare. Luaj online falas kundër AI ose miqve.",
-    "gamePlatform": ["Web", "Android", "iOS"],
-    "genre": ["Strategy", "Board Game", "Traditional Game"],
-    "numberOfPlayers": "2",
-    "playMode": ["SinglePlayer", "MultiPlayer"],
-    "inLanguage": "sq",
-    "url": "https://tokerrgjik.netlify.app/",
-    "image": "https://tokerrgjik.netlify.app/icons/Icon-512.png",
-    "applicationCategory": "Game",
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.8",
-      "ratingCount": "100"
-    },
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "EUR"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "TokerrGjik Team"
-    },
-    "author": {
-      "@type": "Organization",
-      "name": "TokerrGjik Team"
-    },
-    "datePublished": "2025-11-16",
-    "operatingSystem": "Web, Android, iOS"
-  }
-  </script>
-  
-  <!-- BreadcrumbList for better navigation -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [{
-      "@type": "ListItem",
-      "position": 1,
-      "name": "Home",
-      "item": "https://tokerrgjik.netlify.app/"
-    }]
-  }
-  </script>
-  
-  <!-- WebSite schema for better search appearance -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "TokerrGjik",
-    "alternateName": "Loja Tokerrgjik",
-    "url": "https://tokerrgjik.netlify.app/",
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": "https://tokerrgjik.netlify.app/?q={search_term_string}",
-      "query-input": "required name=search_term_string"
-    },
-    "inLanguage": "sq"
-  }
-  </script>
-  
-  <!-- Open Graph / Facebook -->
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://tokerrgjik.netlify.app/">
-  <meta property="og:title" content="TokerrGjik - Lojë Strategjike Tradicionale Shqiptare">
-  <meta property="og:description" content="Luaj TokerrGjik online falas! Lojë strategjike tradicionale shqiptare për të gjithë moshat. Sfido AI ose luan me miqtë. Disponueshme në Web, Android dhe iOS.">
-  <meta property="og:image" content="https://tokerrgjik.netlify.app/icons/Icon-512.png">
-  <meta property="og:image:width" content="512">
-  <meta property="og:image:height" content="512">
-  <meta property="og:image:alt" content="TokerrGjik Game Logo">
-  <meta property="og:site_name" content="TokerrGjik">
-  <meta property="og:locale" content="sq_AL">
-  <meta property="og:locale:alternate" content="sq_XK">
-  
-  <!-- Twitter -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:url" content="https://tokerrgjik.netlify.app/">
-  <meta name="twitter:title" content="TokerrGjik - Lojë Strategjike Tradicionale Shqiptare">
-  <meta name="twitter:description" content="Luaj TokerrGjik online falas! Lojë strategjike tradicionale shqiptare për të gjithë moshat. Disponueshme në Web, Android dhe iOS.">
-  <meta name="twitter:image" content="https://tokerrgjik.netlify.app/icons/Icon-512.png">
-  <meta name="twitter:image:alt" content="TokerrGjik Game Logo">
-  
-  <!-- Canonical URL -->
-  <link rel="canonical" href="https://tokerrgjik.netlify.app/">
-  
-  <!-- Language -->
-  <meta http-equiv="content-language" content="sq">
-  <meta name="language" content="Albanian">
-  
-  <!-- Additional SEO tags -->
-  <meta name="rating" content="general">
-  <meta name="distribution" content="global">
-  <meta name="revisit-after" content="7 days">
-  <meta name="coverage" content="Worldwide">
-  <meta name="target" content="all">
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
-  <meta name="theme-color" content="#667eea">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Tokërrgjik — loja tradicionale shqiptare e strategjisë. Luaj kundër kompjuterit, kundër një shoku në të njëjtin telefon, ose online.">
+  <meta name="theme-color" content="#1B1713">
 
-  <!-- iOS meta tags & icons -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="TokerrGjiks">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png">
-
-  <!-- Favicons -->
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="android-chrome-192x192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="android-chrome-512x512.png">
-
+  <title>Tokërrgjik — loja tradicionale shqiptare</title>
   <link rel="manifest" href="manifest.json">
-  <title>TokerrGjik - Lojë Strategjike Tradicionale Shqiptare Online Falas</title>
-  
-  <!-- Google AdSense -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8491001524308476"
-     crossorigin="anonymous"></script>
-  
-  <!-- Mobile Web Fix -->
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Tokërrgjik">
+
   <style>
-    body {
-      margin: 0;
-      padding: 0;
-      overflow-x: hidden;
-      width: 100vw;
-      max-width: 100%;
-    }
-    
-    html {
-      overflow-x: hidden;
-      width: 100%;
-    }
-    
-    #loading {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-    
-    .loader {
-      width: 50px;
-      height: 50px;
-      border: 5px solid #fff;
-      border-top-color: transparent;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    /* Sfondi vihet KËTU dhe jo vetëm te tema e Flutter-it: mes ngarkimit të
+       faqes dhe kornizës së parë të aplikacionit ka disa qindra milisekonda, dhe
+       pa këtë ato janë të bardha — një blic i bardhë përpara një aplikacioni të
+       errët, në çdo hapje. */
+    html, body { margin: 0; padding: 0; height: 100%; background: #1B1713; }
   </style>
-  
 </head>
 <body>
-  <!-- AdSense removed - causes 400 errors without valid ad unit IDs -->
-  <!-- Google Mobile Ads only work on mobile apps (Android/iOS), not web -->
-  
   <script src="flutter_bootstrap.js" async></script>
-  
 </body>
 </html>

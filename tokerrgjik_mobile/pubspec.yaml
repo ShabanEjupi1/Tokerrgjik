@@ -1,82 +1,34 @@
 name: tokerrgjik_mobile
-description: Lojë tradicionale Tokerrgjik - Aplikacion mobil
+description: Tokërrgjik — loja tradicionale shqiptare e strategjisë.
 publish_to: 'none'
-version: 1.0.0+1
+
+# 2.0.0: rishkrim i plotë. Numri i ndërtimit duhet të rritet në ÇDO ngarkim te
+# Play, edhe kur versioni i dukshëm nuk ndryshon.
+version: 2.0.0+20
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: '>=3.5.0 <4.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.6
-  socket_io_client: ^2.0.3+1
-  provider: ^6.1.2
-  fl_chart: ^0.68.0
-  shared_preferences: ^2.2.3
-  google_mobile_ads: ^5.1.0
-  audioplayers: ^6.0.0
+
+  # 🔑 Rregullat dhe kompjuteri. I njëjti kod që ekzekuton serveri.
+  tokerrgjik_engine:
+    path: ../engine
+
+  # Gjithçka tjetër është hequr me qëllim. Aplikacioni i vjetër varej nga 26
+  # paketa — reklama, Stripe, Sentry, sqflite, socket.io, zgjedhës ngjyrash,
+  # konfeti — për një lojë tabele që luhet me gishtin mbi 24 pika. Secila prej
+  # tyre ishte një ndërtim që mund të prishej, një leje që Play-i e pyeste, dhe
+  # një arsye pse APK-ja ishte 40 MB.
   http: ^1.2.0
-  flutter_animate: ^4.5.0
-  dio: ^5.4.0  # Better HTTP client with CORS support for web
-  share_plus: ^7.2.2
-  url_launcher: ^6.2.4
-  confetti: ^0.7.0
-  flutter_colorpicker: ^1.0.3
-  # Enhanced Storage & Database
-  sqflite: ^2.3.0
-  path_provider: ^2.1.1
-  path: ^1.8.3
-  # Error Tracking & Analytics
-  sentry_flutter: ^7.14.0
-  # Payments
-  flutter_stripe: ^10.1.1
-  # Networking & Multiplayer
-  web_socket_channel: ^2.4.0
-  network_info_plus: ^4.1.0
-  connectivity_plus: ^5.0.2
-  # Utils
-  uuid: ^4.2.2
-  intl: ^0.19.0
-  crypto: ^3.0.3
-  # Notifications
-  flutter_local_notifications: ^18.0.1
-  # Image handling
-  image_picker: ^1.0.7
-  cached_network_image: ^3.3.1
-  # License Protection
-  device_info_plus: ^11.1.0
-  package_info_plus: ^8.0.2
+  shared_preferences: ^2.2.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.0
-  flutter_launcher_icons: ^0.14.4
+  flutter_lints: ^4.0.0
 
 flutter:
   uses-material-design: true
-  
-  # Enable web support
-  # Run: flutter create . --platforms=web
-  
-  assets:
-    - assets/sounds/
-    - assets/icon.png
-
-# Flutter Launcher Icons configuration
-flutter_launcher_icons:
-  android: true
-  ios: true
-  image_path: "assets/icon.png"
-  min_sdk_android: 21
-  remove_alpha_ios: true
-  # Adaptive icon for Android
-  adaptive_icon_background: "#667eea"
-  adaptive_icon_foreground: "assets/icon.png"
-  # iOS specific
-  ios_content_mode: scaleAspectFill
-
-# Fix package_info_plus gradle issue
-dependency_overrides:
-  package_info_plus: 8.0.2

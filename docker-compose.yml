@@ -1,0 +1,21 @@
+services:
+  tokerrgjik:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tokerrgjik
+    restart: always
+    # Vetëm te loopback-u: jashtë del përmes tunelit `ampere`, kurrë drejtpërdrejt.
+    ports:
+      - "127.0.0.1:8205:8080"
+    environment:
+      TOKERRGJIK_DATA: /data/tokerrgjik.json
+      # Ndërtimi i Flutter-it për web mbivendoset mbi faqen e paracaktuar të
+      # imazhit. Nuk hyn në git: është dalje ndërtimi, jo burim. Nëse dosja është
+      # bosh, serveri kthehet te faqja e thjeshtë brenda imazhit.
+      TOKERRGJIK_PUBLIC: /public
+    volumes:
+      # Te /mnt/data dhe jo te disku i nisjes — ai rri mbi 85% i mbushur.
+      - /mnt/data/tokerrgjik:/data
+      - /mnt/data/tokerrgjik-web:/public:ro
+    mem_limit: 256m

@@ -562,6 +562,37 @@ class Game {
     g._inHand[black] = handB;
     g.pliesSinceCapture = plies;
     g._positionCounts[g._positionKey()] = 1;
+    g._recomputeOutcome();
     return g;
+  }
+
+  /// Nxjerr nga vetë pozicioni nëse loja ka mbaruar tashmë.
+  ///
+  /// 🚨 Pa këtë, një gjendje e dekoduar kthen gjithmonë `outcome == none`, edhe
+  /// kur njërit lojtar i kanë mbetur dy gurë — dhe [legalMoves] ofron me
+  /// gëzim lëvizje në një lojë të kryer. Serveri e kapi këtë duke refuzuar
+  /// lëvizje me «ndeshja mbaroi» ndërsa klienti vazhdonte t'i dërgonte.
+  ///
+  /// Vetëm ato fundme që *lexohen nga tabela*. Dorëzimi, koha dhe barazimi nga
+  /// përsëritja nuk janë në tabelë dhe nuk mund të jenë: ato udhëtojnë veçmas,
+  /// bashkë me gjendjen.
+  void _recomputeOutcome() {
+    final int foe = opponentOf(toPlay);
+    // Kundërshtari nën tre gurë: fiton ai që ka radhën.
+    if (piecesLeft(foe) < 3) {
+      outcome = toPlay == white ? Outcome.whiteWins : Outcome.blackWins;
+      endReason = EndReason.reducedToTwo;
+      return;
+    }
+    // Ai që ka radhën nën tre gurë: humb ai.
+    if (piecesLeft(toPlay) < 3) {
+      outcome = toPlay == white ? Outcome.blackWins : Outcome.whiteWins;
+      endReason = EndReason.reducedToTwo;
+      return;
+    }
+    if (!_hasAnyMove(toPlay)) {
+      outcome = toPlay == white ? Outcome.blackWins : Outcome.whiteWins;
+      endReason = EndReason.blocked;
+    }
   }
 }

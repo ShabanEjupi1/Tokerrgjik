@@ -1,0 +1,19 @@
+name: tokerrgjik_server
+description: >-
+  Serveri i lojës online të Tokërrgjikut: ndeshje të renditura, dhoma private
+  dhe rrjedhë ngjarjesh me SSE. Pa asnjë varësi jashtë SDK-së.
+publish_to: 'none'
+version: 2.0.0
+
+environment:
+  sdk: '>=3.5.0 <4.0.0'
+
+dependencies:
+  # 🔑 I njëjti motor që luan në telefon. Serveri NUK i ka rregullat e veta:
+  # klienti nuk është kurrë autoritet, dhe një kopje e dytë e rregullave është
+  # një kopje që herët a vonë nuk pajtohet me të parën.
+  tokerrgjik_engine:
+    path: ../engine
+
+dev_dependencies:
+  test: ^1.25.0

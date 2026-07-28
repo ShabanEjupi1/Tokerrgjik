@@ -304,6 +304,36 @@ void main() {
       expect(back.legalMoves().length, g.legalMoves().length);
     });
 
+    test('gjendja e dekoduar e di nëse loja ka mbaruar', () {
+      // Dekodimi rindërton vetëm tabelën. Nëse ajo tabelë është tashmë e
+      // kryer — dy gurë të mbetur, ose asnjë lëvizje — kjo duhet të dihet,
+      // ndryshe ndërfaqja i ofron lojtarit lëvizje në një lojë të mbaruar dhe
+      // serveri i refuzon të gjitha me «ndeshja mbaroi».
+      final Game lost = position(withPieces(<int, int>{
+        0: white,
+        1: white,
+        2: white,
+        8: black,
+        9: black,
+      }));
+      expect(lost.isOver, isTrue);
+      expect(lost.outcome, Outcome.whiteWins);
+      expect(lost.endReason, EndReason.reducedToTwo);
+      expect(lost.legalMoves(), isEmpty);
+
+      // Ndërsa një pozicion i gjallë mbetet i gjallë.
+      final Game live = position(withPieces(<int, int>{
+        0: white,
+        1: white,
+        2: white,
+        8: black,
+        9: black,
+        20: black,
+      }));
+      expect(live.isOver, isFalse);
+      expect(live.legalMoves(), isNotEmpty);
+    });
+
     test('gjendja e keqe kthen null', () {
       for (final String bad in <String>[
         '',
