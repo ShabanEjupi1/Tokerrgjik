@@ -2,9 +2,9 @@ name: tokerrgjik_mobile
 description: Tokërrgjik — loja tradicionale shqiptare e strategjisë.
 publish_to: 'none'
 
-# 2.0.0: rishkrim i plotë. Numri i ndërtimit duhet të rritet në ÇDO ngarkim te
-# Play, edhe kur versioni i dukshëm nuk ndryshon.
-version: 2.0.0+20
+# 2.0.0: rishkrim i plotë. 2.1.0: reklamat. Numri i ndërtimit duhet të rritet në
+# ÇDO ngarkim te Play, edhe kur versioni i dukshëm nuk ndryshon.
+version: 2.1.0+21
 
 environment:
   sdk: '>=3.5.0 <4.0.0'
@@ -24,6 +24,12 @@ dependencies:
   # një arsye pse APK-ja ishte 40 MB.
   http: ^1.2.0
   shared_preferences: ^2.2.3
+
+  # E treta, dhe e vetmja që u shtua pas rishkrimit: reklamat. Sjell me vete
+  # edhe UMP-në (formularin e pëlqimit të BE-së), ndaj nuk duhet paketë e katërt
+  # për të. Të gjitha rregullat — filtrimi halal, njësitë e provës në debug, ku
+  # lejohet të shfaqet një reklamë — rrinë te `lib/app/ads.dart`.
+  google_mobile_ads: ^6.0.0
 
 dev_dependencies:
   flutter_test:

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:tokerrgjik_engine/tokerrgjik_engine.dart';
 
+import 'app/ads.dart';
 import 'app/prefs.dart';
 import 'app/theme.dart';
 import 'game/local_game_page.dart';
@@ -24,6 +25,12 @@ class _HomePageState extends State<HomePage> {
     final ({String moves, int level, int human})? saved = widget.prefs.savedGame;
 
     return Scaffold(
+      // 🔑 Banderola rri VETËM këtu, te menyja, dhe jashtë zonës që rrëshqet:
+      // një reklamë që lëviz bashkë me përmbajtjen kalon nën gishtin që po
+      // rrëshqet dhe prodhon klikime që lojtari nuk i deshi kurrë. Kur reklama
+      // nuk është gati, `BannerSlot` kthen hapësirë zero — pra menyja nuk ka
+      // asnjë vend bosh të mbajtur për diçka që mund të mos vijë.
+      bottomNavigationBar: const SafeArea(child: BannerSlot()),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 28, 20, 28),

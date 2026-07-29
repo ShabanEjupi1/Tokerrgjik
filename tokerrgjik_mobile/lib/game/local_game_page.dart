@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tokerrgjik_engine/tokerrgjik_engine.dart';
 
+import '../app/ads.dart';
 import '../app/prefs.dart';
 import '../app/theme.dart';
 import 'ai_worker.dart';
@@ -45,6 +46,11 @@ class _LocalGamePageState extends State<LocalGamePage> {
   bool _thinking = false;
   bool _resultRecorded = false;
 
+  /// Lëvizja e sugjeruar, sa kohë lojtari nuk ka luajtur ende. Mbahet veçmas
+  /// nga [_lastMove] që tabela të mos e vizatojë si lëvizje të bërë.
+  Move? _hint;
+  bool _askingHint = false;
+
   @override
   void initState() {
     super.initState();
@@ -83,6 +89,9 @@ class _LocalGamePageState extends State<LocalGamePage> {
 
   void _onTap(int point) {
     if (_thinking || _game.isOver || !_humanTurn) return;
+    // Prekja e parë e fshin këshillën: ndryshe ndriçimi i saj do të mbulonte
+    // pikat ku guri i zgjedhur mund të shkojë vërtet.
+    _hint = null;
     final Move? move = _turn.tap(point);
     if (move == null) {
       setState(() {});
@@ -126,51 +135,93 @@ class _LocalGamePageState extends State<LocalGamePage> {
     unawaited(widget.prefs.recordResult(won: won, drew: drew));
   }
 
-  void _showResult() {
+  /// Një këshillë kundër kompjuterit, në këmbim të një reklame të parë deri në
+  /// fund.
+  ///
+  /// 🔑 Nëse reklama nuk vjen ose lojtari e mbyll para fundit, këshilla **jepet
+  /// gjithsesi**. Ky nuk është bujari: një lojtar që pranoi ta shohë reklamën
+  /// nuk duhet ndëshkuar për një rrjet reklamash që nuk u përgjigj, dhe një
+  /// funksion që dështon në heshtje pas një reklame duket si mashtrim.
+  /// Kompjuteri mendon te niveli më i lartë, jo te niveli i lojës — një këshillë
+  /// nga një kundërshtar i dobët është më keq se asnjë këshillë.
+  Future<void> _askHint() async {
+    if (_askingHint || _thinking || _game.isOver || !_humanTurn) return;
+    setState(() => _askingHint = true);
+
+    await Ads.showRewarded();
+
+    final Move? best = await thinkMove(
+      moves: _game.history.map((Move mv) => mv.toString()).toList(),
+      level: AiLevel.values.last.number,
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _askingHint = false;
+      _hint = best;
+    });
+  }
+
+  void _showResult() => unawaited(_showResultDialog());
+
+  /// Fundi i lojës, dhe i vetmi vend ku lejohet një reklamë e plotë ekrani.
+  ///
+  /// 🚨 Rendi këtu është rregull, jo rastësi: **dialogu → reklama → veprimi**.
+  /// Një reklamë që hapet mbi tabelë ose para se lojtari të lexojë se fitoi apo
+  /// humbi është pikërisht «reklama shkatërruese» që Play-i e ndëshkon me heqje
+  /// nga dyqani. Dhe [Ads.maybeShowAfterGame] vetë vendos të mos shfaqë asgjë
+  /// në shumicën e lojërave — shih kufijtë atje.
+  Future<void> _showResultDialog() async {
     final bool drew = _game.outcome == Outcome.draw;
     final bool humanWon = widget.vsComputer &&
         ((_game.outcome == Outcome.whiteWins && widget.humanColour == white) ||
             (_game.outcome == Outcome.blackWins && widget.humanColour == black));
 
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) => AlertDialog(
-        title: Text(
-          drew
-              ? 'Barazim'
-              : widget.vsComputer
-                  ? (humanWon ? 'Fitove!' : 'Humbe')
-                  : (_game.outcome == Outcome.whiteWins
-                      ? 'Fitoi i bardhi'
-                      : 'Fitoi i ziu'),
-          style: const TextStyle(fontWeight: FontWeight.w700),
-        ),
-        content: Text(outcomeText(_game)),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
-            },
-            child: const Text('Dil'),
+    final bool again = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) => AlertDialog(
+            title: Text(
+              drew
+                  ? 'Barazim'
+                  : widget.vsComputer
+                      ? (humanWon ? 'Fitove!' : 'Humbe')
+                      : (_game.outcome == Outcome.whiteWins
+                          ? 'Fitoi i bardhi'
+                          : 'Fitoi i ziu'),
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+            content: Text(outcomeText(_game)),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Dil'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Përsëri'),
+              ),
+            ],
           ),
-          FilledButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              setState(() {
-                _game = Game();
-                _turn = TurnBuilder(_game);
-                _lastMove = null;
-                _resultRecorded = false;
-              });
-              unawaited(_maybeThink());
-            },
-            child: const Text('Përsëri'),
-          ),
-        ],
-      ),
-    );
+        ) ??
+        false;
+
+    if (!mounted) return;
+    await Ads.maybeShowAfterGame();
+    if (!mounted) return;
+
+    if (!again) {
+      Navigator.of(context).pop();
+      return;
+    }
+    setState(() {
+      _game = Game();
+      _turn = TurnBuilder(_game);
+      _lastMove = null;
+      _hint = null;
+      _resultRecorded = false;
+    });
+    unawaited(_maybeThink());
   }
 
   Future<void> _confirmLeave() async {
@@ -217,6 +268,25 @@ class _LocalGamePageState extends State<LocalGamePage> {
             icon: const Icon(Icons.arrow_back),
             onPressed: _confirmLeave,
           ),
+          actions: <Widget>[
+            // Këshilla shfaqet vetëm kundër kompjuterit dhe vetëm kur radha e ke
+            // ti: te loja me dy vetë mbi një telefon do të ishte thjesht mashtrim
+            // ndaj tjetrit që rri përballë.
+            if (widget.vsComputer && Ads.supported)
+              IconButton(
+                tooltip: 'Këshillë (shiko një reklamë)',
+                icon: _askingHint
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.lightbulb_outline),
+                onPressed: _humanTurn && !_game.isOver && !_askingHint
+                    ? () => unawaited(_askHint())
+                    : null,
+              ),
+          ],
         ),
         body: SafeArea(
           child: Padding(
@@ -236,7 +306,15 @@ class _LocalGamePageState extends State<LocalGamePage> {
                       game: _game,
                       onTap: _onTap,
                       selected: _turn.selected,
-                      highlighted: _humanTurn ? _turn.highlights : const <int>[],
+                      // Kur ka një këshillë të papërdorur, ndriçohen pikat e saj
+                      // — pika ku duhet vendosur guri, ose të dyja pikat e
+                      // zhvendosjes. Sapo lojtari luan diçka, [_hint] fshihet.
+                      highlighted: _hint != null
+                          ? <int>[
+                              if (!_hint!.isPlacement) _hint!.from,
+                              _hint!.to,
+                            ]
+                          : (_humanTurn ? _turn.highlights : const <int>[]),
                       removable: _turn.removalTargets,
                       lastMove: _lastMove,
                       flipped: flipped,

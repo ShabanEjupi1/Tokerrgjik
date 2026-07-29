@@ -1,13 +1,24 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- E vetmja leje që kërkon aplikacioni: loja online. Gjithçka tjetër —
-         reklamat, njoftimet, kamera, gjendja e rrjetit — u hoq bashkë me
-         paketat që e kërkonin. Sa më pak leje, aq më pak pyetje te Play. -->
+    <!-- Interneti duhet për lojën online dhe për reklamat. Kamera, njoftimet
+         dhe gjendja e rrjetit u hoqën bashkë me paketat që i kërkonin — sa më
+         pak leje, aq më pak pyetje te Play.
+
+         🚨 `com.google.android.gms.permission.AD_ID` NUK shkruhet këtu: e shton
+         vetë SDK-ja e reklamave gjatë bashkimit të manifesteve. Duhet vetëm
+         DEKLARUAR te Play Console → Siguria e të dhënave («Identifikues
+         pajisjeje ose përdoruesi», mblidhen dhe ndahen, për reklama). -->
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
         android:label="Tokërrgjik"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <!-- Identifikuesi i aplikacionit te AdMob. Pa këtë rresht aplikacioni
+             RRËZOHET në nisje me një përjashtim të qartë nga SDK-ja — jo në
+             heshtje, ndaj s'ka si të kalojë pa u vënë re. -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-1776059573171352~3673667026"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"

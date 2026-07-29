@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'app/ads.dart';
 import 'app/prefs.dart';
 import 'app/theme.dart';
 import 'home_page.dart';
@@ -27,6 +30,12 @@ Future<void> main() async {
   ));
 
   final Prefs prefs = await Prefs.open();
+
+  // Reklamat nisen PARALELISHT me ekranin e parë, jo para tij. Pëlqimi i BE-së
+  // dhe nisja e SDK-së kërkojnë rrjet; e pritur këtu, një lidhje e ngadaltë do
+  // të mbante ekranin e nisjes disa sekonda para se të shihej tabela.
+  unawaited(Ads.start().then((_) => Ads.preloadInterstitial()));
+
   runApp(TokerrgjikApp(prefs: prefs));
 }
 

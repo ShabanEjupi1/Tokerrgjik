@@ -7,7 +7,7 @@ anglishtja e dyta.
 - **Paketa:** `com.ejupishaban.tokerrgjik`
 - **Kategoria:** Lojëra › Bord
 - **Klasifikimi i synuar:** Për të gjithë / 3+
-- **Çmimi:** Falas. **Pa reklama. Pa blerje brenda aplikacionit.**
+- **Çmimi:** Falas. **Me reklama (AdMob). Pa blerje brenda aplikacionit.**
 - **Politika e privatësisë:** https://tokerrgjik.shabanejupi.tech/privatesia.html
 
 ---
@@ -43,10 +43,14 @@ SI LUHET
 • Online kundër një shoku, me një kod dhome katërshkronjësh
 
 ÇFARË NUK KA
-• Pa reklama
 • Pa blerje brenda aplikacionit
 • Pa regjistrim, pa email, pa fjalëkalim
 • Pa leje të panevojshme — vetëm interneti, dhe vetëm kur luan online
+
+REKLAMAT
+Aplikacioni shfaq reklama, dhe ato janë të filtruara për familje: pa bixhoz, pa
+alkool, pa takime dhe pa kredi me kamatë. Reklamat nuk ndërhyjnë kurrë brenda një
+loje — vetëm në menu dhe pasi loja të ketë mbaruar.
 
 Loja kundër kompjuterit dhe ajo me dy lojtarë punojnë PLOTËSISHT PA INTERNET.
 
@@ -89,10 +93,14 @@ HOW YOU PLAY
 • Online against a friend, with a four-letter room code
 
 WHAT IT DOES NOT HAVE
-• No ads
 • No in-app purchases
 • No sign-up, no email, no password
 • No unnecessary permissions — internet only, and only when playing online
+
+ADS
+The app shows ads, filtered for families: no gambling, no alcohol, no dating, no
+interest-bearing loans. Ads never interrupt a game in progress — only the menu and
+the screen after a game ends.
 
 Playing the computer and two-player mode work COMPLETELY OFFLINE.
 
@@ -113,13 +121,33 @@ kodin.
 | A janë të koduara në transit? | **Po** (HTTPS) |
 | A mund të kërkojë përdoruesi fshirjen? | **Po** — me email, shih politikën |
 | Lloji: Emri (Personal info › Name) | Mblidhet · opsionale · për funksionimin e aplikacionit |
-| Lloji: ID-të (Device or other IDs) | **Jo** — kodi ynë i identifikimit gjenerohet nga serveri dhe nuk lidhet me pajisjen |
+| Lloji: ID-të (Device or other IDs) | **PO** — identifikuesi i reklamave (shih poshtë). Kodi ynë i identifikimit gjenerohet nga serveri dhe nuk lidhet me pajisjen. |
 | Vendndodhja, kontaktet, fotot, financat, shëndeti | **Jo** |
-| Reklamat / ID e reklamave | **Jo** |
+| Reklamat / ID e reklamave | **PO** — AdMob (që nga versioni 2.1.0) |
 | Analitika | **Jo** |
 
 ⚠️ «Emri» është i detyrueshëm si deklarim edhe pse e shkruan vetë përdoruesi:
 Play e quan të dhënë personale çdo emër që del nga pajisja, edhe një pseudonim.
+
+🚨 **Që nga 2.1.0 aplikacioni ka reklama, dhe kjo ndryshon TRI deklarime te
+Console-i.** Ngarkimi kalon edhe pa to; ajo që bie më vonë është aplikacioni,
+kur Play-i e krahason deklarimin me atë që sheh vetë te paketa:
+
+1. **Store presence → Ads: «Po, ka reklama».** SDK-ja e AdMob-it duket qartë te
+   analiza e paketës; një «jo» këtu është deklarim i rremë, jo harresë.
+2. **Data safety → Device or other IDs: mblidhen DHE ndahen, për «Advertising or
+   marketing».** SDK-ja shton vetë lejen `AD_ID` te manifesti — pra Play-i e di,
+   pavarësisht se çfarë shkruajmë ne.
+3. **Publiku i synuar: 13 vjeç e lart.** Nëse zgjidhet një grupmoshë nën 13,
+   hyjnë në fuqi rregullat e «Familjeve»: pa identifikues reklamash dhe vetëm
+   rrjete të certifikuara. Kodi sot dërgon
+   `tagForChildDirectedTreatment: unspecified`, që i përgjigjet 13+.
+
+🕌 **Filtrimi është në dy vende dhe të dyja duhen.** Kodi cakton
+`MaxAdContentRating.g` (klasifikimi). Konsola e AdMob-it → Blocking controls →
+Sensitive categories duhet të bllokojë **bixhozin, alkoolin, takimet dhe kreditë
+me kamatë** (tema). Një reklamë bixhozi mund të jetë fare mirë e klasifikuar «G»,
+ndaj vetëm kodi nuk mjafton.
 
 ## Klasifikimi i përmbajtjes (IARC)
 
