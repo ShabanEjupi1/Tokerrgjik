@@ -17,3 +17,6 @@ android/key.properties
 **/android/local.properties
 .idea/
 .vscode/
+
+# Artefaktet e ndërtimit të shkarkuara nga CI — kurrë në git
+dist/

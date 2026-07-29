@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Modify this file to customize your launch splash screen -->
+<!-- Shih drawable-v21/launch_background.xml: aplikacioni është gjithmonë i errët,
+     ndaj edhe ekrani i nisjes. Ky variant nuk përdoret në praktikë (minSdk = 24),
+     por mbahet i njëjtë që të mos ndryshojë sjellja nëse dikush ul minSdk-në. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@android:color/white" />
-
-    <!-- You can insert your own image assets here -->
-    <!-- <item>
-        <bitmap
-            android:gravity="center"
-            android:src="@mipmap/launch_image" />
-    </item> -->
+    <item android:drawable="@color/ic_launcher_background" />
 </layer-list>

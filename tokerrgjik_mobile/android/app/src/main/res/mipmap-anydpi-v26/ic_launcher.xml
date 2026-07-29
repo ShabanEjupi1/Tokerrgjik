@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
   <background android:drawable="@color/ic_launcher_background"/>
-  <foreground>
-      <inset
-          android:drawable="@drawable/ic_launcher_foreground"
-          android:inset="16%" />
-  </foreground>
+  <!-- Pa `inset`: figura vizatohet tashmë brenda zonës së sigurt 66% te vetë
+       PNG-ja (store/tools/ikona.html?fg=1). Një inset i dytë 16% mbi të do ta
+       linte tabelën si një pikë të vogël në mes të ikonës. -->
+  <foreground android:drawable="@drawable/ic_launcher_foreground"/>
 </adaptive-icon>

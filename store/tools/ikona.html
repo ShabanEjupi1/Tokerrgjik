@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="sq">
+<meta charset="utf-8">
+<title>Ikona e Tokërrgjikut</title>
+<!--
+  Burimi i vetëm i ikonës: tabela e lojës në paletën e aplikacionit (lib/app/theme.dart).
+  Ikona e vjetër ishte një rreth vjollcë-ar nga një shabllon — ngjyra `#667eea`
+  nuk ndodhet askund tjetër në aplikacion.
+
+  ?fg=1   → vetëm figura, sfond i tejdukshëm, brenda zonës së sigurt 66% të
+            ikonës adaptive të Android-it (pjesa jashtë saj pritet nga maska).
+-->
+<style>
+  html, body { margin: 0; height: 100%; background: transparent; }
+  svg { display: block; width: 100vw; height: 100vh; }
+</style>
+
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="ngrohtesia" cx="50%" cy="34%" r="72%">
+      <stop offset="0%"  stop-color="#2E2721"/>
+      <stop offset="100%" stop-color="#1B1713"/>
+    </radialGradient>
+    <!-- Gurët nuk janë disqe të sheshtë: drita bie nga lart-majtas, njësoj si
+         te `_drawStone` i tabelës në lojë. -->
+    <radialGradient id="guriBardhe" cx="36%" cy="32%" r="72%">
+      <stop offset="0%"   stop-color="#FFFDF9"/>
+      <stop offset="55%"  stop-color="#F2EADF"/>
+      <stop offset="100%" stop-color="#CFC3B2"/>
+    </radialGradient>
+    <radialGradient id="guriTerrakote" cx="36%" cy="32%" r="72%">
+      <stop offset="0%"   stop-color="#E58A4E"/>
+      <stop offset="55%"  stop-color="#C2682D"/>
+      <stop offset="100%" stop-color="#8F4A1D"/>
+    </radialGradient>
+  </defs>
+
+  <rect id="sfondi" width="512" height="512" fill="url(#ngrohtesia)"/>
+
+  <g id="figura">
+    <g fill="none" stroke="#6B5C4C" stroke-width="7" stroke-linecap="round">
+      <rect x="76"  y="76"  width="360" height="360"/>
+      <rect x="136" y="136" width="240" height="240"/>
+      <rect x="196" y="196" width="120" height="120"/>
+      <path d="M256 76 V196 M256 316 V436 M76 256 H196 M316 256 H436"/>
+    </g>
+
+    <!-- Pikat e lira -->
+    <g fill="#6B5C4C">
+      <circle cx="436" cy="256" r="9"/><circle cx="376" cy="256" r="9"/>
+      <circle cx="316" cy="256" r="9"/><circle cx="196" cy="256" r="9"/>
+      <circle cx="76"  cy="256" r="9"/>
+      <circle cx="136" cy="376" r="9"/><circle cx="256" cy="376" r="9"/>
+      <circle cx="376" cy="376" r="9"/>
+      <circle cx="76"  cy="436" r="9"/><circle cx="256" cy="436" r="9"/>
+      <circle cx="436" cy="436" r="9"/>
+      <circle cx="196" cy="316" r="9"/><circle cx="256" cy="316" r="9"/>
+      <circle cx="316" cy="316" r="9"/>
+      <circle cx="376" cy="136" r="9"/>
+      <circle cx="316" cy="196" r="9"/><circle cx="256" cy="196" r="9"/>
+    </g>
+
+    <!-- Dangu: tre gurë të bardhë në një vijë. Kjo është e gjithë loja në një
+         pamje — kush e mbyll vijën, ia merr një gur tjetrit. -->
+    <path d="M76 76 H436" stroke="#EFE6DC" stroke-width="9" stroke-linecap="round" opacity="0.9"/>
+    <g>
+      <circle cx="76"  cy="76" r="30" fill="url(#guriBardhe)"/>
+      <circle cx="256" cy="76" r="30" fill="url(#guriBardhe)"/>
+      <circle cx="436" cy="76" r="30" fill="url(#guriBardhe)"/>
+    </g>
+
+    <g>
+      <circle cx="136" cy="136" r="30" fill="url(#guriTerrakote)"/>
+      <circle cx="256" cy="136" r="30" fill="url(#guriTerrakote)"/>
+      <circle cx="196" cy="196" r="30" fill="url(#guriTerrakote)"/>
+    </g>
+  </g>
+</svg>
+
+<script>
+  // Ikona adaptive: Android-i pret gjithçka jashtë rrethit qendror 66%, ndaj
+  // figura zvogëlohet dhe qendërzohet brenda tij në vend që të mbushë kornizën.
+  const q = new URLSearchParams(location.search);
+  if (q.has('fg')) {
+    // `maskable` (PWA) e mban sfondin: aty maska pret nga një katror i plotë,
+    // ndryshe nga ikona adaptive e Android-it që e ka sfondin veçmas.
+    if (!q.has('maskable')) document.getElementById('sfondi').remove();
+    const k = 0.62;
+    const d = (512 - 512 * k) / 2;
+    document.getElementById('figura')
+      .setAttribute('transform', `translate(${d} ${d}) scale(${k})`);
+  }
+</script>
+</html>

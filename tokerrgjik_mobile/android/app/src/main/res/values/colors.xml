@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_background">#667eea</color>
+    <!-- Palette.ink — e njëjta ngjyrë si sfondi i aplikacionit (lib/app/theme.dart).
+         `#667eea` ishte vjollca e një shablloni: nuk ndodhej askund tjetër në lojë. -->
+    <color name="ic_launcher_background">#1B1713</color>
 </resources>

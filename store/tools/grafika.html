@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="sq">
+<meta charset="utf-8">
+<title>Grafika e veçorive — Tokërrgjik</title>
+<!--
+  Grafika 1024×500 që Play-i vë në krye të listimit. Teksti mbahet i shkurtër me
+  qëllim: në telefon kjo shfaqet e ngushtuar dhe mbi të mund të bjerë butoni i
+  luajtjes së videos, ndaj asgjë e domosdoshme nuk vihet në qendër-poshtë.
+-->
+<style>
+  html, body { margin: 0; height: 100%; }
+  body {
+    width: 1024px; height: 500px;
+    background: radial-gradient(120% 140% at 72% 30%, #2E2721 0%, #1B1713 62%);
+    display: flex; align-items: center; gap: 56px;
+    padding: 0 72px; box-sizing: border-box;
+    font-family: "DejaVu Sans", "Liberation Sans", system-ui, sans-serif;
+    color: #EFE6DC;
+  }
+  .fjala { flex: 1; }
+  h1 {
+    margin: 0; font-size: 92px; line-height: 1; letter-spacing: -2px;
+    font-weight: 700;
+  }
+  p {
+    margin: 18px 0 0; font-size: 30px; line-height: 1.35; color: #B8A894;
+    max-width: 15ch;
+  }
+  .vija { margin-top: 26px; width: 148px; height: 8px; border-radius: 4px; background: #D98B45; }
+  svg { flex: 0 0 auto; width: 380px; height: 380px; }
+</style>
+
+<div class="fjala">
+  <h1>Tokërrgjik</h1>
+  <p>Loja tradicionale shqiptare e strategjisë</p>
+  <div class="vija"></div>
+</div>
+
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="gb" cx="36%" cy="32%" r="72%">
+      <stop offset="0%" stop-color="#FFFDF9"/><stop offset="55%" stop-color="#F2EADF"/>
+      <stop offset="100%" stop-color="#CFC3B2"/>
+    </radialGradient>
+    <radialGradient id="gt" cx="36%" cy="32%" r="72%">
+      <stop offset="0%" stop-color="#E58A4E"/><stop offset="55%" stop-color="#C2682D"/>
+      <stop offset="100%" stop-color="#8F4A1D"/>
+    </radialGradient>
+  </defs>
+  <g fill="none" stroke="#6B5C4C" stroke-width="7" stroke-linecap="round">
+    <rect x="76" y="76" width="360" height="360"/>
+    <rect x="136" y="136" width="240" height="240"/>
+    <rect x="196" y="196" width="120" height="120"/>
+    <path d="M256 76 V196 M256 316 V436 M76 256 H196 M316 256 H436"/>
+  </g>
+  <g fill="#6B5C4C">
+    <circle cx="436" cy="256" r="9"/><circle cx="376" cy="256" r="9"/>
+    <circle cx="316" cy="256" r="9"/><circle cx="196" cy="256" r="9"/>
+    <circle cx="76" cy="256" r="9"/>
+    <circle cx="136" cy="376" r="9"/><circle cx="256" cy="376" r="9"/>
+    <circle cx="376" cy="376" r="9"/>
+    <circle cx="76" cy="436" r="9"/><circle cx="256" cy="436" r="9"/>
+    <circle cx="436" cy="436" r="9"/>
+    <circle cx="196" cy="316" r="9"/><circle cx="256" cy="316" r="9"/>
+    <circle cx="316" cy="316" r="9"/>
+    <circle cx="376" cy="136" r="9"/>
+    <circle cx="316" cy="196" r="9"/><circle cx="256" cy="196" r="9"/>
+  </g>
+  <path d="M76 76 H436" stroke="#EFE6DC" stroke-width="9" stroke-linecap="round" opacity="0.9"/>
+  <circle cx="76" cy="76" r="30" fill="url(#gb)"/>
+  <circle cx="256" cy="76" r="30" fill="url(#gb)"/>
+  <circle cx="436" cy="76" r="30" fill="url(#gb)"/>
+  <circle cx="136" cy="136" r="30" fill="url(#gt)"/>
+  <circle cx="256" cy="136" r="30" fill="url(#gt)"/>
+  <circle cx="196" cy="196" r="30" fill="url(#gt)"/>
+</svg>
+</html>

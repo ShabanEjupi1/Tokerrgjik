@@ -163,6 +163,45 @@ jobs:
           path: tokerrgjik_mobile/build/web
           if-no-files-found: error
 
+  # ── Play Console ──────────────────────────────────────────────────────────
+  #
+  # Ngarkimi te gjurma e brendshme, me llogari shërbimi. Bëhet vetëm te një
+  # etiketë `v*`: çdo shtytje te `main` do të digjte një `versionCode` pa nevojë,
+  # dhe një numër i harxhuar nuk kthehet kurrë më prapa.
+  #
+  # 🚨 Kjo punë NUK e krijon dot aplikacionin te Play Console — API-ja nuk e di
+  # atë veprim, dhe ngarkimin e parë e pranon vetëm pasi paketa të ekzistojë
+  # atje. Hapat me dorë, një herë të vetme, janë te store/DORËZIMI.md.
+  play:
+    name: Play (gjurma e brendshme)
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: android
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: android
+          path: dist
+
+      - name: Ngarko te Play
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          # I njëjti kusht si te nënshkrimi: `secrets` nuk lexohet te `if` i një
+          # hapi, ndaj kontrolli bëhet këtu brenda.
+          if [ -z "$PLAY_SERVICE_ACCOUNT_JSON" ]; then
+            echo "::warning::Pa PLAY_SERVICE_ACCOUNT_JSON — ngarkimi te Play u kapërcye."
+            exit 0
+          fi
+          printf '%s' "$PLAY_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/play.json"
+          node store/tools/play.mjs "$RUNNER_TEMP/play.json" ngarko \
+            com.ejupishaban.tokerrgjik \
+            dist/bundle/release/app-release.aab \
+            internal
+          rm -f "$RUNNER_TEMP/play.json"
+
   # ── Lëshimi ───────────────────────────────────────────────────────────────
   release:
     name: Lëshimi
