@@ -3,6 +3,38 @@
 Llogaria e zhvilluesit është aktive. Kjo është lista e plotë, dhe vetëm ajo që
 mbetet për t'u bërë me dorë.
 
+## ✅ Gjendja më 29-07-2026 — dhe pse aplikacioni rri ende «Draft»
+
+Aplikacioni EKZISTON te Console-i me një lëshim te gjurma `internal`
+(versionCode 20). Verifikimi i zhvilluesit është i gjelbër — **ai s'ka lidhje**:
+është kontroll identiteti mbi llogarinë, jo mbi aplikacionin.
+
+Shkaku i vërtetë u mat me API (`node store/tools/play.mjs <çelësi> gjendja
+com.ejupishaban.tokerrgjik`): **listimi ishte BOSH** — `«Tokerrgjik» (0/0
+shkronja)`, pa ikonë, pa pamje, pa kontakt. Pa përshkrim dhe pa grafikë Play-i
+nuk e publikon dot, ndaj rri «Draft» sado lëshime të ketë.
+
+**U rregullua me API më 29-07** (`play.mjs listimi … store/listimi.json`):
+tekstet shqip + anglisht, ikona 512, grafika 1024×500, pesë pamjet, kontakti,
+dhe shqipja si gjuhë e parazgjedhur.
+
+**Mbeten VETËM këto, dhe asnjëra nuk bëhet dot me API:**
+
+1. **Klasifikimi i përmbajtjes (IARC)** — pyetësori te Console.
+2. **«Siguria e të dhënave»** — tabela më poshtë te `LISTIMI.md`. 🚨 Që nga
+   2.1.0 aplikacioni ka reklama: «Device or other IDs» tani **mblidhen DHE
+   ndahen** për reklama.
+3. **Store presence → Ads: PO.** SDK-ja e AdMob-it duket te analiza e paketës;
+   një «jo» këtu është deklarim i rremë.
+4. **Publiku i synuar: 13+** (nën 13 hyjnë rregullat e «Familjeve»).
+5. **Shtetet dhe çmimi** (falas).
+6. 🚨 **Testim i MBYLLUR (`alpha`) me ≥12 testues, 14 ditë rresht**, pastaj
+   «Apply for production access». Gjurma `internal` **nuk numërohet** për këtë
+   dhe as nuk e nxjerr aplikacionin nga «Draft» — ajo është e vetmja gjurmë që
+   Google-i nuk e shqyrton. Nise sot: ora nis kur testuesit pranojnë ftesën.
+   Lëshimi ekzistues ngjitet te `alpha` pa u ringarkuar:
+   `node store/tools/play.mjs <çelësi> promovo com.ejupishaban.tokerrgjik 20 alpha`
+
 ## 0. Çfarë NUK e bën dot llogaria e shërbimit
 
 Llogaria e shërbimit e lidhur me Play
