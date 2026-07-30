@@ -191,6 +191,85 @@ class _LobbyPageState extends State<LobbyPage> {
     }
   }
 
+  /// Cilësimet e llogarisë. Përmban fshirjen, që Google Play e kërkon të jetë
+  /// e arritshme **brenda** aplikacionit për çdo llogari të krijuar brenda tij.
+  Future<void> _accountSettings() async {
+    if (!mounted) return;
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (BuildContext sheet) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            ListTile(
+              leading: const Icon(Icons.person_outline),
+              title: const Text('Llogaria'),
+              subtitle: Text(widget.prefs.name.isEmpty
+                  ? 'Vetëm një emër — pa email, pa fjalëkalim'
+                  : '${widget.prefs.name} — pa email, pa fjalëkalim'),
+            ),
+            const Divider(height: 1),
+            ListTile(
+              leading: const Icon(Icons.delete_forever, color: Palette.danger),
+              title: const Text('Fshi llogarinë',
+                  style: TextStyle(color: Palette.danger)),
+              subtitle: const Text(
+                  'Emri dhe pikët fshihen menjëherë e nuk kthehen mbrapsht.'),
+              onTap: () {
+                Navigator.of(sheet).pop();
+                unawaited(_confirmDelete());
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmDelete() async {
+    if (!mounted) return;
+    final bool ok = await showDialog<bool>(
+          context: context,
+          builder: (BuildContext d) => AlertDialog(
+            title: const Text('Të fshihet llogaria?'),
+            content: const Text(
+                'Emri, pikët dhe historiku yt fshihen nga serveri dhe nuk '
+                'kthehen mbrapsht.\n\n'
+                'Nëse je në një ndeshje, ajo mbyllet si dorëzim.\n\n'
+                'Loja kundër telefonit dhe ajo në një pajisje vazhdojnë të '
+                'punojnë — ato nuk kërkojnë llogari.'),
+            actions: <Widget>[
+              TextButton(
+                  onPressed: () => Navigator.of(d).pop(false),
+                  child: const Text('Jo')),
+              TextButton(
+                onPressed: () => Navigator.of(d).pop(true),
+                style: TextButton.styleFrom(foregroundColor: Palette.danger),
+                child: const Text('Fshi'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+    if (!ok || !mounted) return;
+
+    try {
+      await _api.deleteAccount();
+    } on ApiError catch (e) {
+      if (mounted) setState(() => _error = e.message);
+      return;
+    }
+    await widget.prefs.clearToken();
+    if (!mounted) return;
+
+    // Llogaria s'ekziston më, ndaj salla nuk ka çfarë të tregojë.
+    if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Llogaria u fshi.')),
+    );
+  }
+
   Future<void> _showLeaderboard() async {
     List<dynamic> rows;
     try {
@@ -266,6 +345,11 @@ class _LobbyPageState extends State<LobbyPage> {
             tooltip: 'Tabela',
             icon: const Icon(Icons.leaderboard_outlined),
             onPressed: () => unawaited(_showLeaderboard()),
+          ),
+          IconButton(
+            tooltip: 'Cilësimet e llogarisë',
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => unawaited(_accountSettings()),
           ),
         ],
       ),

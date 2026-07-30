@@ -71,6 +71,21 @@ class Api {
 
   Future<Map<String, dynamic>> me() => _send('GET', '/api/une');
 
+  /// Fshin llogarinë te serveri. E kërkon politika e Google Play-t: një llogari
+  /// e krijuar brenda aplikacionit duhet të fshihet brenda tij.
+  ///
+  /// 🚨 Një `401` trajtohet si sukses: do të thotë që tokeni nuk i takon më
+  /// asnjë llogarie, pra fshirja tashmë ka ndodhur. Të thuhej «dështoi» do ta
+  /// linte lojtarin të mendojë se të dhënat i kanë mbetur.
+  Future<void> deleteAccount() async {
+    try {
+      await _send('DELETE', '/api/une');
+    } on ApiError catch (e) {
+      if (e.status != 401 && e.status != 404) rethrow;
+    }
+    token = null;
+  }
+
   Future<Map<String, dynamic>> rename(String name) =>
       _send('POST', '/api/emri', <String, dynamic>{'emri': name});
 

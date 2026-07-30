@@ -91,7 +91,7 @@ class TokerrgjikServer {
       case 'hyr':
         return _signIn(req, res);
       case 'une':
-        return _me(req, res);
+        return req.method == 'DELETE' ? _deleteAccount(req, res) : _me(req, res);
       case 'emri':
         return _rename(req, res);
       case 'rradha':
@@ -148,6 +148,39 @@ class TokerrgjikServer {
       'ndeshja': active == null ? null : _matchView(active, p.id),
       'neRradhe': _queue.containsKey(p.id),
     });
+  }
+
+  /// Fshirja e llogarisë. Google Play e kërkon që një llogari e krijuar brenda
+  /// aplikacionit të fshihet edhe brenda tij; këtu është e lirë, sepse llogaria
+  /// është një regjistrim i vetëm dhe një token.
+  ///
+  /// 🚨 Ndeshjet nuk fshihen, ato anonimizohen. Një ndeshje ka dy anë: po të
+  /// fshihej, kundërshtari do ta gjente historikun e vet të ndryshuar dhe Elo-n
+  /// e fituar nga një ndeshje që nuk ekziston më. Ndeshja aktive, nëse ka,
+  /// mbyllet si dorëzim — përndryshe kundërshtari do të priste përjetësisht një
+  /// lëvizje nga një lojtar që s'ekziston.
+  Future<void> _deleteAccount(HttpRequest req, HttpResponse res) async {
+    final Player? p = store.byToken(_bearer(req));
+    if (p == null) return _text(res, HttpStatus.unauthorized, 'pa token');
+
+    final Match? active = store.matches.values.firstWhereOrNull((Match m) =>
+        !m.game.isOver && (m.whiteId == p.id || m.blackId == p.id));
+    if (active != null) {
+      final String colour = active.colourOf(p.id);
+      active.resignedBy = p.id;
+      active.game.finish(
+          colour == 'white' ? Outcome.blackWins : Outcome.whiteWins,
+          EndReason.resigned);
+      _settle(active);
+      _broadcast(active);
+    }
+
+    _queue.remove(p.id);
+    store.tokens.removeWhere((String t, String id) => id == p.id);
+    store.players.remove(p.id);
+    store.save();
+
+    return _json(res, <String, dynamic>{'ufshi': true});
   }
 
   Future<void> _rename(HttpRequest req, HttpResponse res) async {
@@ -548,8 +581,11 @@ class TokerrgjikServer {
       'perfundimi': m.game.outcome.name,
       'arsyeja': m.game.endReason.name,
       'radha': m.game.toPlay,
-      'ibardhi': w?.toPublic(),
-      'iziu': b?.toPublic(),
+      // 🚨 `iziu` null ka kuptim: dhomë e hapur që pret mikun. Një lojtar i
+      // fshirë NUK duhet të duket kështu — përndryshe një ndeshje e mbaruar do
+      // t'i dukej kundërshtarit si dhomë boshe. Prandaj tombstone, jo null.
+      'ibardhi': w?.toPublic() ?? _iFshire(m.whiteId),
+      'iziu': m.blackId.isEmpty ? null : (b?.toPublic() ?? _iFshire(m.blackId)),
       'ngjyraIme': viewerId == null ? null : m.colourOf(viewerId),
       'eloPara': <String, int>{'w': m.whiteEloBefore, 'b': m.blackEloBefore},
       'eloPas': <String, int>{'w': m.whiteEloAfter, 'b': m.blackEloAfter},
@@ -557,6 +593,17 @@ class TokerrgjikServer {
       'afatiSekonda': moveTimeout.inSeconds,
     };
   }
+
+  /// Vendi i një lojtari që e ka fshirë llogarinë. Emri zëvendësohet; asgjë
+  /// personale nuk mbetet, dhe ndeshja e kundërshtarit mbetet e lexueshme.
+  Map<String, dynamic> _iFshire(String id) => <String, dynamic>{
+        'id': id,
+        'name': 'Lojtar i fshirë',
+        'elo': 0,
+        'wins': 0,
+        'losses': 0,
+        'draws': 0,
+      };
 
   String? _bearer(HttpRequest req) {
     final String? h = req.headers.value('Authorization');
