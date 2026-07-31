@@ -34,9 +34,13 @@ android {
     defaultConfig {
         applicationId = "com.ejupishaban.tokerrgjik"
         minSdk = 24
-        // 🚨 Play kërkon API 35 për çdo ngarkim të ri që nga 31 gushti 2025.
-        // Me 34 ngarkimi refuzohet te dera, para se ta shohë njeri.
-        targetSdk = 35
+        // 🚨 Play kërkon API 35 për çdo ngarkim të ri që nga 31 gushti 2025,
+        // dhe **API 36 që nga 31 gushti 2026**. Me një numër më të ulët
+        // ngarkimi refuzohet te dera, para se ta shohë njeri.
+        // Ngritur 35 → 36 më 2026-07-31: testimi i mbyllur zgjat 14 ditë dhe
+        // publikimi bie pas afatit, pra çdo AAB i ri duhet të jetë tashmë 36.
+        // `compileSdk` ishte tashmë 36, ndaj s'kërkohet asgjë tjetër.
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
