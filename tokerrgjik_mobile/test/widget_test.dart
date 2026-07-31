@@ -5,6 +5,7 @@ import 'package:tokerrgjik_engine/tokerrgjik_engine.dart';
 import 'package:tokerrgjik_mobile/app/prefs.dart';
 import 'package:tokerrgjik_mobile/app/theme.dart';
 import 'package:tokerrgjik_mobile/game/board_view.dart';
+import 'package:tokerrgjik_mobile/game/sfida.dart';
 import 'package:tokerrgjik_mobile/game/turn.dart';
 import 'package:tokerrgjik_mobile/home_page.dart';
 
@@ -69,7 +70,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Tokërrgjik'), findsOneWidget);
-    expect(find.text('Kundër kompjuterit'), findsOneWidget);
+    expect(find.text('Luaj vetëm'), findsOneWidget);
     expect(find.text('Dy lojtarë, një telefon'), findsOneWidget);
     expect(find.text('Luaj online'), findsOneWidget);
     // Pa lojë të ruajtur nuk ka pse të ketë buton "Vazhdo".
@@ -143,6 +144,47 @@ void main() {
       g.undo();                            // nuk guxon të rrëzohet
       expect(g.history, isEmpty);
       expect(g.toPlay, white);
+    });
+  });
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // Sfida e ditës
+  //
+  // Provohet si funksion i pastër: e gjithë vlera e saj është se dy pajisje në
+  // të njëjtën ditë marrin të njëjtën sfidë PA folur me njëra-tjetrën, dhe kjo
+  // matet vetëm duke e thirrur dy herë.
+  // ───────────────────────────────────────────────────────────────────────────
+  group('sfida e ditës', () {
+    test('e njëjta datë jep gjithmonë të njëjtin nivel dhe ngjyrë', () {
+      final Sfida a = Sfida.eDites('2026-08-01');
+      final Sfida b = Sfida.eDites('2026-08-01');
+      expect(a.niveli, b.niveli);
+      expect(a.ngjyra, b.ngjyra);
+    });
+
+    test('niveli rri gjithmonë brenda 3..6', () {
+      for (int d = 1; d <= 28; d++) {
+        final String data = '2026-08-${d.toString().padLeft(2, '0')}';
+        final Sfida s = Sfida.eDites(data);
+        expect(s.niveli, inInclusiveRange(3, 6), reason: data);
+        expect(s.ngjyra, anyOf(white, black), reason: data);
+      }
+    });
+
+    test('dita ndryshon sfidën — 31 ditë nuk japin një vlerë të vetme', () {
+      final Set<String> pare = <String>{};
+      for (int d = 1; d <= 31; d++) {
+        final String data = '2026-08-${d.toString().padLeft(2, '0')}';
+        final Sfida s = Sfida.eDites(data);
+        pare.add('${s.niveli}/${s.ngjyra}');
+      }
+      expect(pare.length, greaterThan(2),
+          reason: 'sfida duhet të ndryshojë vërtet nga dita në ditë');
+    });
+
+    test('«dje» kalon edhe kufirin e muajit', () {
+      expect(Sfida.dje('2026-08-01'), '2026-07-31');
+      expect(Sfida.dje('2027-01-01'), '2026-12-31');
     });
   });
 }

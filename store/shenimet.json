@@ -5,15 +5,19 @@
     "🚨 Emri NUK u shfaqet përdoruesve — shërben vetëm që ti ta dallosh lëshimin te Console-i.",
     "🚨 Shënimet i shihen testuesit: deri në 500 shkronja për gjuhë, dhe VETËM për gjuhët që",
     "   ekzistojnë te listimi (sq dhe en-US). Një gjuhë e panjohur e rrëzon :commit-in.",
+    "🚨 Emri i lëshimit: maksimumi 50 shkronja — ky skedar e ka kapërcyer një herë me 62.",
     "🚨 «gjendja»: sa kohë aplikacioni është «Draft» te Console-i, Play pranon VETËM «draft» —",
     "   një «completed» bie te :commit me «Only releases with status draft may be created on",
     "   draft app», dhe bie PASI AAB-ja ka hipur. Pas publikimit të parë ktheje në «completed».",
+    "🚨 MOS e redakto këtë skedar me perl ose sed pa `-CSD`: një kalim i vetëm pa të e shkruan",
+    "   tekstin dy herë të koduar (ë → Ã«). JSON-i mbetet i vlefshëm, ndaj gabimi nuk duket",
+    "   derisa dikush ta lexojë shqipen te Console-i — dhe atëherë lëshimi ka hipur tashmë.",
     "Kur ngrihet versioni, ndrysho emrin këtu dhe rreshtat që s'vlejnë më."
   ],
   "gjendja": "draft",
-  "emri": "2.3.0 (23) — ikona dhe kthimi i lëvizjes",
+  "emri": "2.4.0 (24) — sfida e ditës",
   "shenimet": {
-    "sq": "• I ri: «Kthe një lëvizje». Kundër kompjuterit kthehen dy — e jotja dhe përgjigjja e tij — që radha të mbetet te ti.\n• Ikonat e menysë nuk kanë më fytyrë roboti as figura njerëzish; kuptimi mbeti i njëjti.\n• Asgjë nuk ndryshoi te rregullat, te niveli i kompjuterit dhe te loja online.",
-    "en-US": "• New: \"Take back a move\". Against the computer two moves are undone — yours and its reply — so the turn stays with you.\n• The menu icons no longer use a robot face or human figures; the meaning is unchanged.\n• Nothing changed in the rules, the computer levels or online play."
+    "sq": "• I ri: «Sfida e ditës». Një lojë e vetme që ndërrohet çdo ditë dhe është e njëjta për këdo — niveli dhe ngjyra dalin nga data, pa asnjë kërkesë interneti. Fitorja e mban serinë; humbja të lë të provosh sërish po atë ditë.\n• Seria ditore shfaqet te statistikat, pranë fitoreve.\n• «Kundër kompjuterit» quhet tani «Luaj vetëm».\n• Rregullat, nivelet dhe loja online nuk ndryshuan.",
+    "en-US": "• New: \"Daily challenge\". One game that changes every day and is the same for everyone — the level and the colour come from the date, with no network request at all. A win keeps your streak; a loss lets you try again the same day.\n• The daily streak appears in the statistics, next to your wins.\n• \"Against the computer\" is now called \"Play alone\".\n• The rules, the levels and online play are unchanged."
   }
 }

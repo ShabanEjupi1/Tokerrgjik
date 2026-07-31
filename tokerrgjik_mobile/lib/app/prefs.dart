@@ -58,6 +58,31 @@ class Prefs {
     }
   }
 
+  // ───────────────────────────────────────────────────────────────────────────
+  // Sfida e ditës
+  //
+  // 🔑 Dita numërohet e mbaruar vetëm kur FITOHET, jo kur luhet. Një humbje
+  // lejon provë të re po atë ditë: ndryshe një nivel 6 do ta priste serinë e
+  // dikujt që luajti mirë, dhe atëherë e vetmja lëvizje e sigurt do të ishte
+  // të mos e hapje fare sfidën.
+  // ───────────────────────────────────────────────────────────────────────────
+
+  static const String _kSfida = 'sfida_data';
+  static const String _kSeria = 'sfida_seria';
+
+  /// Data e sfidës së fundit të FITUAR (`2026-08-01`), ose null.
+  String? get sfidaData => _p.getString(_kSfida);
+
+  int get sfidaSeria => _p.getInt(_kSeria) ?? 0;
+
+  bool sfidaEBere(String data) => sfidaData == data;
+
+  Future<void> shenoSfiden(String data, String dje) async {
+    if (sfidaData == data) return;
+    await _p.setInt(_kSeria, sfidaData == dje ? sfidaSeria + 1 : 1);
+    await _p.setString(_kSfida, data);
+  }
+
   /// Loja kundër kompjuterit që u la përgjysmë.
   ///
   /// Ruhen LËVIZJET dhe jo tabela: nga lëvizjet rindërtohet edhe historiku i

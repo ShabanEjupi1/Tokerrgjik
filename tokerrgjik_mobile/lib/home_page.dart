@@ -7,6 +7,7 @@ import 'app/ads.dart';
 import 'app/prefs.dart';
 import 'app/theme.dart';
 import 'game/local_game_page.dart';
+import 'game/sfida.dart';
 import 'online/lobby_page.dart';
 import 'rules_page.dart';
 
@@ -53,21 +54,24 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(height: 12),
               ],
 
-              // 🕌 Ikonat e kësaj menyje nuk kanë qenie të gjalla. Ishin
-              // `smart_toy` (fytyrë roboti, me sy e gojë) dhe `people` (dy
-              // bysta njerëzish) — pikërisht ato dilnin te pamjet e Play-it.
-              // Zëvendësimet mbajnë të njëjtin kuptim pa figurë: një çip për
-              // kompjuterin, dy shigjeta për radhën që kalon nga njëri lojtar
-              // te tjetri. Mos i kthe.
+              // 🕌 Ikonat e kësaj menyje nuk kanë qenie të gjalla dhe as sende
+              // që zëvendësojnë një qenie. Historiku, që të mos kthehet asnjë
+              // hap prapa:
+              //   `smart_toy` (fytyrë roboti me sy e gojë) → `memory` (çip) →
+              //   sot vetëm numri i lojtarëve.
+              //   `people` (dy bysta njerëzish) → `swap_horiz` → «2».
+              // Modaliteti nuk quhet më «Kundër kompjuterit»: emri e ngrinte
+              // pajisjen në kundërshtar, kurse ajo vetëm zbaton rregullat.
+              // I njëjti ndryshim është bërë te Mat!-i — mbaji të dyja njësoj.
               FilledButton.icon(
                 onPressed: () => unawaited(_chooseLevel()),
-                icon: const Icon(Icons.memory_rounded),
-                label: const Text('Kundër kompjuterit'),
+                icon: const Icon(Icons.looks_one_rounded),
+                label: const Text('Luaj vetëm'),
               ),
               const SizedBox(height: 12),
               OutlinedButton.icon(
                 onPressed: () => _play(level: 0, human: white),
-                icon: const Icon(Icons.swap_horiz_rounded),
+                icon: const Icon(Icons.looks_two_rounded),
                 label: const Text('Dy lojtarë, një telefon'),
               ),
               const SizedBox(height: 12),
@@ -79,6 +83,21 @@ class _HomePageState extends State<HomePage> {
                 )),
                 icon: const Icon(Icons.public),
                 label: const Text('Luaj online'),
+              ),
+              const SizedBox(height: 12),
+              // Sfida e ditës: e njëjta për këdo, pa asnjë kërkesë rrjeti.
+              // Etiketa e mban serinë, sepse pikërisht seria është arsyeja
+              // pse dikush e hap aplikacionin nesër.
+              OutlinedButton.icon(
+                onPressed: _luajSfiden,
+                icon: const Icon(Icons.today_outlined),
+                label: Text(
+                  widget.prefs.sfidaEBere(Sfida.dataESotme())
+                      ? 'Sfida e ditës — e bërë ✓'
+                      : widget.prefs.sfidaSeria > 0
+                          ? 'Sfida e ditës · seri ${widget.prefs.sfidaSeria}'
+                          : 'Sfida e ditës',
+                ),
               ),
 
               const SizedBox(height: 32),
@@ -130,18 +149,34 @@ class _HomePageState extends State<HomePage> {
     await widget.prefs.setLevel(level);
 
     if (!mounted) return;
-    // Ngjyra hidhet si short. E bardha luan e para dhe ajo epërsi nuk duhet të
-    // jetë gjithmonë e lojtarit — ndryshe niveli më i lartë ndihet më i lehtë
-    // se ç'është.
+    // Ngjyra ndërrohet pa rregull. E bardha luan e para dhe ajo epërsi nuk
+    // duhet të jetë gjithmonë e lojtarit — ndryshe niveli më i lartë ndihet më
+    // i lehtë se ç'është.
     final int human =
         DateTime.now().millisecondsSinceEpoch.isEven ? white : black;
     _play(level: level, human: human);
+  }
+
+  /// Sfida e ditës. Niveli dhe ngjyra dalin nga data, ndaj janë të njëjta për
+  /// këdo — dhe një ditë e fituar nuk luhet dy herë.
+  void _luajSfiden() {
+    final String sot = Sfida.dataESotme();
+    if (widget.prefs.sfidaEBere(sot)) {
+      ScaffoldMessenger.of(context)
+        ..clearSnackBars()
+        ..showSnackBar(const SnackBar(
+            content: Text('Sfida e sotme u fitua. Kthehu nesër!')));
+      return;
+    }
+    final Sfida s = Sfida.eDites(sot);
+    _play(level: s.niveli, human: s.ngjyra, sfidaData: sot);
   }
 
   void _play({
     required int level,
     required int human,
     List<String> resume = const <String>[],
+    String? sfidaData,
   }) {
     unawaited(Navigator.of(context)
         .push(MaterialPageRoute<void>(
@@ -150,6 +185,7 @@ class _HomePageState extends State<HomePage> {
             level: level,
             humanColour: human,
             resumeMoves: resume,
+            sfidaData: sfidaData,
           ),
         ))
         .then((_) {
@@ -260,6 +296,11 @@ class _Stats extends StatelessWidget {
             cell('Fitore', prefs.wins, Palette.good),
             cell('Humbje', prefs.losses, Palette.danger),
             cell('Barazime', prefs.draws, Palette.textDim),
+            // Seria e sfidës rri këtu e jo te butoni sepse ajo është arritje,
+            // jo veprim. Fshihet kur është zero, që kutia të mos mësojë
+            // askënd me një «0» të përhershëm.
+            if (prefs.sfidaSeria > 0)
+              cell('Seri ditore', prefs.sfidaSeria, Palette.accent),
           ],
         ),
       ),

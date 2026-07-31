@@ -9,6 +9,7 @@ import '../app/prefs.dart';
 import '../app/theme.dart';
 import 'ai_worker.dart';
 import 'board_view.dart';
+import 'sfida.dart';
 import 'player_bar.dart';
 import 'turn.dart';
 
@@ -20,18 +21,23 @@ class LocalGamePage extends StatefulWidget {
     required this.level,
     required this.humanColour,
     this.resumeMoves = const <String>[],
+    this.sfidaData,
   });
 
-  /// Niveli i kompjuterit, ose 0 për dy lojtarë në një pajisje.
+  /// Niveli i vështirësisë, ose 0 për dy lojtarë në një pajisje.
   final int level;
 
-  /// Ngjyra e njeriut kur luhet kundër kompjuterit.
+  /// Ngjyra e njeriut kur luhet vetëm.
   final int humanColour;
 
   final Prefs prefs;
 
   /// Lëvizjet e një loje të lënë përgjysmë.
   final List<String> resumeMoves;
+
+  /// Data e sfidës së ditës nëse kjo lojë ËSHTË ajo sfidë, ose null.
+  /// Vetëm një fitore e shënon ditën — shih `Prefs.shenoSfiden`.
+  final String? sfidaData;
 
   bool get vsComputer => level > 0;
 
@@ -161,6 +167,11 @@ class _LocalGamePageState extends State<LocalGamePage> {
             widget.humanColour == white) ||
         (_game.outcome == Outcome.blackWins && widget.humanColour == black);
     unawaited(widget.prefs.recordResult(won: won, drew: drew));
+
+    final String? data = widget.sfidaData;
+    if (data != null && won) {
+      unawaited(widget.prefs.shenoSfiden(data, Sfida.dje(data)));
+    }
   }
 
   /// Një këshillë kundër kompjuterit, në këmbim të një reklame të parë deri në
@@ -379,6 +390,10 @@ class _LocalGamePageState extends State<LocalGamePage> {
     if (!widget.vsComputer) return colour == white ? 'I bardhi' : 'I ziu';
     return colour == widget.humanColour
         ? (widget.prefs.name.isEmpty ? 'Ti' : widget.prefs.name)
-        : 'Kompjuteri';
+        // 🕌 Kundërshtari nuk quhet «Kompjuteri»: emri i jep pajisjes rolin e
+        // një vetjeje që luan. Ajo vetëm zbaton rregullat, ndaj rreshti mban
+        // atë që lojtari ka zgjedhur vërtet — shkallën e vështirësisë.
+        // I njëjti ndryshim është bërë te Mat!-i.
+        : AiLevel.fromNumber(widget.level).label;
   }
 }
