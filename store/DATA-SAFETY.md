@@ -204,3 +204,16 @@ Nëse faqja e parapamjes lexohet ndryshe nga kjo, diçka u klikua gabim:
 3. **Target audience: 13+.** Nën 13 hyjnë rregullat e «Families» (pa ID
    reklamash, vetëm rrjete të certifikuara); kodi dërgon
    `tagForChildDirectedTreatment: unspecified`, që i përgjigjet 13+.
+
+---
+
+## Raportimi i lojtarëve (31-07-2026) — nuk shton asnjë tip të ri
+
+`POST /api/raporto` ruan: kush raportoi, kë raportoi, emrat e të dyve në atë
+çast, dhe arsyen nga një listë e mbyllur. Të gjitha bien brenda tipave që
+tashmë deklarohen — **User IDs** dhe **App interactions** — ndaj formulari i
+Data safety nuk ndryshon.
+
+🔑 Nuk mblidhet asnjë tekst i lirë: arsyet janë katër vlera të ngurta. Një kuti
+me tekst do të ishte përmbajtje e re e krijuar nga përdoruesi, dhe do të
+kërkonte edhe deklarimin e saj edhe një filtër të vetin.
