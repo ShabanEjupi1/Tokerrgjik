@@ -225,7 +225,7 @@ class _LobbyPageState extends State<LobbyPage> {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             ListTile(
-              leading: const Icon(Icons.person_outline),
+              leading: const Icon(Icons.label_outline),
               title: const Text('Llogaria'),
               subtitle: Text(widget.prefs.name.isEmpty
                   ? 'Vetëm një emër — pa email, pa fjalëkalim'
@@ -463,7 +463,7 @@ class _LobbyPageState extends State<LobbyPage> {
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
                   onPressed: _busy ? null : () => unawaited(_createRoom()),
-                  icon: const Icon(Icons.group_add_outlined),
+                  icon: const Icon(Icons.add_link),
                   label: const Text('Krijo dhomë për një shok'),
                 ),
                 const SizedBox(height: 26),

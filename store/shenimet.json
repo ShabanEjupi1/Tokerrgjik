@@ -11,9 +11,9 @@
     "Kur ngrihet versioni, ndrysho emrin këtu dhe rreshtat që s'vlejnë më."
   ],
   "gjendja": "draft",
-  "emri": "2.2.0 (22) — reklama, moderim, testim i mbyllur",
+  "emri": "2.3.0 (23) — figura pa qenie të gjalla, kthimi i lëvizjes",
   "shenimet": {
-    "sq": "• Reklama të lehta: banderolë vetëm te menyja dhe një reklamë pas dy lojërave — kurrë gjatë lojës.\n• Reklamë me shpërblim që jep një këshillë kundër kompjuterit; këshilla jepet edhe nëse reklama dështon.\n• Emrat e lojtarëve filtrohen, dhe çdo lojtar mund të raportohet nga tabela e pikëve ose nga ndeshja.\n• Fshirja e llogarisë brenda aplikacionit: Luaj online → ⚙ → Fshi llogarinë.\n• Përditësuar për Android 16 (API 36).",
-    "en-US": "• Light ads: a banner in the menu and one ad after every second game — never during play.\n• A rewarded ad gives a hint against the computer; the hint is given even if the ad fails to load.\n• Player names are filtered, and any player can be reported from the leaderboard or from a match.\n• Delete your account inside the app: Play online → ⚙ → Delete account.\n• Updated for Android 16 (API 36)."
+    "sq": "• I ri: «Kthe një lëvizje». Kundër kompjuterit kthehen dy — e jotja dhe përgjigjja e tij — që radha të mbetet te ti.\n• Ikonat e menysë nuk kanë më fytyrë roboti as figura njerëzish; kuptimi mbeti i njëjti.\n• Asgjë nuk ndryshoi te rregullat, te niveli i kompjuterit dhe te loja online.",
+    "en-US": "• New: \"Take back a move\". Against the computer two moves are undone — yours and its reply — so the turn stays with you.\n• The menu icons no longer use a robot face or human figures; the meaning is unchanged.\n• Nothing changed in the rules, the computer levels or online play."
   }
 }

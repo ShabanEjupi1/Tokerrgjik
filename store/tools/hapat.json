@@ -1,10 +1,11 @@
 [
-  { "tap": [180, 592] },
-  { "wait": 2000 },
-  { "shot": "08-rregullat" },
-  { "tap": [28, 28] },
-  { "wait": 1500 },
-  { "tap": [180, 500] },
-  { "wait": 3000 },
-  { "shot": "09-online" }
+  { "wait": 900, "shot": "pamje-1-ballina" },
+
+  { "tap": [180, 327], "wait": 1400, "shot": "pamje-3-nivelet" },
+  { "tap": [180, 80],  "wait": 1200 },
+
+  { "tap": [180, 443], "wait": 3000, "shot": "pamje-4-online" },
+  { "tap": [28, 28],   "wait": 1400 },
+
+  { "tap": [180, 534], "wait": 1600, "shot": "pamje-5-rregullat" }
 ]

@@ -107,6 +107,34 @@ class _LocalGamePageState extends State<LocalGamePage> {
     _afterMove();
   }
 
+  /// Sa lëvizje kthen një shtypje: dy kundër kompjuterit (e jotja dhe përgjigjja
+  /// e tij), një te loja me dy vetë. Të kthesh vetëm një kundër kompjuterit do
+  /// ta linte radhën te ai dhe ai do të luante menjëherë sërish — pra butoni
+  /// nuk do të bënte asgjë të dukshme.
+  int get _sanKthehen => widget.vsComputer ? 2 : 1;
+
+  bool get _mundKthimi =>
+      !_thinking &&
+      !_askingHint &&
+      _game.history.length >= _sanKthehen &&
+      // Pas fundit tabela është e ngrirë dhe rezultati është shkruar te
+      // statistikat; një kthim atje do të thoshte fshirje e humbjes.
+      !_game.isOver;
+
+  void _kthe() {
+    for (int i = 0; i < _sanKthehen; i++) {
+      _game.undo();
+    }
+    _lastMove = _game.history.isEmpty ? null : _game.history.last;
+    _hint = null;
+    _turn.reset();
+    unawaited(widget.prefs.saveGame(
+      _game.history.map((Move m) => m.toString()).join(','),
+      widget.level,
+      widget.humanColour,
+    ));
+  }
+
   void _afterMove() {
     if (_game.isOver) {
       _recordResult();
@@ -269,6 +297,11 @@ class _LocalGamePageState extends State<LocalGamePage> {
             onPressed: _confirmLeave,
           ),
           actions: <Widget>[
+            IconButton(
+              tooltip: 'Kthe një lëvizje',
+              icon: const Icon(Icons.undo),
+              onPressed: _mundKthimi ? () => setState(_kthe) : null,
+            ),
             // Këshilla shfaqet vetëm kundër kompjuterit dhe vetëm kur radha e ke
             // ti: te loja me dy vetë mbi një telefon do të ishte thjesht mashtrim
             // ndaj tjetrit që rri përballë.

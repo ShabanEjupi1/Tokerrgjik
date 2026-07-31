@@ -98,6 +98,53 @@ void main() {
       expect(tester.takeException(), isNull, reason: state);
     }
   });
+
+  // «Kthe një lëvizje» (2026-07-31). Butoni rri te faqja, por rregulli që e bën
+  // të saktë — sa lëvizje kthehen — testohet këtu, sepse pikërisht ai është i
+  // lehtë për ta ndryshuar pa e vënë re: një kthim i vetëm kundër kompjuterit e
+  // lë radhën te ai, ai luan sërish menjëherë, dhe butoni duket i prishur.
+  group('Kthimi i lëvizjes', () {
+    test('dy lëvizje kundër kompjuterit e kthejnë radhën te njeriu', () {
+      final Game g = Game();
+      // Lëvizjet merren nga vetë motori: testi është për KTHIMIN, jo për një
+      // hapje të caktuar. Një varg i shkruar me dorë varet nga gjeometria e
+      // dangjeve — `place(0) place(1) place(2)` mbyll një dang dhe pa gurin që
+      // hiqet ajo lëvizje as nuk pranohet, ndaj testi do të matte gabimin e vet.
+      for (int i = 0; i < 4; i++) {
+        expect(g.apply(g.legalMoves().first), isTrue);
+      }
+      expect(g.toPlay, white, reason: 'katër gjysma → radha te i bardhi');
+
+      final String para = g.encode();
+      expect(g.apply(g.legalMoves().first), isTrue);   // njeriu
+      expect(g.apply(g.legalMoves().first), isTrue);   // kompjuteri
+      expect(g.encode(), isNot(para));
+
+      g.undo();
+      g.undo();
+      expect(g.encode(), para, reason: 'dy kthime e kthejnë gjendjen saktësisht');
+      expect(g.toPlay, white, reason: 'radha kthehet te njeriu, jo te kompjuteri');
+      expect(g.history.length, 4);
+    });
+
+    test('një kthim i vetëm e lë radhën te kundërshtari', () {
+      final Game g = Game();
+      g.apply(const Move.place(0));
+      g.apply(const Move.place(8));
+      expect(g.toPlay, white);
+      g.undo();
+      expect(g.toPlay, black,
+          reason: 'prandaj kundër kompjuterit kthehen DY, jo një');
+    });
+
+    test('te tabela bosh nuk ka çfarë kthehet', () {
+      final Game g = Game();
+      expect(g.history, isEmpty);
+      g.undo();                            // nuk guxon të rrëzohet
+      expect(g.history, isEmpty);
+      expect(g.toPlay, white);
+    });
+  });
 }
 
 String _cells(Map<int, int> pieces) {
