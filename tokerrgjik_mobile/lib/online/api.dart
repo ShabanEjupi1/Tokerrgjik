@@ -89,6 +89,18 @@ class Api {
   Future<Map<String, dynamic>> rename(String name) =>
       _send('POST', '/api/emri', <String, dynamic>{'emri': name});
 
+  /// Raporton një lojtar tjetër. E kërkon politika e Google Play-t për
+  /// përmbajtjen e krijuar nga përdoruesit: emrat shkruhen nga vetë lojtarët
+  /// dhe shihen nga të gjithë, ndaj krahas filtrit te serveri duhet edhe një
+  /// rrugë me të cilën lojtarët njoftojnë atë që filtri nuk e kap.
+  ///
+  /// Arsyet janë listë e mbyllur (`emri`, `sjellja`, `mashtrim`, `tjeter`) —
+  /// një kuti me tekst të lirë do të ishte vetë UGC.
+  Future<void> report(String against, String reason) async {
+    await _send('POST', '/api/raporto',
+        <String, dynamic>{'kunder': against, 'arsyeja': reason});
+  }
+
   Future<Map<String, dynamic>> joinQueue() => _send('POST', '/api/rradha');
 
   Future<void> leaveQueue() async {

@@ -175,8 +175,17 @@ class Store {
   final Map<String, String> tokens = <String, String>{}; // token -> playerId
   final Map<String, Match> matches = <String, Match>{};
 
+  /// Raportimet e lojtarëve (`POST /api/raporto`). Rrinë te i njëjti skedar si
+  /// gjithçka tjetër, sepse Google Play kërkon që rruga e raportimit të mos jetë
+  /// vetëm një buton që s'çon askund.
+  final List<Map<String, dynamic>> reports = <Map<String, dynamic>>[];
+
   /// Ndeshjet e mbaruara ruhen të plota deri në këtë numër; më të vjetrat bien.
   static const int keepFinishedMatches = 400;
+
+  /// Sa raporte mbahen. Të vjetrat bien: një regjistër që rritet pa fund do të
+  /// mbushte diskun për një gjë që lexohet me sy.
+  static const int keepReports = 500;
 
   final Random _rng = Random.secure();
   Timer? _saveTimer;
@@ -215,12 +224,21 @@ class Store {
     });
   }
 
+  void addReport(Map<String, dynamic> entry) {
+    reports.add(entry);
+    while (reports.length > keepReports) {
+      reports.removeAt(0);
+    }
+    save();
+  }
+
   void save() {
     _dirty = false;
     _prune();
     final Map<String, dynamic> data = <String, dynamic>{
       'players': players.values.map((Player p) => p.toJson()).toList(),
       'matches': matches.values.map((Match m) => m.toJson()).toList(),
+      'reports': reports,
     };
     final File f = File(path);
     f.parent.createSync(recursive: true);
@@ -257,6 +275,9 @@ class Store {
         final Match? m = Match.fromJson(raw as Map<String, dynamic>);
         if (m != null) matches[m.id] = m;
       }
+      for (final dynamic raw in (data['reports'] as List<dynamic>? ?? <dynamic>[])) {
+        if (raw is Map<String, dynamic>) reports.add(raw);
+      }
     } on Object catch (e) {
       // Një skedar i prishur nuk e ndalon serverin: më mirë të nisë bosh sesa të
       // mos nisë fare. Kopja e prishur ruhet për ta parë njeriu.
@@ -267,6 +288,7 @@ class Store {
       players.clear();
       tokens.clear();
       matches.clear();
+      reports.clear();
     }
   }
 }

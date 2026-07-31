@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:tokerrgjik_engine/tokerrgjik_engine.dart';
 
+import 'moderim.dart';
 import 'store.dart';
 
 /// Sa gjatë pret një ndeshje një lëvizje para se t'i japë fitoren tjetrit.
@@ -102,6 +103,8 @@ class TokerrgjikServer {
         return _match(req, res, seg);
       case 'tabela':
         return _leaderboard(req, res);
+      case 'raporto':
+        return _report(req, res);
       default:
         return _text(res, HttpStatus.notFound, 'jo këtu');
     }
@@ -113,17 +116,26 @@ class TokerrgjikServer {
     final Map<String, dynamic> body = await _body(req);
     final String? existing = _bearer(req);
 
+    // 🚨 Emri është UGC: shfaqet te tabela e renditjes dhe te kundërshtari, ndaj
+    // kalon nga filtri PARA se të ruhet. Kontrolli rri këtu e jo te aplikacioni,
+    // sepse kjo derë hapet edhe me një `curl` të vetëm. Shih moderim.dart.
+    final Emri? kerkuar =
+        body['emri'] == null ? null : kontrolloEmrin(body['emri'] as String?);
+    if (kerkuar != null && !kerkuar.ok) {
+      return _text(res, HttpStatus.badRequest, kerkuar.arsyeja!);
+    }
+
     // Aplikacioni e dërgon tokenin e vet nëse e ka: rihyrja pas rinstalimit nuk
     // duhet të krijojë një lojtar të dytë me të njëjtin emër dhe zero pikë.
     Player? p = store.byToken(existing);
     if (p == null) {
       final String id = store.newId(6);
       final String token = store.newId(24);
-      p = Player(id, token, _cleanName(body['emri'] as String?));
+      p = Player(id, token, kerkuar?.emri ?? 'Lojtar');
       store.players[id] = p;
       store.tokens[token] = id;
-    } else if (body['emri'] != null) {
-      p.name = _cleanName(body['emri'] as String?);
+    } else if (kerkuar != null) {
+      p.name = kerkuar.emri!;
     }
     p.lastSeen = DateTime.now();
     store.touch();
@@ -187,21 +199,63 @@ class TokerrgjikServer {
     final Player? p = store.byToken(_bearer(req));
     if (p == null) return _text(res, HttpStatus.unauthorized, 'pa token');
     final Map<String, dynamic> body = await _body(req);
-    p.name = _cleanName(body['emri'] as String?);
+
+    // I njëjti filtër si te hyrja. Pa këtë, ndërrimi i emrit do të ishte dera e
+    // pasme: hyn me «Arben» dhe menjëherë bëhesh çfarë të duash.
+    final Emri kerkuar = kontrolloEmrin(body['emri'] as String?);
+    if (!kerkuar.ok) return _text(res, HttpStatus.badRequest, kerkuar.arsyeja!);
+
+    p.name = kerkuar.emri!;
     store.touch();
     return _json(res, <String, dynamic>{'lojtari': p.toPublic()});
   }
 
-  String _cleanName(String? raw) {
-    final String n = (raw ?? '').trim().replaceAll(RegExp(r'\s+'), ' ');
-    if (n.isEmpty) return 'Lojtar';
-    // Prerja bëhet me runes dhe jo me karaktere: një emër shqip ka ë dhe ç, dhe
-    // prerja në mes të një çifti surrogate jep tekst të prishur.
-    final List<int> runes = n.runes.toList();
-    final String cut =
-        runes.length <= 18 ? n : String.fromCharCodes(runes.take(18));
-    return cut;
+  /// Raportimi i një lojtari. Gjysma e dytë e rregullit të Play-t për UGC-në:
+  /// filtri ndalon fjalët që dihen, raportimi kap ato që s'i di askush ende.
+  ///
+  /// 🔑 Raporti mban EMRIN e raportuar, jo vetëm id-në: emri është pikërisht ajo
+  /// që u raportua, dhe deri sa ta shohësh ti, lojtari mund ta ketë ndërruar.
+  Future<void> _report(HttpRequest req, HttpResponse res) async {
+    final Player? p = store.byToken(_bearer(req));
+    if (p == null) return _text(res, HttpStatus.unauthorized, 'pa token');
+    if (req.method != 'POST') return _text(res, HttpStatus.notFound, 'jo këtu');
+
+    final Map<String, dynamic> body = await _body(req);
+    final String target = (body['kunder'] as String? ?? '').trim();
+    final String? reason = arsyetERaportit.contains(body['arsyeja'])
+        ? body['arsyeja'] as String
+        : null;
+    if (target.isEmpty || reason == null) {
+      return _text(res, HttpStatus.badRequest, 'kërkesë e paplotë');
+    }
+    if (target == p.id) {
+      return _text(res, HttpStatus.badRequest, 'nuk raporton dot veten');
+    }
+
+    // Një kufi i thjeshtë: pa të, raportimi me buton bëhet mjet ngacmimi dhe
+    // regjistri mbushet me qindra rreshta nga i njëjti lojtar.
+    final DateTime now = DateTime.now();
+    final DateTime? last = _lastReport[p.id];
+    if (last != null && now.difference(last) < const Duration(seconds: 30)) {
+      return _text(res, 429, 'Prit pak para raportit tjetër.');
+    }
+    _lastReport[p.id] = now;
+
+    store.addReport(<String, dynamic>{
+      'kur': now.toIso8601String(),
+      'nga': p.id,
+      'ngaEmri': p.name,
+      'kunder': target,
+      'kunderEmri': store.players[target]?.name ?? '?',
+      'arsyeja': reason,
+    });
+    stdout.writeln('tokerrgjik: raport ${p.id} → $target ($reason)');
+    return _json(res, <String, dynamic>{'ok': true});
   }
+
+  /// playerId -> koha e raportit të fundit. Rri në kujtesë e jo te disku: një
+  /// rinisje serveri nuk është arsye për ta bllokuar raportimin.
+  final Map<String, DateTime> _lastReport = <String, DateTime>{};
 
   // ── Radha dhe dhomat ─────────────────────────────────────────────────────
 

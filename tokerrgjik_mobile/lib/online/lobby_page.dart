@@ -6,6 +6,7 @@ import '../app/prefs.dart';
 import '../app/theme.dart';
 import 'api.dart';
 import 'online_game_page.dart';
+import 'report_sheet.dart';
 
 /// Hyrja te loja online: emri, ndeshje e rastësishme, dhomë private, tabela.
 class LobbyPage extends StatefulWidget {
@@ -47,12 +48,26 @@ class _LobbyPageState extends State<LobbyPage> {
       // Tokeni ruhet dhe ridërgohet: pa të, çdo hapje e aplikacionit do të
       // krijonte një lojtar të ri me zero pikë, dhe renditja nuk do të thoshte
       // asgjë.
-      final Map<String, dynamic> p = await _api.signIn(
-          widget.prefs.name.isEmpty ? 'Lojtar' : widget.prefs.name);
+      Map<String, dynamic> p;
+      String? refuzimi;
+      try {
+        p = await _api.signIn(
+            widget.prefs.name.isEmpty ? 'Lojtar' : widget.prefs.name);
+      } on ApiError catch (e) {
+        // 🚨 Emri i ruajtur mund të mos e kalojë më filtrin — p.sh. sepse lista
+        // u zgjerua pas një raportimi. Pa këtë dalje, aplikacioni do të ngecte
+        // te i njëjti gabim në çdo hapje dhe lojtari nuk do të kishte asnjë
+        // mënyrë të hynte për ta ndërruar emrin.
+        if (e.status != 400) rethrow;
+        refuzimi = e.message;
+        await widget.prefs.setName('');
+        p = await _api.signIn('Lojtar');
+      }
       await widget.prefs.setToken(_api.token!);
       if (widget.prefs.name.isEmpty) {
         await widget.prefs.setName(p['name'] as String);
       }
+      if (refuzimi != null && mounted) setState(() => _error = refuzimi);
 
       final Map<String, dynamic> me = await _api.me();
       if (!mounted) return;
@@ -180,11 +195,18 @@ class _LobbyPageState extends State<LobbyPage> {
     );
     ctrl.dispose();
     if (name == null || name.trim().isEmpty) return;
-    await widget.prefs.setName(name);
+
+    // 🚨 Emri ruhet në telefon VETËM pasi serveri ta ketë pranuar. Ndryshe një
+    // emër që filtri e refuzon do të mbetej i ruajtur, do të ridërgohej te çdo
+    // hapje e aplikacionit dhe do ta bllokonte hyrjen përgjithmonë.
     try {
       final Map<String, dynamic> r = await _api.rename(name);
+      await widget.prefs.setName(r['lojtari']['name'] as String);
       if (mounted) {
-        setState(() => _player = r['lojtari'] as Map<String, dynamic>);
+        setState(() {
+          _player = r['lojtari'] as Map<String, dynamic>;
+          _error = null;
+        });
       }
     } on ApiError catch (e) {
       if (mounted) setState(() => _error = e.message);
@@ -322,9 +344,30 @@ class _LobbyPageState extends State<LobbyPage> {
                       subtitle: Text(
                           '${p['wins']}F · ${p['losses']}H · ${p['draws']}B',
                           style: const TextStyle(color: Palette.textDim)),
-                      trailing: Text('${p['elo']}',
-                          style: const TextStyle(
-                              fontSize: 17, fontWeight: FontWeight.w700)),
+                      // Emrat këtu i shkruajnë vetë lojtarët dhe i sheh
+                      // gjithkush: prandaj çdo rresht mban edhe rrugën e
+                      // raportimit që Google Play e kërkon për UGC-në.
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Text('${p['elo']}',
+                              style: const TextStyle(
+                                  fontSize: 17, fontWeight: FontWeight.w700)),
+                          IconButton(
+                            icon: const Icon(Icons.flag_outlined, size: 20),
+                            tooltip: 'Raporto',
+                            visualDensity: VisualDensity.compact,
+                            onPressed: isMe
+                                ? null
+                                : () => unawaited(showReportSheet(
+                                      context: context,
+                                      api: _api,
+                                      targetId: '${p['id']}',
+                                      targetName: p['name'] as String,
+                                    )),
+                          ),
+                        ],
+                      ),
                     );
                   },
                 ),

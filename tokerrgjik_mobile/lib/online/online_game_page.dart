@@ -9,6 +9,7 @@ import '../game/board_view.dart';
 import '../game/player_bar.dart';
 import '../game/turn.dart';
 import 'api.dart';
+import 'report_sheet.dart';
 
 /// Një ndeshje online.
 ///
@@ -239,6 +240,24 @@ class _OnlineGamePageState extends State<OnlineGamePage> {
     });
   }
 
+  /// Raportimi i kundërshtarit. Një lojtar i fshirë s'ka kë të raportojë:
+  /// tombstone-i nuk është llogari dhe emri i tij nuk është i askujt.
+  Future<void> _reportOpponent(Map<String, dynamic>? opponent) async {
+    final String id = '${opponent?['id'] ?? ''}';
+    if (id.isEmpty || (opponent?['name'] as String?) == 'Lojtar i fshirë') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('S\'ka kë të raportosh këtu.')),
+      );
+      return;
+    }
+    await showReportSheet(
+      context: context,
+      api: widget.api,
+      targetId: id,
+      targetName: opponent?['name'] as String? ?? 'Kundërshtari',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     _turn.game = _game;
@@ -266,6 +285,14 @@ class _OnlineGamePageState extends State<OnlineGamePage> {
       appBar: AppBar(
         title: const Text('Online'),
         actions: <Widget>[
+          // Emri i kundërshtarit shihet pikërisht këtu, ndaj këtu rri edhe
+          // rruga e raportimit që Google Play e kërkon për UGC-në.
+          IconButton(
+            tooltip: 'Raporto kundërshtarin',
+            icon: const Icon(Icons.report_outlined),
+            onPressed: () => unawaited(_reportOpponent(
+                _myColour == 'white' ? blackPlayer : whitePlayer)),
+          ),
           if (!_game.isOver)
             IconButton(
               tooltip: 'Dorëzohu',

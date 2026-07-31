@@ -89,6 +89,64 @@ void main() {
     a.close();
   });
 
+  // Filtri i emrave provohet i tëri te `moderim_test.dart`. Këtu provohet vetëm
+  // që rrugët e KYÇURA e thërrasin: një filtër që ekziston por nuk lidhet askund
+  // do t'i kalonte të gjitha provat e veta dhe prapë do ta linte emrin të hyjë.
+  test('emri i papërshtatshëm refuzohet te hyrja dhe te ndërrimi i emrit',
+      () async {
+    final Client a = Client(base, 'Ardit');
+    await a.signIn();
+
+    final Map<String, dynamic> hyrje = await a
+        .call('POST', '/api/hyr', <String, dynamic>{'emri': 'kurva'});
+    expect(hyrje['_status'], 400);
+    expect(store.players[a.playerId]!.name, 'Ardit',
+        reason: 'emri i vjetër nuk preket nga një kërkesë e refuzuar');
+
+    final Map<String, dynamic> emri = await a
+        .call('POST', '/api/emri', <String, dynamic>{'emri': 'f u c k'});
+    expect(emri['_status'], 400);
+
+    final Map<String, dynamic> mire = await a
+        .call('POST', '/api/emri', <String, dynamic>{'emri': 'Arbëri'});
+    expect(mire['_status'], isNot(400));
+    expect(store.players[a.playerId]!.name, 'Arbëri');
+    a.close();
+  });
+
+  test('raportimi kërkon token, arsye të njohur dhe një tjetër lojtar',
+      () async {
+    final Client a = Client(base, 'Ardit');
+    final Client b = Client(base, 'Blerta');
+    await a.signIn();
+    await b.signIn();
+
+    expect(
+        (await a.call('POST', '/api/raporto',
+            <String, dynamic>{'kunder': b.playerId, 'arsyeja': 'sillet keq'}))['_status'],
+        400,
+        reason: 'arsyet janë listë e mbyllur');
+    expect(
+        (await a.call('POST', '/api/raporto',
+            <String, dynamic>{'kunder': a.playerId, 'arsyeja': 'emri'}))['_status'],
+        400,
+        reason: 'nuk raporton dot veten');
+
+    final Map<String, dynamic> ok = await a.call('POST', '/api/raporto',
+        <String, dynamic>{'kunder': b.playerId, 'arsyeja': 'emri'});
+    expect(ok['ok'], isTrue);
+    expect(store.reports.length, 1);
+    expect(store.reports.first['kunderEmri'], 'Blerta');
+
+    // Kufiri i kohës: raporti i dytë brenda 30 sekondash bie me 429.
+    expect(
+        (await a.call('POST', '/api/raporto',
+            <String, dynamic>{'kunder': b.playerId, 'arsyeja': 'sjellja'}))['_status'],
+        429);
+    a.close();
+    b.close();
+  });
+
   test('pa token, çdo gjë e mbrojtur kthen 401', () async {
     final Client a = Client(base, 'Askush');
     for (final List<String> r in <List<String>>[
@@ -170,8 +228,8 @@ void main() {
   }, timeout: const Timeout(Duration(minutes: 3)));
 
   test('serveri refuzon lëvizjet e palejuara dhe ato jashtë radhe', () async {
-    final Client a = Client(base, 'A');
-    final Client b = Client(base, 'B');
+    final Client a = Client(base, 'Ana');
+    final Client b = Client(base, 'Bora');
     await a.signIn();
     await b.signIn();
     await a.call('POST', '/api/rradha');
@@ -215,8 +273,8 @@ void main() {
   });
 
   test('dorëzimi e mbyll ndeshjen dhe ia jep fitoren tjetrit', () async {
-    final Client a = Client(base, 'A');
-    final Client b = Client(base, 'B');
+    final Client a = Client(base, 'Ana');
+    final Client b = Client(base, 'Bora');
     await a.signIn();
     await b.signIn();
     await a.call('POST', '/api/rradha');
@@ -270,7 +328,7 @@ void main() {
   });
 
   test('kodi i gabuar i dhomës kthen 404', () async {
-    final Client a = Client(base, 'A');
+    final Client a = Client(base, 'Ana');
     await a.signIn();
     final Map<String, dynamic> res = await a.call('POST', '/api/dhoma/ZZZZ');
     expect(res['_status'], 404);
@@ -278,8 +336,8 @@ void main() {
   });
 
   test('gjendja mbijeton një rinisje të serverit', () async {
-    final Client a = Client(base, 'A');
-    final Client b = Client(base, 'B');
+    final Client a = Client(base, 'Ana');
+    final Client b = Client(base, 'Bora');
     await a.signIn();
     await b.signIn();
     await a.call('POST', '/api/rradha');
@@ -308,8 +366,8 @@ void main() {
   });
 
   test('rrjedha SSE e nis me gjendjen dhe dërgon çdo lëvizje', () async {
-    final Client a = Client(base, 'A');
-    final Client b = Client(base, 'B');
+    final Client a = Client(base, 'Ana');
+    final Client b = Client(base, 'Bora');
     await a.signIn();
     await b.signIn();
     await a.call('POST', '/api/rradha');

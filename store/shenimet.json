@@ -1,0 +1,15 @@
+{
+  "_koment": [
+    "Emri i lëshimit dhe shënimet për çdo gjuhë, të lexuara nga store/tools/play.mjs:",
+    "  node play.mjs <çelësi.json> ngarko com.ejupishaban.tokerrgjik app.aab alpha store/shenimet.json",
+    "🚨 Emri NUK u shfaqet përdoruesve — shërben vetëm që ti ta dallosh lëshimin te Console-i.",
+    "🚨 Shënimet i shihen testuesit: deri në 500 shkronja për gjuhë, dhe VETËM për gjuhët që",
+    "   ekzistojnë te listimi (sq dhe en-US). Një gjuhë e panjohur e rrëzon :commit-in.",
+    "Kur ngrihet versioni, ndrysho emrin këtu dhe rreshtat që s'vlejnë më."
+  ],
+  "emri": "2.2.0 (22) — reklama, moderim, testim i mbyllur",
+  "shenimet": {
+    "sq": "• Reklama të lehta: banderolë vetëm te menyja dhe një reklamë pas dy lojërave — kurrë gjatë lojës.\n• Reklamë me shpërblim që jep një këshillë kundër kompjuterit; këshilla jepet edhe nëse reklama dështon.\n• Emrat e lojtarëve filtrohen, dhe çdo lojtar mund të raportohet nga tabela e pikëve ose nga ndeshja.\n• Fshirja e llogarisë brenda aplikacionit: Luaj online → ⚙ → Fshi llogarinë.\n• Përditësuar për Android 16 (API 36).",
+    "en-US": "• Light ads: a banner in the menu and one ad after every second game — never during play.\n• A rewarded ad gives a hint against the computer; the hint is given even if the ad fails to load.\n• Player names are filtered, and any player can be reported from the leaderboard or from a match.\n• Delete your account inside the app: Play online → ⚙ → Delete account.\n• Updated for Android 16 (API 36)."
+  }
+}

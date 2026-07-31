@@ -4,7 +4,7 @@ publish_to: 'none'
 
 # 2.0.0: rishkrim i plotë. 2.1.0: reklamat. Numri i ndërtimit duhet të rritet në
 # ÇDO ngarkim te Play, edhe kur versioni i dukshëm nuk ndryshon.
-version: 2.1.0+21
+version: 2.2.0+22
 
 environment:
   sdk: '>=3.5.0 <4.0.0'
