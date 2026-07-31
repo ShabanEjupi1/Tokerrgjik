@@ -5,8 +5,12 @@
     "🚨 Emri NUK u shfaqet përdoruesve — shërben vetëm që ti ta dallosh lëshimin te Console-i.",
     "🚨 Shënimet i shihen testuesit: deri në 500 shkronja për gjuhë, dhe VETËM për gjuhët që",
     "   ekzistojnë te listimi (sq dhe en-US). Një gjuhë e panjohur e rrëzon :commit-in.",
+    "🚨 «gjendja»: sa kohë aplikacioni është «Draft» te Console-i, Play pranon VETËM «draft» —",
+    "   një «completed» bie te :commit me «Only releases with status draft may be created on",
+    "   draft app», dhe bie PASI AAB-ja ka hipur. Pas publikimit të parë ktheje në «completed».",
     "Kur ngrihet versioni, ndrysho emrin këtu dhe rreshtat që s'vlejnë më."
   ],
+  "gjendja": "draft",
   "emri": "2.2.0 (22) — reklama, moderim, testim i mbyllur",
   "shenimet": {
     "sq": "• Reklama të lehta: banderolë vetëm te menyja dhe një reklamë pas dy lojërave — kurrë gjatë lojës.\n• Reklamë me shpërblim që jep një këshillë kundër kompjuterit; këshilla jepet edhe nëse reklama dështon.\n• Emrat e lojtarëve filtrohen, dhe çdo lojtar mund të raportohet nga tabela e pikëve ose nga ndeshja.\n• Fshirja e llogarisë brenda aplikacionit: Luaj online → ⚙ → Fshi llogarinë.\n• Përditësuar për Android 16 (API 36).",
