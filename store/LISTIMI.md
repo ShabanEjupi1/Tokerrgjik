@@ -1,4 +1,4 @@
-# Tokërrgjik — teksti për Google Play
+# Tokerrgjik — teksti për Google Play
 
 Gati për t'u ngjitur te Play Console. Shqipja është gjuha e parazgjedhur,
 anglishtja e dyta.
@@ -16,12 +16,14 @@ anglishtja e dyta.
 
 **Titulli** (maks. 30):
 ```
-Tokërrgjik — loja shqiptare
+Tokerrgjik — loja shqiptare
 ```
+
+🔎 **Pa `ë` me qëllim (03-08-2026).** Te kërkimi i Play-it «tokerrgjik» dhe «Tokërrgjik» nuk përputhen njëri me tjetrin, dhe forma pa shenjë është ajo që shkruhet me tastierë. Grafia e saktë mbetet te përshkrimi dhe te etiketa e aplikacionit.
 
 **Përshkrimi i shkurtër** (maks. 80):
 ```
-Loja tradicionale shqiptare e strategjisë. Kundër kompjuterit, shokut ose online.
+Loja tradicionale shqiptare e strategjisë. Luaj vetëm, me shokë ose online.
 ```
 
 **Përshkrimi i plotë** (maks. 4000):
@@ -37,7 +39,7 @@ që mbetet me dy, ose ai që nuk ka më ku të lëvizë.
 E thjeshtë për t'u mësuar. E vështirë për t'u zotëruar.
 
 SI LUHET
-• Kundër kompjuterit, në gjashtë nivele — nga fillestari deri te mjeshtri
+• Vetëm, në gjashtë nivele — nga fillestari deri te mjeshtri
 • Dy lojtarë në të njëjtin telefon
 • Online kundër një kundërshtari të rastësishëm, me pikë dhe renditje
 • Online kundër një shoku, me një kod dhome katërshkronjësh
@@ -52,7 +54,7 @@ Aplikacioni shfaq reklama, dhe ato janë të filtruara për familje: pa bixhoz, 
 alkool, pa takime dhe pa kredi me kamatë. Reklamat nuk ndërhyjnë kurrë brenda një
 loje — vetëm në menu dhe pasi loja të ketë mbaruar.
 
-Loja kundër kompjuterit dhe ajo me dy lojtarë punojnë PLOTËSISHT PA INTERNET.
+Loja vetëm, sfida e ditës dhe ajo me dy lojtarë punojnë PLOTËSISHT PA INTERNET.
 
 Krejtësisht në shqip.
 ```
@@ -66,7 +68,7 @@ guralecë, lojë tradicionale, offline
 
 **Title** (max 30):
 ```
-Tokërrgjik — Albanian Mills
+Tokerrgjik — Albanian Mills
 ```
 
 **Short description** (max 80):
